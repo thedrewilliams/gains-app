@@ -1,0 +1,16 @@
+{
+  "name": "gains-app",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-17",
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "gains-db",
+      "database_id": "ec0b8642-e641-4404-9177-8ae26fa84165"
+    }
+  ]
+}
