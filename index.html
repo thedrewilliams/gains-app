@@ -2652,37 +2652,268 @@
       }
     }
 
-    function reconcileCloudPayloadIntoLocal(data) {
+        function reconcileCloudPayloadIntoLocal(data) {
       ensureDeletedItemsStruct(state);
       let didChange = false;
 
-      const remoteState = data.state ? sanitizeLoadedState(data.state) : null;
-      if (remoteState) {
-        const remDel = ensureDeletedItemsStruct(remoteState);
-        ['sessions', 'exercisesByDate', 'libraryIds', 'workoutIds'].forEach(bucket => {
-          Object.entries(remDel[bucket] || {}).forEach(([k, ts]) => {
-            if (!state.deletedItems[bucket][k] || ts > state.deletedItems[bucket][k]) {
-              state.deletedItems[bucket][k] = ts;
-            }
-          });
+      const remoteState = data.state ? sanitizeLoadedState(JSON.parse(JSON.stringify(data.state))) : null;
+      if (!remoteState) return false;
+
+      const remoteTs = parseTimestampMs(data.updatedAt || remoteState.updatedAt || remoteState.lastModifiedAt);
+      const localTs = parseTimestampMs(state.lastModifiedAt || state.updatedAt);
+      const remoteIsNewer = !localTs || remoteTs >= localTs;
+
+      // 1. Merge deletion tombstones from both devices
+      const remDel = ensureDeletedItemsStruct(remoteState);
+      ['sessions', 'exercisesByDate', 'libraryIds', 'workoutIds'].forEach(bucket => {
+        Object.entries(remDel[bucket] || {}).forEach(([k, ts]) => {
+          if (!state.deletedItems[bucket][k] || ts > state.deletedItems[bucket][k]) {
+            state.deletedItems[bucket][k] = ts;
+            didChange = true;
+          }
         });
+      });
 
-        if (remoteState.sessions) {
-          Object.entries(remoteState.sessions).forEach(([dateStr, remSess]) => {
-            const tombTs = state.deletedItems.sessions[dateStr] || 0;
-            const remTs = remSess.updatedAt ? Date.parse(remSess.updatedAt) : 0;
-            if (tombTs && tombTs >= remTs) return;
+      // Remove locally any session or exercise that was deleted on the other device
+      Object.entries(state.deletedItems.sessions || {}).forEach(([dateStr, tombTs]) => {
+        const locSess = state.sessions[dateStr];
+        const locSessTs = locSess?.updatedAt ? Date.parse(locSess.updatedAt) : 0;
+        if (locSess && tombTs > locSessTs) {
+          delete state.sessions[dateStr];
+          if (state.sessionExercisesByDate) delete state.sessionExercisesByDate[dateStr];
+          didChange = true;
+        }
+      });
 
-            const locSess = state.sessions[dateStr];
-            const locTs = locSess?.updatedAt ? Date.parse(locSess.updatedAt) : 0;
-            if (!locSess || remTs > locTs) {
-              state.sessions[dateStr] = remSess;
-              delete state.sessionExercisesByDate[dateStr];
+      // 2. Merge completed & draft sessions per date (newest updatedAt wins, Completed status preserved)
+      if (remoteState.sessions) {
+        Object.entries(remoteState.sessions).forEach(([dateStr, remSess]) => {
+          const tombTs = state.deletedItems.sessions[dateStr] || 0;
+          const remTs = remSess.updatedAt ? Date.parse(remSess.updatedAt) : remoteTs;
+          if (tombTs && tombTs > remTs) return;
+
+          const locSess = state.sessions[dateStr];
+          const locTs = locSess?.updatedAt ? Date.parse(locSess.updatedAt) : 0;
+
+          if (!locSess || remTs >= locTs || (remSess.completed && !locSess.completed)) {
+            state.sessions[dateStr] = remSess;
+            // Clear cached day-exercises so they hydrate cleanly from the synced session entries
+            if (state.sessionExercisesByDate && state.sessionExercisesByDate[dateStr]) {
+              delete state.sessionExercisesByDate[dateStr][remSess.workoutId];
+            }
+            didChange = true;
+          }
+        });
+      }
+
+      // 3. Merge in-progress date-scoped exercises (for dates without a newer local session)
+      if (remoteState.sessionExercisesByDate) {
+        Object.entries(remoteState.sessionExercisesByDate).forEach(([dStr, byWk]) => {
+          if (state.deletedItems.sessions[dStr]) return;
+          if (!state.sessionExercisesByDate[dStr]) state.sessionExercisesByDate[dStr] = {};
+          Object.entries(byWk || {}).forEach(([wId, exList]) => {
+            const localList = state.sessionExercisesByDate[dStr][wId];
+            if (!localList || !localList.length || remoteIsNewer) {
+              state.sessionExercisesByDate[dStr][wId] = (exList || []).filter(
+                ex => !state.deletedItems.exercisesByDate[`${dStr}::${(ex.name || '').trim().toLowerCase()}`]
+              );
               didChange = true;
             }
           });
+        });
+      }
+
+      // 4. Merge Exercise Library items
+      if (Array.isArray(remoteState.exerciseLibrary)) {
+        const localById = new Map((state.exerciseLibrary || []).map(item => [item.id, item]));
+        const localByName = new Map((state.exerciseLibrary || []).map(item => [(item.name || '').trim().toLowerCase(), item]));
+
+        remoteState.exerciseLibrary.forEach(remItem => {
+          if (!remItem || state.deletedItems.libraryIds[remItem.id]) return;
+          const existing = localById.get(remItem.id) || localByName.get((remItem.name || '').trim().toLowerCase());
+          if (!existing) {
+            state.exerciseLibrary.push(remItem);
+            didChange = true;
+          } else if (remoteIsNewer) {
+            Object.assign(existing, remItem);
+            didChange = true;
+          }
+        });
+      }
+
+      // 5. Merge Session Types, Templates & Top-Level Settings when remote is newer
+      if (remoteState.workouts) {
+        Object.entries(remoteState.workouts).forEach(([k, v]) => {
+          if (state.deletedItems.workoutIds[k]) return;
+          if (!state.workouts[k] || remoteIsNewer) {
+            state.workouts[k] = v;
+            didChange = true;
+          }
+        });
+      }
+
+      if (remoteIsNewer) {
+        if (remoteState.userName !== undefined && state.userName !== remoteState.userName) {
+          state.userName = remoteState.userName;
+          didChange = true;
+        }
+        if (remoteState.weeklyTarget !== undefined && state.weeklyTarget !== remoteState.weeklyTarget) {
+          state.weeklyTarget = remoteState.weeklyTarget;
+          didChange = true;
+        }
+        if (Array.isArray(remoteState.profileOrder) && remoteState.profileOrder.length) {
+          state.profileOrder = remoteState.profileOrder.filter(id => !state.deletedItems.workoutIds[id]);
+          didChange = true;
+        }
+        if (remoteState.routineTemplates) {
+          state.routineTemplates = remoteState.routineTemplates;
+          Object.keys(remoteState.routineTemplates).forEach(k => {
+            DEFAULT_ROUTINE_TEMPLATES[k] = remoteState.routineTemplates[k];
+          });
+          didChange = true;
         }
       }
+
+      if (remoteTs > localTs) {
+        state.lastModifiedAt = remoteTs;
+      }
+
+      if (didChange) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        renderAll();
+      }
+      return didChange;
+    }
+
+    async function pushStateToCloud(immediate = false) {
+      if (!immediate) {
+        if (cloudSyncDebounceTimer) clearTimeout(cloudSyncDebounceTimer);
+        cloudSyncDebounceTimer = setTimeout(() => pushStateToCloud(true), 800);
+        return;
+      }
+      if (cloudSyncDebounceTimer) {
+        clearTimeout(cloudSyncDebounceTimer);
+        cloudSyncDebounceTimer = null;
+      }
+
+      cloudSyncStatus = 'SYNCING';
+      cloudSyncErrorDetail = '';
+      updateCloudSyncIndicators();
+
+      try {
+        state.routineTemplates = JSON.parse(JSON.stringify(DEFAULT_ROUTINE_TEMPLATES));
+        const res = await fetch(CLOUD_SYNC_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ state })
+        });
+        if (res.status === 404) {
+          throw new Error('Function 404 (/api/sync)');
+        }
+        const rawText = await res.text();
+        let data = null;
+        try { data = JSON.parse(rawText); } catch (_) {}
+        if (!res.ok) {
+          throw new Error(data?.error || `HTTP ${res.status}`);
+        }
+        if (data && data.ok) {
+          cloudSyncStatus = 'SYNCED';
+          cloudLastSyncedAt = data.updatedAt || data.syncedAt || new Date().toISOString();
+          state.lastModifiedAt = parseTimestampMs(cloudLastSyncedAt) || Date.now();
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } else {
+          throw new Error(data?.error || 'Cloudflare D1 Error');
+        }
+      } catch (err) {
+        cloudSyncStatus = 'OFFLINE';
+        cloudSyncErrorDetail = err && err.message ? err.message : 'Sync Failed';
+      }
+      updateCloudSyncIndicators();
+    }
+
+    async function pullStateFromCloud(pushAfterMerge = false) {
+      cloudSyncStatus = 'SYNCING';
+      cloudSyncErrorDetail = '';
+      updateCloudSyncIndicators();
+
+      try {
+        const res = await fetch(`${CLOUD_SYNC_ENDPOINT}?t=${Date.now()}`, {
+          method: 'GET',
+          cache: 'no-store'
+        });
+        if (res.status === 404) {
+          throw new Error('Function 404 (/api/sync)');
+        }
+        const rawText = await res.text();
+        let data = null;
+        try { data = JSON.parse(rawText); } catch (_) {}
+        if (!res.ok) {
+          throw new Error(data?.error || `HTTP ${res.status}`);
+        }
+        if (!data || !data.ok) {
+          throw new Error(data?.error || 'Cloudflare D1 Error');
+        }
+
+        const hasRemoteContent = Boolean(data.state && typeof data.state === 'object');
+        if (hasRemoteContent) {
+          const currentTab = state.activeTab;
+          const currentDate = state.activeDate;
+          const currentWkId = state.selectedWorkoutId;
+
+          reconcileCloudPayloadIntoLocal(data);
+
+          state.activeTab = currentTab;
+          state.activeDate = currentDate;
+          if (state.workouts[currentWkId]) {
+            state.selectedWorkoutId = currentWkId;
+          }
+
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          renderAll();
+
+          if (pushAfterMerge) {
+            await pushStateToCloud(true);
+            return;
+          }
+        } else {
+          // Empty D1 database: seed Cloudflare D1 with local state
+          await pushStateToCloud(true);
+          return;
+        }
+
+        cloudSyncStatus = 'SYNCED';
+        cloudLastSyncedAt = data.updatedAt || new Date().toISOString();
+      } catch (err) {
+        cloudSyncStatus = 'OFFLINE';
+        cloudSyncErrorDetail = err && err.message ? err.message : 'Sync Failed';
+      }
+      updateCloudSyncIndicators();
+    }
+
+    async function syncWithCloudOnBoot() {
+      await pullStateFromCloud(false);
+    }
+
+    // Auto-pull whenever you unlock your phone or switch back to the app
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        pullStateFromCloud(false);
+      }
+    });
+    window.addEventListener('focus', () => {
+      pullStateFromCloud(false);
+    });
+
+    async function forceOverwriteSheetWithLocal() {
+      state.lastModifiedAt = Date.now();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      await pushStateToCloud(true);
+      const statusEl = document.getElementById('menuBackupStatus');
+      if (statusEl) {
+        statusEl.textContent = 'Local state pushed to Cloudflare D1 ✓';
+        statusEl.classList.remove('hidden');
+      }
+    }
 
       if (didChange) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
