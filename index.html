@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#000000" />
+  <title>Gains — Fitness &amp; Workout Tracker</title>
+  <style>
+    :root {
+      --bg-base: #000000;
+      --bg-elevated: rgba(28, 28, 30, 0.72);
+      --bg-elevated-solid: #1c1c1e;
+      --bg-card: rgba(34, 34, 38, 0.68);
+      --border-glass: rgba(255, 255, 255, 0.12);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --text-primary: #ffffff;
+      --text-secondary: rgba(235, 235, 245, 0.65);
+      --text-tertiary: rgba(235, 235, 245, 0.38);
+      --accent-blue: #0a84ff;
+      --accent-green: #30d158;
+      --accent-orange: #ff9f0a;
+      --accent-purple: #bf5af2;
+      --accent-red: #ff453a;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --safe-bottom: env(safe-area-inset-bottom, 20px);
+      --safe-top: env(safe-area-inset-top, 20px);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+      min-height: 100%;
+      overscroll-behavior-y: auto;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      padding-top: calc(var(--safe-top) + 12px);
+      padding-bottom: calc(var(--safe-bottom) + 104px);
+    }
+
+    .app-shell {
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    .view {
+      display: none;
+      animation: fadeIn 0.22s ease;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-header {
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .page-subtitle {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .page-title {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: var(--radius-md);
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+      opacity: 0.88;
+    }
+
+    .btn-primary {
+      background: var(--accent-blue);
+      color: #fff;
+    }
+
+    .btn-success {
+      background: var(--accent-green);
+      color: #000;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+      border: 1px solid var(--border-glass);
+    }
+
+    .btn-danger {
+      background: rgba(255, 69, 58, 0.16);
+      color: var(--accent-red);
+      border: 1px solid rgba(255, 69, 58, 0.3);
+    }
+
+    .btn-sm {
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: var(--radius-sm);
+      width: auto;
+    }
+
+    /* Session Selector Pills */
+    .session-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+
+    .session-pills::-webkit-scrollbar { display: none; }
+
+    .session-pill {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .session-pill.active {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(255, 255, 255, 0.32);
+    }
+
+    /* Exercise Set Rows */
+    .exercise-block {
+      background: rgba(22, 22, 24, 0.78);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .exercise-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .exercise-name {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .exercise-meta {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .set-grid-header {
+      display: grid;
+      grid-template-columns: 36px 1fr 1fr 40px;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .set-row {
+      display: grid;
+      grid-template-columns: 36px 1fr 1fr 40px;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .set-num {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 8px 0;
+    }
+
+    input[type="number"], input[type="text"], select, textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 9px 10px;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    input[type="number"] {
+      text-align: center;
+      font-weight: 600;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent-blue);
+      background: rgba(10, 132, 255, 0.12);
+    }
+
+    .check-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid var(--border-glass);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-tertiary);
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .check-btn.done {
+      background: var(--accent-green);
+      color: #000;
+      border-color: var(--accent-green);
+      font-weight: 700;
+    }
+
+    /* Calendar Grid */
+    .cal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .cal-weekdays, .cal-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+
+    .cal-weekdays div {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      padding-bottom: 6px;
+    }
+
+    .cal-day {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid transparent;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .cal-day.today {
+      border-color: var(--accent-blue);
+      font-weight: 700;
+    }
+
+    .cal-day.selected {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .cal-dots {
+      display: flex;
+      gap: 3px;
+      margin-top: 3px;
+    }
+
+    .cal-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+
+    /* Menu Rows */
+    .list-group {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .list-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      cursor: pointer;
+    }
+
+    .list-row:last-child { border-bottom: none; }
+
+    .list-row:active { background: rgba(255, 255, 255, 0.06); }
+
+    /* Sticky Bottom Floating Liquid Glass Tab Bar */
+    .bottom-nav-wrap {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: calc(var(--safe-bottom) + 10px);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      padding: 0 18px;
+      pointer-events: none;
+    }
+
+    .bottom-nav {
+      pointer-events: auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      width: 100%;
+      max-width: 440px;
+      background: rgba(30, 30, 34, 0.78);
+      backdrop-filter: blur(28px) saturate(200%);
+      -webkit-backdrop-filter: blur(28px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      padding: 6px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 8px 4px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .nav-item.active {
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+    }
+
+    .nav-icon {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    /* Stat Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .status-pill {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(48, 209, 88, 0.14);
+      color: var(--accent-green);
+    }
+
+    .status-pill.syncing {
+      background: rgba(10, 132, 255, 0.16);
+      color: var(--accent-blue);
+    }
+
+    .status-pill.error {
+      background: rgba(255, 69, 58, 0.16);
+      color: var(--accent-red);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- WELCOME VIEW -->
+    <section id="view-welcome" class="view active">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle" id="today-date-label">TODAY</div>
+          <h1 class="page-title">Gains</h1>
+        </div>
+        <span id="header-sync-badge" class="status-pill">Cloud Ready</span>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-val" id="stat-total-workouts">0</div>
+          <div class="stat-lbl">Workouts</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stat-week-workouts">0</div>
+          <div class="stat-lbl">This Week</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="stat-total-sets">0</div>
+          <div class="stat-lbl">Total Sets</div>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <span class="card-title">Quick Start Session</span>
+          <span class="badge" id="next-up-badge">Recommended</span>
+        </div>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 14px;" id="welcome-summary-text">
+          Ready for your next strength session. Every set and custom setting syncs automatically to Cloudflare D1.
+        </p>
+        <button class="btn btn-primary" onclick="switchTab('log')">Start Today's Workout</button>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <span class="card-title">Recent Sessions</span>
+        </div>
+        <div id="recent-workouts-list"></div>
+      </div>
+    </section>
+
+    <!-- LOG VIEW -->
+    <section id="view-log" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle">ACTIVE WORKOUT</div>
+          <h1 class="page-title">Log</h1>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="addExercisePrompt()">+ Exercise</button>
+      </div>
+
+      <div class="session-pills" id="log-session-pills"></div>
+
+      <div class="glass-card" style="padding: 12px 14px;">
+        <div style="display:flex; gap:10px; align-items:center;">
+          <label style="font-size:13px; color:var(--text-secondary); white-space:nowrap;">Workout Date</label>
+          <input type="text" id="log-date-input" placeholder="YYYY-MM-DD" />
+        </div>
+      </div>
+
+      <div id="log-exercises-container"></div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <span class="card-title">Session Notes</span>
+        </div>
+        <textarea id="log-notes-input" rows="2" placeholder="Energy levels, form cues, pump notes..."></textarea>
+      </div>
+
+      <button class="btn btn-success" onclick="completeWorkout()" style="margin-bottom: 12px;">Complete &amp; Sync Workout</button>
+    </section>
+
+    <!-- CALENDAR VIEW -->
+    <section id="view-calendar" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle">HISTORY</div>
+          <h1 class="page-title">Calendar</h1>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="cal-header">
+          <button class="btn btn-secondary btn-sm" onclick="changeMonth(-1)">‹</button>
+          <span class="card-title" id="cal-month-label">November 2026</span>
+          <button class="btn btn-secondary btn-sm" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="cal-weekdays">
+          <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+        </div>
+        <div class="cal-days" id="cal-days-grid"></div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <span class="card-title" id="cal-selected-date-title">Selected Day</span>
+        </div>
+        <div id="cal-day-details"></div>
+      </div>
+    </section>
+
+    <!-- MENU / SETTINGS VIEW -->
+    <section id="view-menu" class="view">
+      <div class="page-header">
+        <div>
+          <div class="page-subtitle">CUSTOMIZE &amp; CLOUD</div>
+          <h1 class="page-title">Menu</h1>
+        </div>
+      </div>
+
+      <!-- Cloudflare D1 Sync Card -->
+      <div class="glass-card">
+        <div class="card-header">
+          <span class="card-title">Cloudflare D1 Database</span>
+          <span id="sync-status-text" class="status-pill">Ready</span>
+        </div>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 14px;">
+          All workouts, session splits, exercise templates, and preferences sync automatically with <strong>/api/sync</strong>.
+        </p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="pushStateToCloud(true)">Push to Cloud</button>
+          <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="pullStateFromCloud(true)">Pull from Cloud</button>
+        </div>
+      </div>
+
+      <!-- Custom Session Types -->
+      <div class="glass-card">
+        <div class="card-header">
+          <span class="card-title">Session Types</span>
+          <button class="btn btn-secondary btn-sm" onclick="addSessionTypePrompt()">+ Add Split</button>
+        </div>
+        <div id="settings-sessions-list"></div>
+      </div>
+
+      <!-- Exercise Library -->
+      <div class="glass-card">
+        <div class="card-header">
+          <span class="card-title">Exercise Library</span>
+          <button class="btn btn-secondary btn-sm" onclick="addLibraryExercisePrompt()">+ Add</button>
+        </div>
+        <div id="settings-exercises-list"></div>
+      </div>
+
+      <!-- Backup & Reset -->
+      <div class="list-group">
+        <div class="list-row" onclick="exportJSON()">
+          <span style="color: var(--accent-blue); font-weight: 600;">Export JSON Backup</span>
+          <span style="color: var(--text-tertiary);">›</span>
+        </div>
+        <div class="list-row" onclick="resetDefaultData()">
+          <span style="color: var(--accent-red); font-weight: 600;">Reset Sample Split</span>
+          <span style="color: var(--text-tertiary);">›</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Sticky Bottom Floating Menu -->
+  <div class="bottom-nav-wrap">
+    <nav class="bottom-nav" aria-label="Primary Navigation">
+      <button class="nav-item active" data-tab="welcome" onclick="switchTab('welcome')">
+        <span class="nav-icon">⌂</span>
+        <span>Welcome</span>
+      </button>
+      <button class="nav-item" data-tab="log" onclick="switchTab('log')">
+        <span class="nav-icon">🏋️</span>
+        <span>Log</span>
+      </button>
+      <button class="nav-item" data-tab="calendar" onclick="switchTab('calendar')">
+        <span class="nav-icon">📅</span>
+        <span>Calendar</span>
+      </button>
+      <button class="nav-item" data-tab="menu" onclick="switchTab('menu')">
+        <span class="nav-icon">☰</span>
+        <span>Menu</span>
+      </button>
+    </nav>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'gains_tracker_state_v2';
+    const CLOUD_ENDPOINT = '/api/sync';
+
+    const DEFAULT_STATE = {
+      sessionTypes: [
+        { id: 'upper-a', name: 'Upper A (Push Focus)', color: '#0a84ff' },
+        { id: 'lower-core', name: 'Lower & Core', color: '#30d158' },
+        { id: 'upper-b', name: 'Upper B (Pull & Shoulders)', color: '#bf5af2' },
+        { id: 'pickleball', name: 'Pickleball / Conditioning', color: '#ff9f0a' }
+      ],
+      exerciseTemplates: [
+        { id: 'ex-1', sessionId: 'upper-a', name: 'Machine Chest Press', target: '3 × 8–10 reps', defaultSets: 3, defaultWeight: 55 },
+        { id: 'ex-2', sessionId: 'upper-a', name: 'Dumbbell Lateral Raises', target: '3 × 12–15 reps', defaultSets: 3, defaultWeight: 12 },
+        { id: 'ex-3', sessionId: 'upper-a', name: 'Cable Tricep Pushdown', target: '3 × 10–12 reps', defaultSets: 3, defaultWeight: 30 },
+        { id: 'ex-4', sessionId: 'lower-core', name: 'Hoist Leg Press', target: '3 × 10–12 reps', defaultSets: 3, defaultWeight: 110 },
+        { id: 'ex-5', sessionId: 'lower-core', name: 'Seated Leg Curl', target: '3 × 10–12 reps', defaultSets: 3, defaultWeight: 55 },
+        { id: 'ex-6', sessionId: 'lower-core', name: 'Bird Dogs / Cable Crunch', target: '3 × 12 reps', defaultSets: 3, defaultWeight: 0 },
+        { id: 'ex-7', sessionId: 'upper-b', name: 'Lat Pulldown', target: '3 × 8–12 reps', defaultSets: 3, defaultWeight: 70 },
+        { id: 'ex-8', sessionId: 'upper-b', name: 'Seated Cable Row', target: '3 × 10–12 reps', defaultSets: 3, defaultWeight: 60 },
+        { id: 'ex-9', sessionId: 'upper-b', name: 'Dumbbell Hammer Curls', target: '3 × 10–12 reps', defaultSets: 3, defaultWeight: 15 }
+      ],
+      workouts: [],
+      activeDraft: {
+        sessionId: 'upper-a',
+        date: new Date().toISOString().slice(0, 10),
+        notes: '',
+        exercises: []
+      },
+      preferences: {
+        weightUnit: 'lbs',
+        restTimerSeconds: 90
+      },
+      updatedAt: new Date().toISOString()
+    };
+
+    let appState = loadLocalState();
+    let calViewDate = new Date();
+    let selectedCalDate = new Date().toISOString().slice(0, 10);
+    let syncTimeout = null;
+
+    function loadLocalState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          return { ...structuredClone(DEFAULT_STATE), ...parsed };
+        }
+      } catch (e) {
+        console.warn('Local load error:', e);
+      }
+      const fresh = structuredClone(DEFAULT_STATE);
+      fresh.activeDraft.exercises = buildDraftExercises(fresh, fresh.activeDraft.sessionId);
+      return fresh;
+    }
+
+    function buildDraftExercises(state, sessionId) {
+      return state.exerciseTemplates
+        .filter(ex => ex.sessionId === sessionId)
+        .map(ex => ({
+          templateId: ex.id,
+          name: ex.name,
+          target: ex.target,
+          sets: Array.from({ length: ex.defaultSets || 3 }, () => ({
+            weight: ex.defaultWeight || '',
+            reps: '',
+            done: false
+          }))
+        }));
+    }
+
+    function saveState(triggerCloud = true) {
+      appState.updatedAt = new Date().toISOString();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      if (triggerCloud) {
+        clearTimeout(syncTimeout);
+        syncTimeout = setTimeout(() => pushStateToCloud(false), 1200);
+      }
+    }
+
+    function setSyncBadge(text, mode = 'ok') {
+      const badges = [
+        document.getElementById('header-sync-badge'),
+        document.getElementById('sync-status-text')
+      ];
+      badges.forEach(el => {
+        if (!el) return;
+        el.textContent = text;
+        el.className = 'status-pill' + (mode === 'syncing' ? ' syncing' : mode === 'error' ? ' error' : '');
+      });
+    }
+
+    async function pushStateToCloud(manual = false) {
+      setSyncBadge('Syncing…', 'syncing');
+      try {
+        const res = await fetch(CLOUD_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ state: appState })
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Sync failed');
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        setSyncBadge(`Synced • ${timeStr}`, 'ok');
+        if (manual) alert('All workouts and custom variables pushed to Cloudflare D1!');
+      } catch (err) {
+        console.error('Cloud push error:', err);
+        setSyncBadge(`Offline (${err.message})`, 'error');
+        if (manual) alert(`Could not reach /api/sync: ${err.message}`);
+      }
+    }
+
+    async function pullStateFromCloud(manual = false) {
+      setSyncBadge('Checking Cloud…', 'syncing');
+      try {
+        const res = await fetch(CLOUD_ENDPOINT, { method: 'GET' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data.ok && data.state) {
+          const remoteTime = new Date(data.state.updatedAt || 0).getTime();
+          const localTime = new Date(appState.updatedAt || 0).getTime();
+          if (manual || remoteTime >= localTime) {
+            appState = { ...structuredClone(DEFAULT_STATE), ...data.state };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            renderAll();
+          }
+          const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          setSyncBadge(`Synced • ${timeStr}`, 'ok');
+          if (manual) alert('Loaded latest state from Cloudflare D1!');
+        } else {
+          // Seed D1 with initial state on first boot
+          await pushStateToCloud(false);
+        }
+      } catch (err) {
+        console.warn('Cloud pull fallback to local:', err);
+        setSyncBadge(`Local (${err.message})`, 'error');
+      }
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.getElementById(`view-${tabName}`).classList.add('active');
+      document.querySelector(`.nav-item[data-tab="${tabName}"]`).classList.add('active');
+      renderAll();
+    }
+
+    function renderAll() {
+      renderWelcome();
+      renderLog();
+      renderCalendar();
+      renderMenu();
+    }
+
+    function renderWelcome() {
+      const now = new Date();
+      document.getElementById('today-date-label').textContent = now.toLocaleDateString([], {
+        weekday: 'long', month: 'short', day: 'numeric'
+      });
+
+      const workouts = appState.workouts || [];
+      document.getElementById('stat-total-workouts').textContent = workouts.length;
+
+      const weekAgo = new Date();
+      weekAgo.setDate(now.getDate() - 7);
+      const weekCount = workouts.filter(w => new Date(w.date) >= weekAgo).length;
+      document.getElementById('stat-week-workouts').textContent = weekCount;
+
+      const totalSets = workouts.reduce((sum, w) =>
+        sum + (w.exercises || []).reduce((s, ex) => s + (ex.sets ? ex.sets.filter(st => st.done).length : 0), 0), 0);
+      document.getElementById('stat-total-sets').textContent = totalSets;
+
+      const recentEl = document.getElementById('recent-workouts-list');
+      if (!workouts.length) {
+        recentEl.innerHTML = `<p style="font-size:14px; color:var(--text-secondary);">No completed workouts yet. Tap <strong>Start Today's Workout</strong> above to log your first session.</p>`;
+        return;
+      }
+
+      recentEl.innerHTML = workouts.slice().reverse().slice(0, 5).map(w => {
+        const sType = appState.sessionTypes.find(s => s.id === w.sessionId) || { name: w.sessionName || 'Workout', color: '#0a84ff' };
+        const doneSets = (w.exercises || []).reduce((acc, ex) => acc + ex.sets.filter(s => s.done).length, 0);
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border-subtle);">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px; font-weight:600; font-size:15px;">
+                <span class="dot" style="background:${sType.color};"></span>
+                <span>${sType.name}</span>
+              </div>
+              <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${w.date} • ${doneSets} sets completed</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderLog() {
+      if (!appState.activeDraft.exercises || !appState.activeDraft.exercises.length) {
+        appState.activeDraft.exercises = buildDraftExercises(appState, appState.activeDraft.sessionId);
+      }
+
+      const pillsEl = document.getElementById('log-session-pills');
+      pillsEl.innerHTML = appState.sessionTypes.map(s => `
+        <button class="session-pill ${s.id === appState.activeDraft.sessionId ? 'active' : ''}" onclick="selectDraftSession('${s.id}')">
+          <span class="dot" style="background:${s.color};"></span>
+          <span>${s.name}</span>
+        </button>
+      `).join('');
+
+      const dateInput = document.getElementById('log-date-input');
+      dateInput.value = appState.activeDraft.date;
+      dateInput.onchange = (e) => {
+        appState.activeDraft.date = e.target.value;
+        saveState();
+      };
+
+      const notesInput = document.getElementById('log-notes-input');
+      notesInput.value = appState.activeDraft.notes || '';
+      notesInput.oninput = (e) => {
+        appState.activeDraft.notes = e.target.value;
+        saveState();
+      };
+
+      const container = document.getElementById('log-exercises-container');
+      container.innerHTML = appState.activeDraft.exercises.map((ex, exIdx) => `
+        <div class="exercise-block">
+          <div class="exercise-header">
+            <div>
+              <div class="exercise-name">${ex.name}</div>
+              <div class="exercise-meta">${ex.target || 'Custom Exercise'}</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="addSetToExercise(${exIdx})">+ Set</button>
+          </div>
+          <div class="set-grid-header">
+            <div>Set</div>
+            <div>Lbs</div>
+            <div>Reps</div>
+            <div>✓</div>
+          </div>
+          ${ex.sets.map((st, setIdx) => `
+            <div class="set-row">
+              <div class="set-num">${setIdx + 1}</div>
+              <input type="number" inputmode="decimal" placeholder="0" value="${st.weight}"
+                onchange="updateSetField(${exIdx}, ${setIdx}, 'weight', this.value)" />
+              <input type="number" inputmode="numeric" placeholder="0" value="${st.reps}"
+                onchange="updateSetField(${exIdx}, ${setIdx}, 'reps', this.value)" />
+              <button class="check-btn ${st.done ? 'done' : ''}" onclick="toggleSetDone(${exIdx}, ${setIdx})">✓</button>
+            </div>
+          `).join('')}
+        </div>
+      `).join('');
+    }
+
+    function selectDraftSession(sessionId) {
+      appState.activeDraft.sessionId = sessionId;
+      appState.activeDraft.exercises = buildDraftExercises(appState, sessionId);
+      saveState();
+      renderLog();
+    }
+
+    function updateSetField(exIdx, setIdx, field, val) {
+      appState.activeDraft.exercises[exIdx].sets[setIdx][field] = val;
+      saveState();
+    }
+
+    function toggleSetDone(exIdx, setIdx) {
+      const setObj = appState.activeDraft.exercises[exIdx].sets[setIdx];
+      setObj.done = !setObj.done;
+      saveState();
+      renderLog();
+    }
+
+    function addSetToExercise(exIdx) {
+      const sets = appState.activeDraft.exercises[exIdx].sets;
+      const last = sets[sets.length - 1] || { weight: '', reps: '' };
+      sets.push({ weight: last.weight, reps: last.reps, done: false });
+      saveState();
+      renderLog();
+    }
+
+    function addExercisePrompt() {
+      const name = prompt('Exercise name:');
+      if (!name || !name.trim()) return;
+      appState.activeDraft.exercises.push({
+        templateId: 'custom-' + Date.now(),
+        name: name.trim(),
+        target: '3 × 10 reps',
+        sets: [
+          { weight: '', reps: '', done: false },
+          { weight: '', reps: '', done: false },
+          { weight: '', reps: '', done: false }
+        ]
+      });
+      saveState();
+      renderLog();
+    }
+
+    async function completeWorkout() {
+      const sType = appState.sessionTypes.find(s => s.id === appState.activeDraft.sessionId) || { name: 'Workout' };
+      const completed = {
+        id: 'w-' + Date.now(),
+        sessionId: appState.activeDraft.sessionId,
+        sessionName: sType.name,
+        date: appState.activeDraft.date || new Date().toISOString().slice(0, 10),
+        notes: appState.activeDraft.notes || '',
+        exercises: structuredClone(appState.activeDraft.exercises)
+      };
+      appState.workouts.push(completed);
+
+      // Reset draft for next session
+      appState.activeDraft.notes = '';
+      appState.activeDraft.exercises = buildDraftExercises(appState, appState.activeDraft.sessionId);
+      saveState(false);
+      await pushStateToCloud(false);
+      switchTab('welcome');
+    }
+
+    function renderCalendar() {
+      const year = calViewDate.getFullYear();
+      const month = calViewDate.getMonth();
+      document.getElementById('cal-month-label').textContent = calViewDate.toLocaleDateString([], {
+        month: 'long', year: 'numeric'
+      });
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const todayStr = new Date().toISOString().slice(0, 10);
+
+      let html = '';
+      for (let i = 0; i < firstDay; i++) {
+        html += `<div></div>`;
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const dayWorkouts = (appState.workouts || []).filter(w => w.date === dateStr);
+        const dots = dayWorkouts.map(w => {
+          const s = appState.sessionTypes.find(st => st.id === w.sessionId);
+          return `<span class="cal-dot" style="background:${s ? s.color : '#0a84ff'};"></span>`;
+        }).join('');
+
+        html += `
+          <div class="cal-day ${dateStr === todayStr ? 'today' : ''} ${dateStr === selectedCalDate ? 'selected' : ''}"
+               onclick="selectCalendarDate('${dateStr}')">
+            <span>${d}</span>
+            <div class="cal-dots">${dots}</div>
+          </div>
+        `;
+      }
+      document.getElementById('cal-days-grid').innerHTML = html;
+
+      document.getElementById('cal-selected-date-title').textContent = selectedCalDate;
+      const matching = (appState.workouts || []).filter(w => w.date === selectedCalDate);
+      const detailsEl = document.getElementById('cal-day-details');
+      if (!matching.length) {
+        detailsEl.innerHTML = `<p style="font-size:14px; color:var(--text-secondary);">No workouts logged on this date.</p>`;
+      } else {
+        detailsEl.innerHTML = matching.map(w => `
+          <div style="padding:10px 0; border-bottom:1px solid var(--border-subtle);">
+            <div style="font-weight:600; margin-bottom:4px;">${w.sessionName}</div>
+            ${w.notes ? `<div style="font-size:13px; color:var(--text-secondary); margin-bottom:6px;">"${w.notes}"</div>` : ''}
+            ${(w.exercises || []).map(ex => {
+              const setsTxt = ex.sets.filter(s => s.done || s.reps).map(s => `${s.weight || 0}×${s.reps || 0}`).join(', ');
+              return `<div style="font-size:13px; color:var(--text-secondary);">• <strong>${ex.name}</strong>: ${setsTxt || 'Logged'}</div>`;
+            }).join('')}
+          </div>
+        `).join('');
+      }
+    }
+
+    function changeMonth(delta) {
+      calViewDate.setMonth(calViewDate.getMonth() + delta);
+      renderCalendar();
+    }
+
+    function selectCalendarDate(dateStr) {
+      selectedCalDate = dateStr;
+      renderCalendar();
+    }
+
+    function renderMenu() {
+      const sessEl = document.getElementById('settings-sessions-list');
+      sessEl.innerHTML = appState.sessionTypes.map(s => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border-subtle);">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="dot" style="background:${s.color}; width:12px; height:12px;"></span>
+            <span style="font-weight:600; font-size:15px;">${s.name}</span>
+          </div>
+          <button class="btn btn-danger btn-sm" onclick="deleteSessionType('${s.id}')">Remove</button>
+        </div>
+      `).join('');
+
+      const exEl = document.getElementById('settings-exercises-list');
+      exEl.innerHTML = appState.exerciseTemplates.map(ex => {
+        const s = appState.sessionTypes.find(st => st.id === ex.sessionId);
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border-subtle);">
+            <div>
+              <div style="font-weight:600; font-size:15px;">${ex.name}</div>
+              <div style="font-size:12px; color:var(--text-secondary);">${s ? s.name : 'Unassigned'} • ${ex.target}</div>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="deleteLibraryExercise('${ex.id}')">Delete</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addSessionTypePrompt() {
+      const name = prompt('New split/session name (e.g., Full Body, Arms & Core):');
+      if (!name || !name.trim()) return;
+      const colors = ['#0a84ff', '#30d158', '#bf5af2', '#ff9f0a', '#ff453a', '#64d2ff'];
+      const color = colors[appState.sessionTypes.length % colors.length];
+      appState.sessionTypes.push({
+        id: 'sess-' + Date.now(),
+        name: name.trim(),
+        color
+      });
+      saveState();
+      renderAll();
+    }
+
+    function deleteSessionType(id) {
+      if (appState.sessionTypes.length <= 1) return alert('Keep at least one session type.');
+      appState.sessionTypes = appState.sessionTypes.filter(s => s.id !== id);
+      if (appState.activeDraft.sessionId === id) {
+        appState.activeDraft.sessionId = appState.sessionTypes[0].id;
+        appState.activeDraft.exercises = buildDraftExercises(appState, appState.activeDraft.sessionId);
+      }
+      saveState();
+      renderAll();
+    }
+
+    function addLibraryExercisePrompt() {
+      const name = prompt('Exercise name:');
+      if (!name || !name.trim()) return;
+      const splitNames = appState.sessionTypes.map((s, i) => `${i + 1}: ${s.name}`).join('\n');
+      const choice = prompt(`Assign to which session number?\n${splitNames}`, '1');
+      const idx = Math.max(0, Math.min(appState.sessionTypes.length - 1, (parseInt(choice, 10) || 1) - 1));
+      const sessionId = appState.sessionTypes[idx].id;
+
+      appState.exerciseTemplates.push({
+        id: 'ex-' + Date.now(),
+        sessionId,
+        name: name.trim(),
+        target: '3 × 10–12 reps',
+        defaultSets: 3,
+        defaultWeight: 0
+      });
+      if (appState.activeDraft.sessionId === sessionId) {
+        appState.activeDraft.exercises = buildDraftExercises(appState, sessionId);
+      }
+      saveState();
+      renderAll();
+    }
+
+    function deleteLibraryExercise(id) {
+      appState.exerciseTemplates = appState.exerciseTemplates.filter(e => e.id !== id);
+      appState.activeDraft.exercises = buildDraftExercises(appState, appState.activeDraft.sessionId);
+      saveState();
+      renderAll();
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(appState, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gains-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function resetDefaultData() {
+      if (!confirm('Reset sample exercises and splits to default?')) return;
+      appState = structuredClone(DEFAULT_STATE);
+      appState.activeDraft.exercises = buildDraftExercises(appState, appState.activeDraft.sessionId);
+      saveState();
+      renderAll();
+    }
+
+    // Boot
+    renderAll();
+    pullStateFromCloud(false);
+  </script>
+</body>
+</html>
