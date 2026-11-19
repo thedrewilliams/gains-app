@@ -127,6 +127,17 @@
       padding: 0;
     }
 
+    .glass--circle-44 {
+      border-radius: 9999px;
+      width: 44px;
+      height: 44px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
     .glass-interactive {
       cursor: pointer;
       user-select: none;
@@ -636,10 +647,10 @@
     }
 
     .sticky-compact-header.is-pinned.has-scrolled-bar {
-      background: rgba(20, 20, 22, 0.78);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
-      backdrop-filter: blur(20px) saturate(180%);
-      border-bottom-color: rgba(255, 255, 255, 0.12);
+      background: rgba(18, 18, 20, 0.90);
+      -webkit-backdrop-filter: blur(22px) saturate(180%);
+      backdrop-filter: blur(22px) saturate(180%);
+      border-bottom-color: rgba(255, 255, 255, 0.14);
     }
 
     /* Seamless Sticky Log Date Header */
@@ -1299,10 +1310,10 @@
 
   <!-- Pinned Compact Header (appears only after large title scrolls past) -->
   <header id="stickyCompactHeader" class="sticky-compact-header">
-    <div class="max-w-lg mx-auto px-4 min-h-[36px] flex items-center justify-between gap-3">
+    <div class="max-w-lg mx-auto px-4 min-h-[44px] flex items-center justify-between gap-3">
       <div id="stickyHeaderLeft" class="flex items-center gap-2.5 min-w-0"></div>
       <div id="stickyHeaderCenter" class="flex-1 text-center truncate"></div>
-      <div id="stickyHeaderRight" class="flex items-center gap-2 min-w-[36px] justify-end"></div>
+      <div id="stickyHeaderRight" class="flex items-center gap-2 min-w-[44px] justify-end"></div>
     </div>
   </header>
 
@@ -1588,7 +1599,7 @@
 
       <!-- Push-In Subpage Container -->
       <div id="menuSubpageContainer" class="hidden space-y-4">
-        <div id="menuSubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 52px);"></div>
+        <div id="menuSubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 60px);"></div>
         <div id="menuSubpageBody" class="space-y-4"></div>
       </div>
     </section>
@@ -4962,14 +4973,15 @@
         }
         const isInlineFieldPage = activeMenuSubpage === 'LIBRARY' && (librarySubViewMode === 'FIELD_TEXT' || librarySubViewMode === 'FIELD_PICKER' || librarySubViewMode === 'EDIT');
         const heroCard = document.getElementById('subpageHeroCard');
-        const headerBottom = stickyBar.getBoundingClientRect().bottom || 72;
-        const scrolledPastHero = isInlineFieldPage || (heroCard ? heroCard.getBoundingClientRect().top < headerBottom - 8 && heroCard.getBoundingClientRect().bottom < headerBottom + 20 : (window.scrollY || 0) > 24);
+        const headerBottom = stickyBar.getBoundingClientRect().bottom || 76;
+        const isScrolled = (window.scrollY || window.pageYOffset || 0) > 6;
+        const scrolledPastHero = isInlineFieldPage || (heroCard ? heroCard.getBoundingClientRect().bottom < headerBottom + 12 : isScrolled);
         stickyBar.classList.add('is-pinned');
-        stickyBar.classList.toggle('has-scrolled-bar', scrolledPastHero);
+        stickyBar.classList.toggle('has-scrolled-bar', isInlineFieldPage || isScrolled);
         if (!leftSlot.firstElementChild) {
           leftSlot.innerHTML = `
-            <button type="button" onclick="closeMenuSubpage()" aria-label="Back to Menu" class="glass glass--clear glass--circle-36 glass-interactive">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            <button type="button" onclick="closeMenuSubpage()" aria-label="Back to Menu" class="glass glass--clear glass--circle-44 glass-interactive">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
           `;
         }
