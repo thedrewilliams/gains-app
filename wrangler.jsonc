@@ -1,0 +1,18 @@
+{
+  "name": "gains-app",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "gains-db",
+      "database_id": "ec0b8642-e641-4404-9177-8ae26fa84165"
+    }
+  ]
+}
