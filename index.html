@@ -622,16 +622,24 @@
       right: 0;
       z-index: 30;
       padding-top: calc(env(safe-area-inset-top, 12px) + 8px);
-      padding-bottom: 14px;
-      background: linear-gradient(180deg, #000000 62%, rgba(0, 0, 0, 0) 100%);
+      padding-bottom: 10px;
+      background: transparent;
+      border-bottom: 0.5px solid transparent;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.22s ease;
+      transition: opacity 0.22s ease, background-color 0.2s ease, border-color 0.2s ease;
     }
 
     .sticky-compact-header.is-pinned {
       opacity: 1;
       pointer-events: auto;
+    }
+
+    .sticky-compact-header.is-pinned.has-scrolled-bar {
+      background: rgba(20, 20, 22, 0.78);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-bottom-color: rgba(255, 255, 255, 0.12);
     }
 
     /* Seamless Sticky Log Date Header */
@@ -1580,7 +1588,7 @@
 
       <!-- Push-In Subpage Container -->
       <div id="menuSubpageContainer" class="hidden space-y-4">
-        <div id="menuSubpageHero" class="pt-14"></div>
+        <div id="menuSubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 52px);"></div>
         <div id="menuSubpageBody" class="space-y-4"></div>
       </div>
     </section>
@@ -4954,22 +4962,32 @@
         }
         const isInlineFieldPage = activeMenuSubpage === 'LIBRARY' && (librarySubViewMode === 'FIELD_TEXT' || librarySubViewMode === 'FIELD_PICKER' || librarySubViewMode === 'EDIT');
         const heroCard = document.getElementById('subpageHeroCard');
-        const scrolledPastHero = isInlineFieldPage || (heroCard ? heroCard.getBoundingClientRect().bottom < 72 : false);
+        const headerBottom = stickyBar.getBoundingClientRect().bottom || 72;
+        const scrolledPastHero = isInlineFieldPage || (heroCard ? heroCard.getBoundingClientRect().top < headerBottom - 8 && heroCard.getBoundingClientRect().bottom < headerBottom + 20 : (window.scrollY || 0) > 24);
         stickyBar.classList.add('is-pinned');
-        leftSlot.innerHTML = `
-          <button type="button" onclick="closeMenuSubpage()" aria-label="Back to Menu" class="glass glass--clear glass--circle-36 glass-interactive">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-        `;
-        centerSlot.innerHTML = `<span class="type-headline text-white font-bold transition-opacity duration-200" style="opacity: ${scrolledPastHero ? '1' : '0'};">${esc(compactTitle)}</span>`;
-        rightSlot.innerHTML = ``;
+        stickyBar.classList.toggle('has-scrolled-bar', scrolledPastHero);
+        if (!leftSlot.firstElementChild) {
+          leftSlot.innerHTML = `
+            <button type="button" onclick="closeMenuSubpage()" aria-label="Back to Menu" class="glass glass--clear glass--circle-36 glass-interactive">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+          `;
+        }
+        let titleSpan = centerSlot.firstElementChild;
+        if (!titleSpan) {
+          centerSlot.innerHTML = `<span class="type-headline text-white font-bold transition-opacity duration-200"></span>`;
+          titleSpan = centerSlot.firstElementChild;
+        }
+        if (titleSpan.textContent !== compactTitle) titleSpan.textContent = compactTitle;
+        titleSpan.style.opacity = scrolledPastHero ? '1' : '0';
+        if (rightSlot.innerHTML) rightSlot.innerHTML = ``;
         return;
       }
 
-      stickyBar.classList.remove('is-pinned');
-      leftSlot.innerHTML = ``;
-      centerSlot.innerHTML = ``;
-      rightSlot.innerHTML = ``;
+      stickyBar.classList.remove('is-pinned', 'has-scrolled-bar');
+      if (leftSlot.innerHTML) leftSlot.innerHTML = ``;
+      if (centerSlot.innerHTML) centerSlot.innerHTML = ``;
+      if (rightSlot.innerHTML) rightSlot.innerHTML = ``;
 
       if (state.activeTab === 'SUMMARY') {
         const rawY = window.scrollY || window.pageYOffset || 0;
