@@ -1826,7 +1826,7 @@
       <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <path d="M12 2.5a1 1 0 0 1 .65.24l8.5 7.25a1 1 0 0 1-.65 1.76H19v7.75A1.5 1.5 0 0 1 17.5 21h-3.25a.75.75 0 0 1-.75-.75v-4.5a1.5 1.5 0 0 0-3 0v4.5a.75.75 0 0 1-.75.75H6.5A1.5 1.5 0 0 1 5 19.5v-7.75H3.5a1 1 0 0 1-.65-1.76l8.5-7.25A1 1 0 0 1 12 2.5z"/>
       </svg>
-      <span class="type-caption">Welcome</span>
+      <span class="type-caption">Home</span>
     </button>
 
     <button type="button" id="tabBtn_LOG" onclick="switchTab('LOG')" class="tab-btn">
@@ -2148,16 +2148,7 @@
     // TOMBSTONE & TIMESTAMP HELPERS FOR NON-DESTRUCTIVE SMART SYNC
     // =========================================================================
     function ensureDeletedItemsStore(targetState = state) {
-      if (!targetState.deletedItems || typeof targetState.deletedItems !== 'object') {
-        targetState.deletedItems = { sessions: {}, logs: {} };
-      }
-      if (!targetState.deletedItems.sessions || typeof targetState.deletedItems.sessions !== 'object') {
-        targetState.deletedItems.sessions = {};
-      }
-      if (!targetState.deletedItems.logs || typeof targetState.deletedItems.logs !== 'object') {
-        targetState.deletedItems.logs = {};
-      }
-      return targetState.deletedItems;
+      return ensureDeletedItemsStruct(targetState);
     }
 
     function normalizeExKey(dateStr, exName) {
@@ -2173,27 +2164,27 @@
 
     function recordSessionTombstone(dateStr, ts = Date.now()) {
       if (!dateStr) return;
-      const store = ensureDeletedItemsStore();
+      const store = ensureDeletedItemsStruct(state);
       store.sessions[dateStr] = Math.max(Number(store.sessions[dateStr] || 0), ts);
     }
 
     function clearSessionTombstone(dateStr) {
       if (!dateStr) return;
-      const store = ensureDeletedItemsStore();
+      const store = ensureDeletedItemsStruct(state);
       delete store.sessions[dateStr];
     }
 
     function recordExerciseLogTombstone(dateStr, exName, ts = Date.now()) {
       if (!dateStr || !exName) return;
-      const store = ensureDeletedItemsStore();
+      const store = ensureDeletedItemsStruct(state);
       const key = normalizeExKey(dateStr, exName);
-      store.logs[key] = Math.max(Number(store.logs[key] || 0), ts);
+      store.exercisesByDate[key] = Math.max(Number(store.exercisesByDate[key] || 0), ts);
     }
 
     function clearExerciseLogTombstone(dateStr, exName) {
       if (!dateStr || !exName) return;
-      const store = ensureDeletedItemsStore();
-      delete store.logs[normalizeExKey(dateStr, exName)];
+      const store = ensureDeletedItemsStruct(state);
+      delete store.exercisesByDate[normalizeExKey(dateStr, exName)];
     }
 
     function getPreviousDateLogByExerciseName(exName, currentDateStr) {
@@ -2621,12 +2612,16 @@
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const clean = sanitizeLoadedState(JSON.parse(saved));
-          if (clean) return clean;
+          if (clean) {
+            clean.activeTab = 'SUMMARY';
+            return clean;
+          }
         }
       } catch (e) {
         console.error(e);
       }
       const fresh = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      fresh.activeTab = 'SUMMARY';
       fresh.activeDate = getTodayDateStr();
       return fresh;
     }
@@ -2848,7 +2843,16 @@
       updateCloudSyncIndicators();
     }
 
+    let cloudPullInFlight = false;
+    let lastCloudPullAt = 0;
+
     async function pullStateFromCloud(pushAfterMerge = false) {
+      const now = Date.now();
+      if (cloudPullInFlight) return;
+      if (!pushAfterMerge && now - lastCloudPullAt < 2000) return;
+      cloudPullInFlight = true;
+      lastCloudPullAt = now;
+
       cloudSyncStatus = 'SYNCING';
       cloudSyncErrorDetail = '';
       updateCloudSyncIndicators();
@@ -2877,7 +2881,7 @@
           const currentDate = state.activeDate;
           const currentWkId = state.selectedWorkoutId;
 
-          reconcileCloudPayloadIntoLocal(data);
+          const didChange = reconcileCloudPayloadIntoLocal(data);
 
           state.activeTab = currentTab;
           state.activeDate = currentDate;
@@ -2885,8 +2889,10 @@
             state.selectedWorkoutId = currentWkId;
           }
 
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-          renderAll();
+          if (didChange) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            renderAll();
+          }
 
           if (pushAfterMerge) {
             await pushStateToCloud(true);
@@ -2903,6 +2909,8 @@
       } catch (err) {
         cloudSyncStatus = 'OFFLINE';
         cloudSyncErrorDetail = err && err.message ? err.message : 'Sync Failed';
+      } finally {
+        cloudPullInFlight = false;
       }
       updateCloudSyncIndicators();
     }
@@ -5060,7 +5068,7 @@
 
       return exercises.map(ex => {
         const log = getLogForDate(ex, dateStr);
-        const prevLog = getPreviousDateLogByExerciseName(ex.name, dateStr);
+        const prevLog = interactive ? getPreviousDateLogByExerciseName(ex.name, dateStr) : null;
         const prevSummary = prevLog ? formatLiftSummary(prevLog) : '';
         const varColor = getExerciseVariableColor(ex);
         const varLabel = formatExerciseVariableLabel(ex);
@@ -5105,17 +5113,19 @@
                     </svg>
                   </button>
                 ` : ''}
-                <button
-                  type="button"
-                  ${interactive ? `onclick="openRemoveExerciseConfirm('${esc(ex.id)}')"` : 'tabindex="-1"'}
-                  aria-label="Remove ${esc(ex.name)}"
-                  class="glass glass--clear glass--circle-36 glass-interactive shrink-0"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round">
-                    <line x1="18" y1="6" x2="6" y2="18"/>
-                    <line x1="6" y1="6" x2="18" y2="18"/>
-                  </svg>
-                </button>
+                ${interactive ? `
+                  <button
+                    type="button"
+                    onclick="openRemoveExerciseConfirm('${esc(ex.id)}')"
+                    aria-label="Remove ${esc(ex.name)}"
+                    class="glass glass--clear glass--circle-36 glass-interactive shrink-0"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                ` : ''}
               </div>
             </div>
 
@@ -5161,6 +5171,7 @@
       const sess = state.sessions[dateStr];
       const isCompleted = Boolean(sess && sess.workoutId === wkId && sess.completed);
       const isEditingThis = interactive && isCompleted && isEditingCompletedWorkout;
+      const canEditExercises = interactive && (!isCompleted || isEditingThis);
       const showDateBtn = isEditingThis;
       const canComplete = hasAnyWorkoutInput(wkId, dateStr);
 
@@ -5214,16 +5225,18 @@
       return `
         <p ${interactive ? 'id="logRoutineSubtitle"' : ''} class="type-footnote px-1" style="color: var(--label-secondary);">${esc(wk?.subtitle || '')}</p>
         <div ${interactive ? 'id="exerciseCardsList"' : ''} class="space-y-3.5">
-          ${buildExerciseCardsHtml(wk, dateStr, interactive, showDateBtn)}
+          ${buildExerciseCardsHtml(wk, dateStr, canEditExercises, showDateBtn)}
         </div>
-        <div class="flex justify-center pt-1">
-          <button type="button" ${interactive ? 'onclick="openAddExerciseSheet(\'SESSION\')"' : 'tabindex="-1"'} aria-label="Add Exercise" class="glass glass--clear glass--circle-48 glass-interactive">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-          </button>
-        </div>
+        ${(!isCompleted || isEditingThis) ? `
+          <div class="flex justify-center pt-1">
+            <button type="button" ${interactive ? 'onclick="openAddExerciseSheet(\'SESSION\')"' : 'tabindex="-1"'} aria-label="Add Exercise" class="glass glass--clear glass--circle-48 glass-interactive">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          </div>
+        ` : ''}
         <div class="pt-2 pb-2">
           ${bottomActionHtml}
         </div>
@@ -5755,6 +5768,7 @@
 
     function initSpecularSpotlight() {
       document.addEventListener('pointermove', (e) => {
+        if (!(e.target instanceof Element)) return;
         const glassEl = e.target.closest('.glass');
         if (!glassEl) return;
         const rect = glassEl.getBoundingClientRect();
@@ -5764,7 +5778,8 @@
       }, { passive: true });
 
       document.addEventListener('pointerleave', (e) => {
-        const glassEl = e.target.closest && e.target.closest('.glass');
+        if (!(e.target instanceof Element)) return;
+        const glassEl = e.target.closest('.glass');
         if (glassEl) glassEl.style.setProperty('--spotlight-active', '0');
       }, true);
     }
@@ -5803,6 +5818,8 @@
           updateCollapsibleHeaderOnScroll();
         });
       }, { passive: true });
+      state.activeTab = 'SUMMARY';
+      activeMenuSubpage = null;
       renderAll();
       syncWithCloudOnBoot();
     });
