@@ -99,6 +99,30 @@ function derToP1363(derBytes, coordLen = 32) {
   return out;
 }
 
+
+async function hashPassword(password, saltBytes) {
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    { name: 'PBKDF2' },
+    false,
+    ['deriveBits']
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: saltBytes, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    256
+  );
+  return uint8ToBase64Url(new Uint8Array(bits));
+}
+
+function timingSafeEqualStr(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 async function ensureTables(db) {
   await db.batch([
     db.prepare(
@@ -115,6 +139,9 @@ async function ensureTables(db) {
     ),
     db.prepare(
       'CREATE TABLE IF NOT EXISTS gains_sessions (token TEXT PRIMARY KEY, user_id TEXT NOT NULL, expires_at INTEGER NOT NULL, created_at TEXT NOT NULL)'
+    ),
+    db.prepare(
+      'CREATE TABLE IF NOT EXISTS gains_passwords (user_id TEXT PRIMARY KEY, password_hash TEXT NOT NULL, salt TEXT NOT NULL, updated_at TEXT NOT NULL)'
     )
   ]);
 }
@@ -250,6 +277,93 @@ export default {
             { ok: true },
             200,
             { 'Set-Cookie': buildSessionCookie('', 0, isHttps) }
+          );
+        }
+
+
+        // -------------------------------------------------------------------
+        // POST /api/auth/email — Traditional Email & Password Sign-In / Sign-Up
+        // -------------------------------------------------------------------
+        if (url.pathname === '/api/auth/email' && request.method === 'POST') {
+          const body = await request.json().catch(() => ({}));
+          const email = String(body.email || '').trim().toLowerCase();
+          const password = String(body.password || '');
+          const mode = body.mode === 'signup' ? 'signup' : 'signin';
+          const name = String(body.name || '').trim();
+
+          if (!email || !email.includes('@')) {
+            return jsonResponse({ ok: false, error: 'Please enter a valid email address.' }, 400);
+          }
+          if (password.length < 6) {
+            return jsonResponse({ ok: false, error: 'Password must be at least 6 characters.' }, 400);
+          }
+
+          const existingUser = await db
+            .prepare('SELECT id, email, name FROM gains_users WHERE email = ?')
+            .bind(email)
+            .first();
+
+          if (mode === 'signup') {
+            if (existingUser) {
+              const existingPw = await db
+                .prepare('SELECT user_id FROM gains_passwords WHERE user_id = ?')
+                .bind(existingUser.id)
+                .first();
+              if (existingPw) {
+                return jsonResponse(
+                  { ok: false, error: 'An account with this email already exists. Switch to Sign In.' },
+                  409
+                );
+              }
+            }
+            const user = existingUser || (await findOrCreateUser(db, email, name));
+            const saltBytes = new Uint8Array(16);
+            crypto.getRandomValues(saltBytes);
+            const saltB64 = uint8ToBase64Url(saltBytes);
+            const pwHash = await hashPassword(password, saltBytes);
+
+            await db
+              .prepare(
+                'INSERT INTO gains_passwords (user_id, password_hash, salt, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET password_hash = excluded.password_hash, salt = excluded.salt, updated_at = excluded.updated_at'
+              )
+              .bind(user.id, pwHash, saltB64, new Date().toISOString())
+              .run();
+
+            const sessionToken = await createSessionForUser(db, user.id);
+            return jsonResponse(
+              { ok: true, user },
+              200,
+              { 'Set-Cookie': buildSessionCookie(sessionToken, SESSION_TTL_SEC, isHttps) }
+            );
+          }
+
+          // Sign-in mode
+          if (!existingUser) {
+            return jsonResponse(
+              { ok: false, needsSignup: true, error: 'No account found for that email. Tap Create Account below.' },
+              404
+            );
+          }
+          const pwRow = await db
+            .prepare('SELECT password_hash, salt FROM gains_passwords WHERE user_id = ?')
+            .bind(existingUser.id)
+            .first();
+          if (!pwRow) {
+            return jsonResponse(
+              { ok: false, error: 'This account was created with a Passkey. Tap Sign in with Passkey or Create Account to add a password.' },
+              401
+            );
+          }
+          const computed = await hashPassword(password, base64UrlToUint8(pwRow.salt));
+          if (!timingSafeEqualStr(computed, pwRow.password_hash)) {
+            return jsonResponse({ ok: false, error: 'Incorrect email or password.' }, 401);
+          }
+
+          const sessionToken = await createSessionForUser(db, existingUser.id);
+          return jsonResponse(
+            { ok: true, user: existingUser },
+            200,
+            { 'Set-Cookie': buildSessionCookie(sessionToken, SESSION_TTL_SEC, isHttps) }
           );
         }
 
