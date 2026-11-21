@@ -1,13 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" fill="#000000"/>
-  <!-- Outer Left Blue Plate -->
-  <rect x="112" y="210.25" width="31.5" height="91.5" rx="14.25" fill="#0275e7"/>
-  <!-- Inner Left Blue Plate -->
-  <rect x="157" y="182.5" width="37.5" height="147" rx="16.5" fill="#0275e7"/>
-  <!-- Center White Bar (Sharp Corners) -->
-  <rect x="208" y="240.25" width="96" height="31.5" fill="#FFFFFF"/>
-  <!-- Inner Right Blue Plate -->
-  <rect x="317.5" y="182.5" width="37.5" height="147" rx="16.5" fill="#0275e7"/>
-  <!-- Outer Right Blue Plate -->
-  <rect x="368.5" y="210.25" width="31.5" height="91.5" rx="14.25" fill="#0275e7"/>
+  <!-- Transparent background, original 100% size -->
+  <rect x="64" y="195" width="42" height="122" rx="19" fill="#0275e7"/>
+  <rect x="124" y="158" width="50" height="196" rx="22" fill="#0275e7"/>
+  <rect x="192" y="235" width="128" height="42" fill="#FFFFFF"/>
+  <rect x="338" y="158" width="50" height="196" rx="22" fill="#0275e7"/>
+  <rect x="406" y="195" width="42" height="122" rx="19" fill="#0275e7"/>
 </svg>
