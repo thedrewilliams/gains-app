@@ -206,7 +206,6 @@ export default {
     const url = new URL(request.url);
     const isHttps = url.protocol === 'https:';
     const googleEnabled = Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
-    const requireAuth = String(env.REQUIRE_AUTH || '').toLowerCase() === 'true';
 
     if (url.pathname.startsWith('/api/')) {
       const db = getD1Binding(env);
@@ -230,7 +229,7 @@ export default {
             authenticated: Boolean(user),
             email: user ? user.email : null,
             name: user ? user.name : null,
-            userId: user ? user.id : requireAuth ? null : 'default',
+            userId: user ? user.id : null,
             passkeyEnabled: true,
             googleEnabled
           });
@@ -570,11 +569,11 @@ export default {
         // -------------------------------------------------------------------
         if (url.pathname === '/api/sync') {
           const user = await getAuthenticatedUser(request, db);
-          if (!user && requireAuth) {
+          if (!user) {
             return jsonResponse({ ok: false, error: 'Please sign in to sync your workouts.' }, 401);
           }
 
-          const rowId = user ? `user:${user.id}` : 'default';
+          const rowId = `user:${user.id}`;
           const ownerEmail = String(env.OWNER_EMAIL || '').trim().toLowerCase();
 
           if (request.method === 'GET') {
