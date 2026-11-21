@@ -3420,11 +3420,22 @@
       try {
         await fetch('/api/auth/logout', { method: 'POST' });
       } catch (_) {}
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        const toRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && (k === STORAGE_KEY || k.startsWith(`${STORAGE_KEY}:`) || k === 'gains_beta_sandbox_v1')) {
+            toRemove.push(k);
+          }
+        }
+        toRemove.forEach(k => localStorage.removeItem(k));
+      } catch (_) {}
       authSession = {
         authenticated: false,
         email: null,
         name: null,
-        userId: 'default',
+        userId: null,
         passkeyEnabled: true,
         googleEnabled: authSession.googleEnabled
       };
