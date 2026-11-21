@@ -107,6 +107,9 @@
     .glass--pill {
       border-radius: 9999px;
       min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .glass--circle-36 {
@@ -481,9 +484,7 @@
       top: 0;
       left: 0;
       right: 0;
-      bottom: 0;
-      height: 100vh;
-      height: 100lvh;
+      bottom: -80px;
       background: rgba(0, 0, 0, 0.56);
       z-index: 50;
       display: flex;
@@ -503,16 +504,15 @@
       position: relative;
       width: 100%;
       max-width: 540px;
-      height: 92lvh;
-      max-height: 92lvh;
+      height: calc(92dvh + 80px);
+      max-height: calc(92dvh + 80px);
       border-top-left-radius: 38px;
       border-top-right-radius: 38px;
-      padding: 16px 16px calc(max(22px, env(safe-area-inset-bottom, 34px)) + 4px);
+      padding: 16px 16px calc(80px + max(22px, env(safe-area-inset-bottom, 34px)));
       display: flex;
       flex-direction: column;
       background: #141416;
       box-shadow:
-        0 64px 0 0 #141416,
         0 -8px 40px rgba(0, 0, 0, 0.65),
         0 0 0 0.5px rgba(255, 255, 255, 0.14),
         inset 0 1px 0 rgba(255, 255, 255, 0.12);
@@ -3597,11 +3597,11 @@
 
       return `
         <div class="space-y-2.5">
-          <button type="button" onclick="smartPasskeyFlow('${context}', '${noticeId}')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
+          <button type="button" onclick="smartPasskeyFlow('${context}', '${noticeId}')" class="solid-pill w-full h-[50px] px-4 gap-2.5 type-subhead font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6"/><path d="M17 14l4 4m0-4l-4 4"/></svg>
             <span>Sign in with Passkey</span>
           </button>
-          <button type="button" onclick="setAuthStep('${context}', 'EMAIL_SIGNIN')" class="glass glass--clear glass--pill glass-interactive w-full py-3.5 px-4 gap-2.5 type-subhead font-semibold text-white">
+          <button type="button" onclick="setAuthStep('${context}', 'EMAIL_SIGNIN')" class="glass glass--clear glass--pill glass-interactive w-full h-[50px] px-4 gap-2.5 type-subhead font-bold text-white">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"/><polyline points="22,6 12,13 2,6"/></svg>
             <span>Sign in with Email</span>
           </button>
@@ -4377,12 +4377,6 @@
       if (!anySheetOpen && !anyAlertOpen && document.body.classList.contains('has-sheet-open')) {
         document.documentElement.classList.remove('is-scroll-locked');
         document.body.classList.remove('has-sheet-open');
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.left = '';
-        document.body.style.right = '';
-        document.body.style.width = '';
-        window.scrollTo(0, lockedScrollY);
       }
     }
 
@@ -6516,11 +6510,6 @@
         lockedScrollY = window.scrollY || window.pageYOffset || 0;
         document.documentElement.classList.add('is-scroll-locked');
         document.body.classList.add('has-sheet-open');
-        document.body.style.position = 'fixed';
-        document.body.style.top = `-${lockedScrollY}px`;
-        document.body.style.left = '0';
-        document.body.style.right = '0';
-        document.body.style.width = '100%';
       }
       document.getElementById(backdropId).classList.add('is-open');
     }
