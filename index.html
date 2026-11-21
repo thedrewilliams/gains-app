@@ -2076,7 +2076,7 @@
           <div id="accountModalAvatar" class="w-10 h-10 rounded-full flex items-center justify-center text-[16px] font-extrabold text-white shrink-0" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">D</div>
           <div class="min-w-0">
             <h3 id="accountModalTitle" class="type-headline text-white font-bold truncate">Drew</h3>
-            <p id="accountModalSubtitle" class="type-caption truncate" style="color: var(--label-secondary);">Cloudflare Access · Per-User Sync</p>
+            <p id="accountModalSubtitle" class="type-caption truncate" style="color: var(--label-secondary);">Private Per-User D1 Sync</p>
           </div>
         </div>
         <button type="button" onclick="closeAccountModal()" class="apple-sheet-close-btn" aria-label="Close">
@@ -2085,12 +2085,12 @@
       </div>
 
       <div id="accountModalAuthActions" class="space-y-2.5 mb-3">
-        <button type="button" onclick="triggerCloudflareAuth('Google', 'accountAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #FFFFFF; color: #000000;">
+        <button type="button" onclick="signInWithGoogleFlow('accountAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #FFFFFF; color: #000000;">
           <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
           <span>Continue with Google</span>
         </button>
 
-        <button type="button" onclick="triggerCloudflareAuth('Passkey', 'accountAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
+        <button type="button" onclick="signInPasskeyFlow('accountModalEmailInput', 'accountAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6"/><path d="M17 14l4 4m0-4l-4 4"/></svg>
           <span>Sign in with Passkey</span>
         </button>
@@ -2339,12 +2339,11 @@
     const BETA_LOCAL_ONLY = false;
     let authSession = {
       authenticated: false,
-      verified: false,
-      authConfigured: false,
       email: null,
+      name: null,
       userId: 'default',
-      loginUrl: '/cdn-cgi/access/login',
-      logoutUrl: '/cdn-cgi/access/logout'
+      passkeyEnabled: true,
+      googleEnabled: false
     };
 
     function getActiveStorageKey() {
@@ -3233,6 +3232,29 @@
       }
     }
 
+    function bufToBase64Url(buf) {
+      const bytes = new Uint8Array(buf);
+      let bin = '';
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    function base64UrlToBuf(str) {
+      const padded = str.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (str.length % 4)) % 4);
+      const bin = atob(padded);
+      const out = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out.buffer;
+    }
+
+    function setAuthNotice(noticeId, msg, isError = false) {
+      const el = noticeId ? document.getElementById(noticeId) : null;
+      if (!el) return;
+      el.textContent = msg || '';
+      el.style.color = isError ? '#FF6961' : '#64D2FF';
+      el.classList.toggle('hidden', !msg);
+    }
+
     async function fetchAuthSession() {
       if (!isCloudSyncSupported()) {
         updateAuthUI();
@@ -3244,12 +3266,11 @@
         if (res.ok && data && data.ok) {
           authSession = {
             authenticated: Boolean(data.authenticated),
-            verified: Boolean(data.verified),
-            authConfigured: Boolean(data.authConfigured),
             email: data.email || null,
+            name: data.name || null,
             userId: data.userId || 'default',
-            loginUrl: data.loginUrl || '/cdn-cgi/access/login',
-            logoutUrl: data.logoutUrl || '/cdn-cgi/access/logout'
+            passkeyEnabled: data.passkeyEnabled !== false,
+            googleEnabled: Boolean(data.googleEnabled)
           };
         }
       } catch (err) {
@@ -3259,21 +3280,177 @@
       return authSession;
     }
 
-    function triggerCloudflareAuth(method, noticeId) {
-      const notice = noticeId ? document.getElementById(noticeId) : null;
+    async function registerPasskeyFlow(emailInputId, noticeId) {
       if (!isCloudSyncSupported()) {
-        if (notice) {
-          notice.textContent = `Open your live Cloudflare URL to sign in with ${method}.`;
-          notice.classList.remove('hidden');
-        }
+        setAuthNotice(noticeId, 'Open your live Cloudflare URL to create a Passkey.', true);
         return;
       }
-      window.location.href = authSession.loginUrl || '/cdn-cgi/access/login';
+      if (!window.PublicKeyCredential || !navigator.credentials) {
+        setAuthNotice(noticeId, 'Passkeys are not supported in this browser.', true);
+        return;
+      }
+      const emailEl = emailInputId ? document.getElementById(emailInputId) : null;
+      const email = authSession.authenticated && authSession.email
+        ? authSession.email
+        : (emailEl ? emailEl.value.trim().toLowerCase() : '');
+      if (!email || !email.includes('@')) {
+        setAuthNotice(noticeId, 'Enter your email address above to register a Passkey.', true);
+        if (emailEl) emailEl.focus();
+        return;
+      }
+
+      setAuthNotice(noticeId, 'Waiting for Face ID / Touch ID…');
+      try {
+        const optRes = await fetch('/api/auth/passkey/register/options', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name: state.userName || '' })
+        });
+        const optData = await optRes.json().catch(() => ({}));
+        if (!optRes.ok || !optData.ok) {
+          throw new Error(optData.error || 'Could not start Passkey registration.');
+        }
+
+        const opts = optData.options;
+        const publicKey = {
+          ...opts,
+          challenge: base64UrlToBuf(opts.challenge),
+          user: { ...opts.user, id: base64UrlToBuf(opts.user.id) },
+          excludeCredentials: (opts.excludeCredentials || []).map(c => ({
+            ...c,
+            id: base64UrlToBuf(c.id)
+          }))
+        };
+
+        const cred = await navigator.credentials.create({ publicKey });
+        if (!cred || !cred.response || typeof cred.response.getPublicKey !== 'function') {
+          throw new Error('Browser did not return a Passkey public key.');
+        }
+        const spkiBuf = cred.response.getPublicKey();
+        if (!spkiBuf) throw new Error('Could not read Passkey public key.');
+
+        const verRes = await fetch('/api/auth/passkey/register/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: cred.id,
+            clientDataJSON: bufToBase64Url(cred.response.clientDataJSON),
+            publicKeySpki: bufToBase64Url(spkiBuf)
+          })
+        });
+        const verData = await verRes.json().catch(() => ({}));
+        if (!verRes.ok || !verData.ok) {
+          throw new Error(verData.error || 'Passkey verification failed.');
+        }
+
+        setAuthNotice(noticeId, 'Passkey saved & signed in ✓');
+        await syncWithCloudOnBoot();
+        if (document.getElementById('accountModalBackdrop')?.classList.contains('is-open')) {
+          openAccountModal();
+        }
+      } catch (err) {
+        if (err && err.name === 'NotAllowedError') {
+          setAuthNotice(noticeId, 'Passkey prompt cancelled.', true);
+        } else {
+          setAuthNotice(noticeId, (err && err.message) || 'Passkey registration failed.', true);
+        }
+      }
     }
 
-    function signOutCloudflareAuth() {
+    async function signInPasskeyFlow(emailInputId, noticeId) {
+      if (!isCloudSyncSupported()) {
+        setAuthNotice(noticeId, 'Open your live Cloudflare URL to sign in with Passkey.', true);
+        return;
+      }
+      if (!window.PublicKeyCredential || !navigator.credentials) {
+        setAuthNotice(noticeId, 'Passkeys are not supported in this browser.', true);
+        return;
+      }
+      const emailEl = emailInputId ? document.getElementById(emailInputId) : null;
+      const email = emailEl ? emailEl.value.trim().toLowerCase() : '';
+
+      setAuthNotice(noticeId, 'Waiting for Face ID / Touch ID…');
+      try {
+        const optRes = await fetch('/api/auth/passkey/login/options', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const optData = await optRes.json().catch(() => ({}));
+        if (!optRes.ok || !optData.ok) {
+          throw new Error(optData.error || 'Could not start Passkey sign-in.');
+        }
+
+        const opts = optData.options;
+        const publicKey = {
+          ...opts,
+          challenge: base64UrlToBuf(opts.challenge),
+          allowCredentials: (opts.allowCredentials || []).map(c => ({
+            ...c,
+            id: base64UrlToBuf(c.id)
+          }))
+        };
+
+        const assertion = await navigator.credentials.get({ publicKey });
+        if (!assertion || !assertion.response) {
+          throw new Error('Passkey sign-in was cancelled.');
+        }
+
+        const verRes = await fetch('/api/auth/passkey/login/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: assertion.id,
+            clientDataJSON: bufToBase64Url(assertion.response.clientDataJSON),
+            authenticatorData: bufToBase64Url(assertion.response.authenticatorData),
+            signature: bufToBase64Url(assertion.response.signature)
+          })
+        });
+        const verData = await verRes.json().catch(() => ({}));
+        if (!verRes.ok || !verData.ok) {
+          throw new Error(verData.error || 'Passkey sign-in failed.');
+        }
+
+        setAuthNotice(noticeId, 'Signed in ✓');
+        await syncWithCloudOnBoot();
+        if (document.getElementById('accountModalBackdrop')?.classList.contains('is-open')) {
+          closeAccountModal();
+        }
+      } catch (err) {
+        if (err && err.name === 'NotAllowedError') {
+          setAuthNotice(noticeId, 'Passkey prompt cancelled.', true);
+        } else {
+          setAuthNotice(noticeId, (err && err.message) || 'Passkey sign-in failed.', true);
+        }
+      }
+    }
+
+    function signInWithGoogleFlow(noticeId) {
+      if (!isCloudSyncSupported()) {
+        setAuthNotice(noticeId, 'Open your live Cloudflare URL to sign in with Google.', true);
+        return;
+      }
+      if (!authSession.googleEnabled) {
+        setAuthNotice(noticeId, 'Add GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET in Worker Settings to enable Google Sign-In (or use Passkey right now).', true);
+        return;
+      }
+      window.location.href = '/api/auth/google';
+    }
+
+    async function signOutNativeAuth() {
       if (!isCloudSyncSupported()) return;
-      window.location.href = authSession.logoutUrl || '/cdn-cgi/access/logout';
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+      } catch (_) {}
+      authSession = {
+        authenticated: false,
+        email: null,
+        name: null,
+        userId: 'default',
+        passkeyEnabled: true,
+        googleEnabled: authSession.googleEnabled
+      };
+      window.location.reload();
     }
 
     async function pushStateToCloud() {
@@ -4147,28 +4324,35 @@
       if (sub) {
         sub.textContent = authSession.authenticated && authSession.email
           ? authSession.email
-          : 'Cloudflare Access · Per-User Sync';
+          : 'Private Per-User D1 Sync';
       }
       if (actions) {
         if (authSession.authenticated && authSession.email) {
           actions.innerHTML = `
             <div class="rounded-2xl px-3.5 py-2.5 flex items-center justify-between gap-2" style="background: rgba(48, 209, 88, 0.14); border: 1px solid rgba(48, 209, 88, 0.3);">
-              <span class="type-caption font-semibold" style="color: #30D158;">Signed in via Cloudflare Access</span>
+              <span class="type-caption font-semibold" style="color: #30D158;">Signed in · Isolated D1 Profile</span>
               <span class="w-2 h-2 rounded-full" style="background-color: #30D158;"></span>
             </div>
-            <button type="button" onclick="signOutCloudflareAuth()" class="solid-pill w-full py-3.5 px-4 gap-2 type-subhead font-bold" style="background-color: rgba(255, 69, 58, 0.16); color: #FF453A; border: 1px solid rgba(255, 69, 58, 0.32);">
+            <button type="button" onclick="registerPasskeyFlow(null, 'accountAuthNotice')" class="glass glass--clear glass--pill glass-interactive w-full py-3 px-4 gap-2 type-subhead font-semibold text-white">
+              <span>Add Passkey on This Device</span>
+            </button>
+            <button type="button" onclick="signOutNativeAuth()" class="solid-pill w-full py-3.5 px-4 gap-2 type-subhead font-bold" style="background-color: rgba(255, 69, 58, 0.16); color: #FF453A; border: 1px solid rgba(255, 69, 58, 0.32);">
               <span>Sign Out</span>
             </button>
           `;
         } else {
           actions.innerHTML = `
-            <button type="button" onclick="triggerCloudflareAuth('Google', 'accountAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #FFFFFF; color: #000000;">
-              <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-              <span>Continue with Google</span>
-            </button>
-            <button type="button" onclick="triggerCloudflareAuth('Passkey', 'accountAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
+            <input type="email" id="accountModalEmailInput" autocomplete="username webauthn" placeholder="Email (for new Passkey account)" class="fitness-field text-[15px] font-medium" />
+            <button type="button" onclick="signInPasskeyFlow('accountModalEmailInput', 'accountAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6"/><path d="M17 14l4 4m0-4l-4 4"/></svg>
               <span>Sign in with Passkey</span>
+            </button>
+            <button type="button" onclick="registerPasskeyFlow('accountModalEmailInput', 'accountAuthNotice')" class="glass glass--clear glass--pill glass-interactive w-full py-3 px-4 gap-2 type-subhead font-semibold text-white">
+              <span>Create Passkey Account</span>
+            </button>
+            <button type="button" onclick="signInWithGoogleFlow('accountAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #FFFFFF; color: #000000;">
+              <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              <span>Continue with Google</span>
             </button>
           `;
         }
@@ -5782,26 +5966,33 @@
               <p class="type-caption" style="color: var(--label-secondary);">
                 ${authSession.authenticated && authSession.email
                   ? `Signed in as <span class="text-white font-semibold">${esc(authSession.email)}</span> — your workouts sync privately to your own D1 profile.`
-                  : 'Sign in with Google or a Passkey via Cloudflare Access for isolated per-user D1 sync.'}
+                  : 'Sign in with a Passkey (Face ID / Touch ID) or Google for private per-user D1 sync.'}
               </p>
             </div>
             <div class="space-y-2.5">
               ${authSession.authenticated && authSession.email ? `
                 <div class="rounded-2xl px-3.5 py-2.5 flex items-center justify-between gap-2" style="background: rgba(48, 209, 88, 0.14); border: 1px solid rgba(48, 209, 88, 0.3);">
-                  <span class="type-caption font-semibold" style="color: #30D158;">Cloudflare Access Active</span>
+                  <span class="type-caption font-semibold" style="color: #30D158;">Signed in · Isolated D1 Profile</span>
                   <span class="w-2 h-2 rounded-full" style="background-color: #30D158;"></span>
                 </div>
-                <button type="button" onclick="signOutCloudflareAuth()" class="solid-pill w-full py-3.5 px-4 gap-2 type-subhead font-bold" style="background-color: rgba(255, 69, 58, 0.16); color: #FF453A; border: 1px solid rgba(255, 69, 58, 0.32);">
+                <button type="button" onclick="registerPasskeyFlow(null, 'profileSubpageAuthNotice')" class="glass glass--clear glass--pill glass-interactive w-full py-3 px-4 gap-2 type-subhead font-semibold text-white">
+                  <span>Add Passkey on This Device</span>
+                </button>
+                <button type="button" onclick="signOutNativeAuth()" class="solid-pill w-full py-3.5 px-4 gap-2 type-subhead font-bold" style="background-color: rgba(255, 69, 58, 0.16); color: #FF453A; border: 1px solid rgba(255, 69, 58, 0.32);">
                   <span>Sign Out</span>
                 </button>
               ` : `
-                <button type="button" onclick="triggerCloudflareAuth('Google', 'profileSubpageAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #FFFFFF; color: #000000;">
-                  <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                  <span>Continue with Google</span>
-                </button>
-                <button type="button" onclick="triggerCloudflareAuth('Passkey', 'profileSubpageAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
+                <input type="email" id="profileSubpageEmailInput" autocomplete="username webauthn" placeholder="Email (for new Passkey account)" class="fitness-field text-[15px] font-medium" />
+                <button type="button" onclick="signInPasskeyFlow('profileSubpageEmailInput', 'profileSubpageAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6"/><path d="M17 14l4 4m0-4l-4 4"/></svg>
                   <span>Sign in with Passkey</span>
+                </button>
+                <button type="button" onclick="registerPasskeyFlow('profileSubpageEmailInput', 'profileSubpageAuthNotice')" class="glass glass--clear glass--pill glass-interactive w-full py-3 px-4 gap-2 type-subhead font-semibold text-white">
+                  <span>Create Passkey Account</span>
+                </button>
+                <button type="button" onclick="signInWithGoogleFlow('profileSubpageAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #FFFFFF; color: #000000;">
+                  <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                  <span>Continue with Google</span>
                 </button>
               `}
             </div>
