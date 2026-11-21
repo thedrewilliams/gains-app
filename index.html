@@ -1663,7 +1663,7 @@
         <!-- Smooth ±14-Day Horizontal Slider (Folds away smoothly when Month Calendar opens) -->
         <div id="logWeekStripWrap" class="log-week-strip-wrap">
           <div class="log-week-strip-inner">
-            <div id="logWeekStrip" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5" style="scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;"></div>
+            <div id="logWeekStrip" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1" style="-webkit-overflow-scrolling: touch; touch-action: pan-x; overscroll-behavior-x: contain;"></div>
           </div>
         </div>
       </div>
@@ -3552,6 +3552,8 @@
       const nextStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
 
       if (state.activeTab === 'LOG') {
+        // Immediately glide the date strip & highlight the target date in sync with the card swipe
+        renderLogWeekStrip(nextStr, true);
         animateLogDayTransition(deltaDays, () => setActiveDate(nextStr));
       } else {
         setActiveDate(nextStr);
@@ -4583,70 +4585,159 @@
       if (nextBtn) nextBtn.setAttribute('aria-label', isLogCalendarOpen ? 'Next Month' : 'Next Day');
     }
 
-    function renderLogWeekStrip() {
+    let logStripAnchorDate = null;
+    let logStripScrollRafId = null;
+    let logStripInterruptBound = false;
+
+    function cancelLogStripScrollAnim() {
+      if (logStripScrollRafId !== null) {
+        cancelAnimationFrame(logStripScrollRafId);
+        logStripScrollRafId = null;
+      }
+    }
+
+    function bindLogStripInterruptListeners(stripEl) {
+      if (!stripEl || logStripInterruptBound) return;
+      logStripInterruptBound = true;
+      stripEl.addEventListener('touchstart', cancelLogStripScrollAnim, { passive: true });
+      stripEl.addEventListener('pointerdown', cancelLogStripScrollAnim, { passive: true });
+      stripEl.addEventListener('wheel', cancelLogStripScrollAnim, { passive: true });
+    }
+
+    function smoothScrollStripTo(stripEl, targetLeft, animate = true) {
+      if (!stripEl) return;
+      cancelLogStripScrollAnim();
+      const maxScroll = Math.max(0, stripEl.scrollWidth - stripEl.clientWidth);
+      const clampedTarget = Math.max(0, Math.min(maxScroll, targetLeft));
+      const startLeft = stripEl.scrollLeft;
+      const delta = clampedTarget - startLeft;
+
+      if (!animate || Math.abs(delta) < 1) {
+        stripEl.scrollLeft = clampedTarget;
+        return;
+      }
+
+      const duration = Math.min(340, Math.max(220, 210 + Math.abs(delta) * 0.25));
+      const startTime = performance.now();
+      const step = (now) => {
+        const elapsed = now - startTime;
+        const t = Math.min(1, elapsed / duration);
+        // Smooth Apple-style cubic ease-out
+        const eased = 1 - Math.pow(1 - t, 3);
+        stripEl.scrollLeft = startLeft + delta * eased;
+        if (t < 1) {
+          logStripScrollRafId = requestAnimationFrame(step);
+        } else {
+          stripEl.scrollLeft = clampedTarget;
+          logStripScrollRafId = null;
+        }
+      };
+      logStripScrollRafId = requestAnimationFrame(step);
+    }
+
+    function getLogStripTileVisual(dateStr, todayStr, activeDate) {
+      const sess = state.sessions[dateStr];
+      const queuedEx = Array.isArray(state.sessionExercisesByDate?.[dateStr]) ? state.sessionExercisesByDate[dateStr] : [];
+      const activeItems = (sess && Array.isArray(sess.entries) && sess.entries.length) ? sess.entries : queuedEx;
+      const isCompleted = Boolean(sess && sess.completed);
+      const isInProgress = !isCompleted && activeItems.length > 0;
+      const isToday = dateStr === todayStr;
+      const isSelected = dateStr === activeDate;
+
+      let tileStyle = 'background-color: #1C1C1E; border: 2px solid transparent;';
+      if (isCompleted) {
+        const gradColors = getSessionGradientColors(activeItems);
+        tileStyle = `border: 2px solid transparent; background: linear-gradient(#161618, #161618) padding-box, linear-gradient(135deg, ${gradColors.join(', ')}) border-box;`;
+      } else if (isInProgress) {
+        tileStyle = `border: 2px dashed #64D2FF; background-color: rgba(100, 210, 255, 0.12);`;
+      } else if (isToday) {
+        tileStyle = `background-color: #1C1C1E; border: 2px solid rgba(255,255,255,0.40);`;
+      }
+
+      const selShadow = isSelected ? 'box-shadow: 0 0 0 2px #FFFFFF;' : '';
+      return {
+        isSelected,
+        styleStr: `flex: 0 0 calc((100% - 36px) / 7); min-width: 44px; ${tileStyle} ${selShadow}`,
+        labelColor: isSelected ? '#FFFFFF' : 'var(--label-secondary)'
+      };
+    }
+
+    function computeStripCenterTarget(stripEl, selEl) {
+      const stripRect = stripEl.getBoundingClientRect();
+      const selRect = selEl.getBoundingClientRect();
+      if (stripRect.width > 0 && selRect.width > 0) {
+        return stripEl.scrollLeft + (selRect.left - stripRect.left) - (stripRect.width - selRect.width) / 2;
+      }
+      return Math.max(0, selEl.offsetLeft - (stripEl.clientWidth - selEl.offsetWidth) / 2);
+    }
+
+    function renderLogWeekStrip(overrideDate = null, forceAnimate = false) {
       const stripEl = document.getElementById('logWeekStrip');
       if (!stripEl) return;
+      bindLogStripInterruptListeners(stripEl);
+
       const todayStr = getTodayDateStr();
-      const activeDate = state.activeDate || todayStr;
+      const activeDate = overrideDate || state.activeDate || todayStr;
       const [ay, am, ad] = activeDate.split('-').map(Number);
       const dayLetters = ['S', 'M', 'TU', 'W', 'TH', 'F', 'S'];
 
-      const items = [];
-      for (let offset = -14; offset <= 14; offset++) {
-        const dt = new Date(ay, am - 1, ad + offset);
-        const dateStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
-        const sess = state.sessions[dateStr];
-        const queuedEx = Array.isArray(state.sessionExercisesByDate?.[dateStr]) ? state.sessionExercisesByDate[dateStr] : [];
-        const activeItems = (sess && Array.isArray(sess.entries) && sess.entries.length) ? sess.entries : queuedEx;
-        const isCompleted = Boolean(sess && sess.completed);
-        const isInProgress = !isCompleted && activeItems.length > 0;
-        const isToday = dateStr === todayStr;
-        const isSelected = dateStr === activeDate;
-
-        let tileStyle = 'background-color: #1C1C1E; border: 2px solid transparent;';
-        if (isCompleted) {
-          const gradColors = getSessionGradientColors(activeItems);
-          tileStyle = `border: 2px solid transparent; background: linear-gradient(#161618, #161618) padding-box, linear-gradient(135deg, ${gradColors.join(', ')}) border-box;`;
-        } else if (isInProgress) {
-          tileStyle = `border: 2px dashed #64D2FF; background-color: rgba(100, 210, 255, 0.12);`;
-        } else if (isToday) {
-          tileStyle = `background-color: #1C1C1E; border: 2px solid rgba(255,255,255,0.40);`;
-        }
-
-        const selShadow = isSelected ? 'box-shadow: 0 0 0 2px #FFFFFF;' : '';
-        items.push(`
-          <button
-            type="button"
-            data-strip-selected="${isSelected ? '1' : '0'}"
-            onclick="setActiveDate('${dateStr}')"
-            class="py-1.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 shrink-0 transition-transform active:scale-95"
-            style="flex: 0 0 calc((100% - 36px) / 7); min-width: 44px; scroll-snap-align: center; ${tileStyle} ${selShadow}"
-          >
-            <span class="text-[9px] font-bold uppercase" style="color: ${isSelected ? '#FFFFFF' : 'var(--label-secondary)'};">${dayLetters[dt.getDay()]}</span>
-            <span class="text-[14px] font-extrabold tabular-nums text-white">${dt.getDate()}</span>
-          </button>
-        `);
+      let needsRebuild = stripEl.children.length === 0 || !logStripAnchorDate;
+      if (!needsRebuild && logStripAnchorDate) {
+        const [gy, gm, gd] = logStripAnchorDate.split('-').map(Number);
+        const anchorDist = Math.abs(Math.round((new Date(ay, am - 1, ad) - new Date(gy, gm - 1, gd)) / 86400000));
+        if (anchorDist > 14) needsRebuild = true;
       }
-      stripEl.innerHTML = items.join('');
-      const selEl = stripEl.querySelector('[data-strip-selected="1"]');
-      if (selEl) {
-        const targetLeft = Math.max(0, selEl.offsetLeft - (stripEl.clientWidth - selEl.offsetWidth) / 2);
-        const prevDate = lastLogStripDate;
-        lastLogStripDate = activeDate;
-        if (prevDate && prevDate !== activeDate) {
-          const [py, pm, pd] = prevDate.split('-').map(Number);
-          const diffDays = Math.round((new Date(ay, am - 1, ad) - new Date(py, pm - 1, pd)) / 86400000);
-          if (diffDays !== 0 && Math.abs(diffDays) <= 14) {
-            const stepPx = (selEl.offsetWidth || 48) + 6;
-            const startLeft = Math.max(0, targetLeft - diffDays * stepPx);
-            stripEl.scrollLeft = startLeft;
-            requestAnimationFrame(() => {
-              stripEl.scrollTo({ left: targetLeft, behavior: 'smooth' });
-            });
-            return;
-          }
+
+      const prevDate = lastLogStripDate;
+      const dateChanged = Boolean(prevDate && prevDate !== activeDate);
+      lastLogStripDate = activeDate;
+
+      if (needsRebuild) {
+        logStripAnchorDate = activeDate;
+        const items = [];
+        // ±21 days (43 tiles) gives a full ±14-day scrollable range with 7-day centering buffer on both ends
+        for (let offset = -21; offset <= 21; offset++) {
+          const dt = new Date(ay, am - 1, ad + offset);
+          const dateStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+          const vis = getLogStripTileVisual(dateStr, todayStr, activeDate);
+          items.push(`
+            <button
+              type="button"
+              data-strip-date="${dateStr}"
+              data-strip-selected="${vis.isSelected ? '1' : '0'}"
+              onclick="setActiveDate('${dateStr}')"
+              class="py-1.5 rounded-2xl flex flex-col items-center justify-center gap-0.5 shrink-0 transition-transform active:scale-95"
+              style="${vis.styleStr}"
+            >
+              <span data-strip-day-label="1" class="text-[9px] font-bold uppercase" style="color: ${vis.labelColor};">${dayLetters[dt.getDay()]}</span>
+              <span class="text-[14px] font-extrabold tabular-nums text-white">${dt.getDate()}</span>
+            </button>
+          `);
         }
-        stripEl.scrollLeft = targetLeft;
+        stripEl.innerHTML = items.join('');
+        const selEl = stripEl.querySelector(`[data-strip-date="${activeDate}"]`);
+        if (selEl) {
+          smoothScrollStripTo(stripEl, computeStripCenterTarget(stripEl, selEl), false);
+        }
+        return;
+      }
+
+      // Fast in-place update: preserve DOM & native scroll momentum on mobile!
+      const buttons = stripEl.querySelectorAll('button[data-strip-date]');
+      let selEl = null;
+      buttons.forEach(btn => {
+        const dStr = btn.getAttribute('data-strip-date');
+        const vis = getLogStripTileVisual(dStr, todayStr, activeDate);
+        btn.setAttribute('data-strip-selected', vis.isSelected ? '1' : '0');
+        btn.setAttribute('style', vis.styleStr);
+        const lbl = btn.querySelector('[data-strip-day-label="1"]');
+        if (lbl) lbl.style.color = vis.labelColor;
+        if (vis.isSelected) selEl = btn;
+      });
+
+      if (selEl && (dateChanged || forceAnimate)) {
+        const targetLeft = computeStripCenterTarget(stripEl, selEl);
+        smoothScrollStripTo(stripEl, targetLeft, true);
       }
     }
 
