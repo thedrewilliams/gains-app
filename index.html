@@ -1531,7 +1531,7 @@
             aria-label="Account and Sign In"
             class="pointer-events-auto glass glass--clear glass--circle-44 glass-interactive relative"
           >
-            <span id="homeProfileInitial" class="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[14px] font-extrabold text-white" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">D</span>
+            <span id="homeProfileInitial" class="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[14px] font-extrabold text-white" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">G</span>
             <span id="homeProfileAuthDot" class="hidden absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full" style="background-color: #30D158; box-shadow: 0 0 0 2px #000000;"></span>
           </button>
         </div>
@@ -1540,7 +1540,7 @@
       <div id="summaryHeroHeader" class="welcome-ambient-hero">
         <h1 id="welcomeHeroTitle" class="collapsible-hero-title text-white text-left relative z-10 flex flex-wrap items-center justify-start gap-x-2.5 max-w-full">
           <span id="welcomeGreetingPrefix">Welcome,</span>
-          <span id="welcomeUserNameSpan" style="color: #0A84FF;">Drew</span>
+          <span id="welcomeUserNameSpan" class="hidden" style="color: #0A84FF;"></span>
         </h1>
       </div>
 
@@ -1792,9 +1792,9 @@
         <div class="settings-group">
           <button type="button" onclick="openMenuSubpage('PROFILE')" class="settings-row !py-3.5">
             <div class="flex items-center gap-3.5 min-w-0">
-              <span id="menuRowProfileInitial" class="w-11 h-11 rounded-full flex items-center justify-center text-[18px] font-extrabold text-white shrink-0" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">D</span>
+              <span id="menuRowProfileInitial" class="w-11 h-11 rounded-full flex items-center justify-center text-[18px] font-extrabold text-white shrink-0" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">G</span>
               <div class="min-w-0">
-                <div id="menuRowProfileName" class="type-headline text-white font-bold truncate">Drew</div>
+                <div id="menuRowProfileName" class="type-headline text-white font-bold truncate">Your Profile</div>
                 <div id="menuRowProfileSub" class="type-caption truncate" style="color: var(--label-secondary);">Profile, Google &amp; Passkey Sign-In</div>
               </div>
             </div>
@@ -2071,12 +2071,12 @@
        ========================================================================= -->
   <div id="accountModalBackdrop" class="ios-alert-backdrop" onclick="if(event.target===this) closeAccountModal()">
     <div class="ios-alert-dialog text-left" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
-      <div class="apple-sheet-header !pb-3">
+      <div class="apple-sheet-header !pb-3.5">
         <div class="flex items-center gap-3 min-w-0">
-          <div id="accountModalAvatar" class="w-10 h-10 rounded-full flex items-center justify-center text-[16px] font-extrabold text-white shrink-0" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">D</div>
+          <div id="accountModalAvatar" class="w-11 h-11 rounded-full flex items-center justify-center text-[17px] font-extrabold text-white shrink-0" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">G</div>
           <div class="min-w-0">
-            <h3 id="accountModalTitle" class="type-headline text-white font-bold truncate">Drew</h3>
-            <p id="accountModalSubtitle" class="type-caption truncate" style="color: var(--label-secondary);">Private Per-User D1 Sync</p>
+            <h3 id="accountModalTitle" class="type-headline text-white font-bold truncate">Sign in to Gains</h3>
+            <p id="accountModalSubtitle" class="type-caption truncate flex items-center gap-1.5" style="color: var(--label-secondary);">Sync your workouts privately</p>
           </div>
         </div>
         <button type="button" onclick="closeAccountModal()" class="apple-sheet-close-btn" aria-label="Close">
@@ -2084,30 +2084,8 @@
         </button>
       </div>
 
-      <div id="accountModalAuthActions" class="space-y-2.5 mb-3">
-        <button type="button" onclick="signInWithGoogleFlow('accountAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #FFFFFF; color: #000000;">
-          <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-          <span>Continue with Google</span>
-        </button>
-
-        <button type="button" onclick="signInPasskeyFlow('accountModalEmailInput', 'accountAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6"/><path d="M17 14l4 4m0-4l-4 4"/></svg>
-          <span>Sign in with Passkey</span>
-        </button>
-      </div>
-
-      <p id="accountAuthNotice" class="hidden type-caption text-center px-2 pb-2.5" style="color: #64D2FF;"></p>
-
-      <div class="settings-group">
-        <button type="button" onclick="closeAccountModal(); switchTab('MENU'); openMenuSubpage('PROFILE');" class="settings-row !py-3">
-          <span class="type-subhead text-white font-semibold">Edit Display Name</span>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.4)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-        <button type="button" onclick="closeAccountModal(); switchTab('MENU'); openMenuSubpage('DATA');" class="settings-row !py-3">
-          <span class="type-subhead text-white font-semibold">Sync &amp; Backup Status</span>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.4)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
+      <div id="accountModalAuthActions" class="space-y-3"></div>
+      <p id="accountAuthNotice" class="hidden type-caption text-center px-2 pt-2.5" style="color: #64D2FF;"></p>
     </div>
   </div>
 
@@ -2516,7 +2494,7 @@
 
     const DEFAULT_STATE = {
       schemaVersion: 12,
-      userName: 'Drew',
+      userName: '',
       activeTab: 'SUMMARY',
       activeDate: getTodayDateStr(),
       weeklyTarget: 3,
@@ -3085,7 +3063,7 @@
       if (!parsed || !parsed.sessions) return null;
       if (parsed.activeTab === 'CALENDAR') parsed.activeTab = 'ACTIVITY';
       if (!TAB_INDEX.hasOwnProperty(parsed.activeTab)) parsed.activeTab = 'SUMMARY';
-      if (typeof parsed.userName !== 'string') parsed.userName = 'Drew';
+      if (typeof parsed.userName !== 'string') parsed.userName = '';
       if (!parsed.weeklyTarget) parsed.weeklyTarget = 3;
       if (!parsed.activeDate) parsed.activeDate = getTodayDateStr();
       if (!parsed.sessionExercisesByDate || typeof parsed.sessionExercisesByDate !== 'object') {
@@ -3282,7 +3260,7 @@
 
     async function registerPasskeyFlow(emailInputId, noticeId) {
       if (!isCloudSyncSupported()) {
-        setAuthNotice(noticeId, 'Open your live Cloudflare URL to create a Passkey.', true);
+        setAuthNotice(noticeId, 'Open the live web app to create a Passkey.', true);
         return;
       }
       if (!window.PublicKeyCredential || !navigator.credentials) {
@@ -3359,7 +3337,7 @@
 
     async function signInPasskeyFlow(emailInputId, noticeId) {
       if (!isCloudSyncSupported()) {
-        setAuthNotice(noticeId, 'Open your live Cloudflare URL to sign in with Passkey.', true);
+        setAuthNotice(noticeId, 'Open the live web app to sign in with a Passkey.', true);
         return;
       }
       if (!window.PublicKeyCredential || !navigator.credentials) {
@@ -3427,7 +3405,7 @@
 
     function signInWithGoogleFlow(noticeId) {
       if (!isCloudSyncSupported()) {
-        setAuthNotice(noticeId, 'Open your live Cloudflare URL to sign in with Google.', true);
+        setAuthNotice(noticeId, 'Open the live web app to sign in with Google.', true);
         return;
       }
       if (!authSession.googleEnabled) {
@@ -3591,13 +3569,13 @@
     async function forceOverwriteSheetWithLocal() {
       const statusEl = document.getElementById('menuBackupStatus');
       if (statusEl) {
-        statusEl.textContent = 'Syncing with Cloudflare D1…';
+        statusEl.textContent = 'Syncing your workouts…';
         statusEl.classList.remove('hidden');
       }
       const ok = await pushStateToCloud();
       if (statusEl) {
         statusEl.textContent = ok
-          ? 'Synced to Cloudflare D1 ✓'
+          ? 'All workouts synced ✓'
           : `Sync unavailable (${cloudSyncErrorDetail || 'offline'})`;
         statusEl.classList.remove('hidden');
       }
@@ -3668,7 +3646,7 @@
 
       const compact = {
         schemaVersion: 14,
-        userName: st.userName || 'Drew',
+        userName: st.userName || '',
         weeklyTarget: Number(st.weeklyTarget) || 3,
         homeWidgets: st.homeWidgets || { rhythm: true, presets: true, fresh: true, prs: true },
         sessions: compactSessions,
@@ -4312,8 +4290,9 @@
     }
 
     function openAccountModal() {
-      const cleanName = (state.userName || 'Drew').trim() || 'Athlete';
-      const initial = cleanName.charAt(0).toUpperCase();
+      const isAuthed = Boolean(authSession.authenticated && authSession.email);
+      const cleanName = (state.userName || '').trim() || (authSession.name || '').trim() || (isAuthed ? authSession.email.split('@')[0] : 'Sign in to Gains');
+      const initial = (isAuthed ? cleanName : (state.userName || 'G')).trim().charAt(0).toUpperCase() || 'G';
       const av = document.getElementById('accountModalAvatar');
       const title = document.getElementById('accountModalTitle');
       const sub = document.getElementById('accountModalSubtitle');
@@ -4322,38 +4301,72 @@
       if (av) av.textContent = initial;
       if (title) title.textContent = cleanName;
       if (sub) {
-        sub.textContent = authSession.authenticated && authSession.email
-          ? authSession.email
-          : 'Private Per-User D1 Sync';
+        if (isAuthed) {
+          sub.innerHTML = `<span class="w-2 h-2 rounded-full shrink-0" style="background-color: #30D158;"></span><span class="truncate">${esc(authSession.email)}</span>`;
+        } else {
+          sub.textContent = 'Save and sync your workouts privately';
+        }
       }
       if (actions) {
-        if (authSession.authenticated && authSession.email) {
+        if (isAuthed) {
+          const syncLabel = cloudSyncStatus === 'SYNCED' ? 'Synced' : (cloudSyncStatus === 'SYNCING' ? 'Syncing…' : 'Ready');
+          const syncColor = cloudSyncStatus === 'SYNCED' ? '#30D158' : 'var(--label-secondary)';
           actions.innerHTML = `
-            <div class="rounded-2xl px-3.5 py-2.5 flex items-center justify-between gap-2" style="background: rgba(48, 209, 88, 0.14); border: 1px solid rgba(48, 209, 88, 0.3);">
-              <span class="type-caption font-semibold" style="color: #30D158;">Signed in · Isolated D1 Profile</span>
-              <span class="w-2 h-2 rounded-full" style="background-color: #30D158;"></span>
+            <div class="settings-group">
+              <button type="button" onclick="closeAccountModal(); switchTab('MENU'); openMenuSubpage('PROFILE');" class="settings-row !py-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style="background: rgba(10, 132, 255, 0.16); color: #0A84FF;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </span>
+                  <span class="type-subhead text-white font-semibold truncate">Edit Display Name</span>
+                </div>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.4)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+              <button type="button" onclick="closeAccountModal(); switchTab('MENU'); openMenuSubpage('DATA');" class="settings-row !py-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style="background: rgba(48, 209, 88, 0.16); color: #30D158;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+                  </span>
+                  <span class="type-subhead text-white font-semibold truncate">Cloud Sync &amp; Backup</span>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <span class="type-caption font-semibold" style="color: ${syncColor};">${syncLabel}</span>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.4)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </button>
+              <button type="button" onclick="registerPasskeyFlow(null, 'accountAuthNotice')" class="settings-row !py-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <span class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style="background: rgba(191, 90, 242, 0.16); color: #BF5AF2;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                  </span>
+                  <span class="type-subhead text-white font-semibold truncate">Add Another Device</span>
+                </div>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.4)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
             </div>
-            <button type="button" onclick="registerPasskeyFlow(null, 'accountAuthNotice')" class="glass glass--clear glass--pill glass-interactive w-full py-3 px-4 gap-2 type-subhead font-semibold text-white">
-              <span>Add Passkey on This Device</span>
-            </button>
-            <button type="button" onclick="signOutNativeAuth()" class="solid-pill w-full py-3.5 px-4 gap-2 type-subhead font-bold" style="background-color: rgba(255, 69, 58, 0.16); color: #FF453A; border: 1px solid rgba(255, 69, 58, 0.32);">
+            <button type="button" onclick="signOutNativeAuth()" class="solid-pill w-full py-3 px-4 type-subhead font-semibold" style="background-color: rgba(255, 69, 58, 0.14); color: #FF453A;">
               <span>Sign Out</span>
             </button>
           `;
         } else {
-          actions.innerHTML = `
-            <input type="email" id="accountModalEmailInput" autocomplete="username webauthn" placeholder="Email (for new Passkey account)" class="fitness-field text-[15px] font-medium" />
-            <button type="button" onclick="signInPasskeyFlow('accountModalEmailInput', 'accountAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6"/><path d="M17 14l4 4m0-4l-4 4"/></svg>
-              <span>Sign in with Passkey</span>
-            </button>
-            <button type="button" onclick="registerPasskeyFlow('accountModalEmailInput', 'accountAuthNotice')" class="glass glass--clear glass--pill glass-interactive w-full py-3 px-4 gap-2 type-subhead font-semibold text-white">
-              <span>Create Passkey Account</span>
-            </button>
+          const googleBtn = authSession.googleEnabled ? `
             <button type="button" onclick="signInWithGoogleFlow('accountAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #FFFFFF; color: #000000;">
               <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
               <span>Continue with Google</span>
             </button>
+          ` : '';
+          actions.innerHTML = `
+            <div class="space-y-2.5">
+              <input type="email" id="accountModalEmailInput" autocomplete="username webauthn" placeholder="Enter your email" class="fitness-field text-[15px] font-medium" />
+              <button type="button" onclick="signInPasskeyFlow('accountModalEmailInput', 'accountAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6"/><path d="M17 14l4 4m0-4l-4 4"/></svg>
+                <span>Sign in with Passkey</span>
+              </button>
+              <button type="button" onclick="registerPasskeyFlow('accountModalEmailInput', 'accountAuthNotice')" class="glass glass--clear glass--pill glass-interactive w-full py-3 px-4 gap-2 type-subhead font-semibold text-white">
+                <span>Create Account with Passkey</span>
+              </button>
+              ${googleBtn}
+            </div>
           `;
         }
       }
@@ -5256,7 +5269,7 @@
     // MENU VIEW & SUBPAGES (PRESETS + 5-VARIABLE LIBRARY)
     // =========================================================================
     function renderMenuView() {
-      const cleanName = (state.userName || 'Drew').trim() || 'Athlete';
+      const cleanName = (state.userName || '').trim() || (authSession.name || '').trim() || 'Your Profile';
       const profNameEl = document.getElementById('menuRowProfileName');
       const profInitEl = document.getElementById('menuRowProfileInitial');
       if (profNameEl) profNameEl.textContent = cleanName;
@@ -5379,7 +5392,7 @@
       PROFILE: {
         title: 'Profile',
         color: '#0A84FF',
-        desc: 'Manage your display name and sign-in methods for multi-user Cloudflare D1 sync.',
+        desc: 'Manage your display name, Passkey devices, and sign-in settings.',
         svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="4.2" fill="#64D2FF"/><path d="M4.5 20c0-3.8 3.4-6.2 7.5-6.2s7.5 2.4 7.5 6.2" fill="#0A84FF"/></svg>`
       },
       GOAL: {
@@ -5421,7 +5434,7 @@
       DATA: {
         title: 'Data & Backup',
         color: '#8B5CF6',
-        desc: 'Your workouts sync automatically to Cloudflare D1 and stay backed up in browser storage.',
+        desc: 'Your workouts sync automatically to the cloud and stay backed up on this device.',
         svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><ellipse cx="12" cy="5.5" rx="8.5" ry="3" fill="#BF5AF2"/><path d="M3.5 8.5v3.2c0 1.66 3.8 3 8.5 3s8.5-1.34 8.5-3V8.5c-1.8 1.25-5 1.95-8.5 1.95s-6.7-.7-8.5-1.95z" fill="#0A84FF"/><path d="M3.5 14.2v3.3c0 1.66 3.8 3 8.5 3s8.5-1.34 8.5-3v-3.3c-1.8 1.25-5 1.95-8.5 1.95s-6.7-.7-8.5-1.95z" fill="#64D2FF"/></svg>`
       }
     };
@@ -5962,38 +5975,36 @@
 
           <div class="fitness-card p-4 space-y-3">
             <div class="space-y-0.5">
-              <div class="type-headline text-white">Account &amp; Authentication</div>
+              <div class="type-headline text-white">Account &amp; Sign-In</div>
               <p class="type-caption" style="color: var(--label-secondary);">
                 ${authSession.authenticated && authSession.email
-                  ? `Signed in as <span class="text-white font-semibold">${esc(authSession.email)}</span> — your workouts sync privately to your own D1 profile.`
-                  : 'Sign in with a Passkey (Face ID / Touch ID) or Google for private per-user D1 sync.'}
+                  ? `Signed in as <span class="text-white font-semibold">${esc(authSession.email)}</span> — your workouts sync privately across your devices.`
+                  : 'Sign in with Face ID, Touch ID, or a Passkey to sync your workouts privately.'}
               </p>
             </div>
             <div class="space-y-2.5">
               ${authSession.authenticated && authSession.email ? `
-                <div class="rounded-2xl px-3.5 py-2.5 flex items-center justify-between gap-2" style="background: rgba(48, 209, 88, 0.14); border: 1px solid rgba(48, 209, 88, 0.3);">
-                  <span class="type-caption font-semibold" style="color: #30D158;">Signed in · Isolated D1 Profile</span>
-                  <span class="w-2 h-2 rounded-full" style="background-color: #30D158;"></span>
-                </div>
                 <button type="button" onclick="registerPasskeyFlow(null, 'profileSubpageAuthNotice')" class="glass glass--clear glass--pill glass-interactive w-full py-3 px-4 gap-2 type-subhead font-semibold text-white">
-                  <span>Add Passkey on This Device</span>
+                  <span>Add Another Device</span>
                 </button>
-                <button type="button" onclick="signOutNativeAuth()" class="solid-pill w-full py-3.5 px-4 gap-2 type-subhead font-bold" style="background-color: rgba(255, 69, 58, 0.16); color: #FF453A; border: 1px solid rgba(255, 69, 58, 0.32);">
+                <button type="button" onclick="signOutNativeAuth()" class="solid-pill w-full py-3 px-4 gap-2 type-subhead font-semibold" style="background-color: rgba(255, 69, 58, 0.14); color: #FF453A;">
                   <span>Sign Out</span>
                 </button>
               ` : `
-                <input type="email" id="profileSubpageEmailInput" autocomplete="username webauthn" placeholder="Email (for new Passkey account)" class="fitness-field text-[15px] font-medium" />
+                <input type="email" id="profileSubpageEmailInput" autocomplete="username webauthn" placeholder="Enter your email" class="fitness-field text-[15px] font-medium" />
                 <button type="button" onclick="signInPasskeyFlow('profileSubpageEmailInput', 'profileSubpageAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6"/><path d="M17 14l4 4m0-4l-4 4"/></svg>
                   <span>Sign in with Passkey</span>
                 </button>
                 <button type="button" onclick="registerPasskeyFlow('profileSubpageEmailInput', 'profileSubpageAuthNotice')" class="glass glass--clear glass--pill glass-interactive w-full py-3 px-4 gap-2 type-subhead font-semibold text-white">
-                  <span>Create Passkey Account</span>
+                  <span>Create Account with Passkey</span>
                 </button>
+                ${authSession.googleEnabled ? `
                 <button type="button" onclick="signInWithGoogleFlow('profileSubpageAuthNotice')" class="solid-pill w-full py-3.5 px-4 gap-2.5 type-subhead font-bold" style="background-color: #FFFFFF; color: #000000;">
                   <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                   <span>Continue with Google</span>
                 </button>
+                ` : ''}
               `}
             </div>
             <p id="profileSubpageAuthNotice" class="hidden type-caption text-center" style="color: #64D2FF;"></p>
@@ -6027,12 +6038,12 @@
         body.innerHTML = `
           <div class="settings-group">
             <div class="settings-row !cursor-default">
-              <span class="type-headline text-white">Cloudflare D1</span>
+              <span class="type-headline text-white">Cloud Sync</span>
               <span id="menuCloudSyncStatusVal" class="type-subhead font-semibold" style="color: #0A84FF;">Cloud Sync Ready</span>
             </div>
           </div>
           <div class="fitness-card p-4 space-y-3">
-            <p class="type-footnote" style="color: var(--label-secondary);">Workouts automatically sync to your Cloudflare D1 database whenever you make changes.</p>
+            <p class="type-footnote" style="color: var(--label-secondary);">Your workouts automatically sync to the cloud whenever you make changes.</p>
             <button type="button" onclick="forceOverwriteSheetWithLocal()" class="solid-pill w-full py-3.5 px-4 type-headline text-center" style="background-color: #0A84FF; color: #FFFFFF;">Sync Now</button>
             <button type="button" onclick="exportJsonBackup()" class="glass glass--clear glass--pill glass-interactive w-full py-3.5 px-4 type-subhead text-center text-white">Export JSON Backup</button>
             <button type="button" onclick="handleResetTemplateFromMenu()" class="glass glass--clear glass--pill glass-interactive w-full py-3.5 px-4 type-subhead text-center" style="color: #FF453A;">
@@ -6163,7 +6174,7 @@
       state.userName = val;
       saveState();
       renderSummaryView();
-      const cleanName = (state.userName || 'Drew').trim() || 'Athlete';
+      const cleanName = (state.userName || '').trim() || (authSession.name || '').trim() || 'Your Profile';
       const profNameEl = document.getElementById('menuRowProfileName');
       const profInitEl = document.getElementById('menuRowProfileInitial');
       if (profNameEl) profNameEl.textContent = cleanName;
