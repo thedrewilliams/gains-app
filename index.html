@@ -365,14 +365,14 @@
 
     .onboarding-track {
       display: flex;
-      width: 300%;
+      width: 500%;
       height: 100%;
       transition: transform 0.44s cubic-bezier(0.22, 1, 0.36, 1);
       will-change: transform;
     }
 
     .onboarding-slide {
-      width: 33.333333%;
+      width: 20%;
       height: 100%;
       flex-shrink: 0;
       display: flex;
@@ -382,26 +382,30 @@
       -webkit-overflow-scrolling: touch;
     }
 
-    .ob-plain-input {
+    .ob-glass-input {
       width: 100%;
-      background: transparent;
-      border: none;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-      border-radius: 0;
-      padding: 12px 2px;
+      background: rgba(44, 44, 46, 0.68);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      backdrop-filter: blur(18px) saturate(160%);
+      border: 0.5px solid rgba(255, 255, 255, 0.14);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 13px 15px;
       color: #FFFFFF;
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 600;
       outline: none;
-      transition: border-color 0.2s ease;
+      transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .ob-plain-input:focus {
-      border-bottom-color: #0A84FF;
+    .ob-glass-input:focus {
+      background: rgba(54, 54, 58, 0.84);
+      border-color: #0A84FF;
+      box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.10);
     }
 
-    .ob-plain-input::placeholder {
-      color: rgba(235, 235, 245, 0.32);
+    .ob-glass-input::placeholder {
+      color: rgba(235, 235, 245, 0.36);
       font-weight: 500;
     }
 
@@ -2687,47 +2691,114 @@
   </div>
 
   <!-- =========================================================================
-       FULL-SCREEN PURE-BLACK FIRST-TIME ONBOARDING (3 SLIDING STEPS)
+       FULL-SCREEN PURE-BLACK FIRST-TIME ONBOARDING (5 SLIDING STEPS)
        ========================================================================= -->
   <div id="onboardingBackdrop" class="onboarding-fullscreen" role="dialog" aria-modal="true" aria-labelledby="onboardingWelcomeTitle">
     <div id="onboardingTrack" class="onboarding-track">
-      <!-- STEP 0: WELCOME TO GAINS -->
+      <!-- SLIDE 0: WELCOME TO GAINS (NO SKIP — USER MUST CHOOSE AN OPTION) -->
       <div class="onboarding-slide">
-        <div class="max-w-md w-full mx-auto flex-1 flex flex-col">
-          <div class="flex items-center justify-end min-h-[44px]">
-            <button type="button" onclick="skipOnboardingFlow()" class="text-[15px] font-semibold px-2 py-1" style="color: rgba(235,235,245,0.58);">Skip</button>
-          </div>
-          <div class="flex-1 flex flex-col items-center justify-center text-center px-2 space-y-5">
-            <div class="w-16 h-16 rounded-2xl flex items-center justify-center" style="background: rgba(10, 132, 255, 0.10);">
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <rect x="1.45" y="8.65" width="2.3" height="6.7" rx="1.05" fill="#0A84FF"/>
-                <rect x="4.75" y="6.65" width="2.75" height="10.7" rx="1.2" fill="#0A84FF"/>
-                <rect x="8.5" y="10.85" width="7.0" height="2.3" fill="#FFFFFF"/>
-                <rect x="16.5" y="6.65" width="2.75" height="10.7" rx="1.2" fill="#0A84FF"/>
-                <rect x="20.25" y="8.65" width="2.3" height="6.7" rx="1.05" fill="#0A84FF"/>
-              </svg>
-            </div>
-            <div class="space-y-2.5">
+        <div class="max-w-md w-full mx-auto flex-1 flex flex-col justify-between pt-6">
+          <div class="flex-1 flex flex-col items-center justify-center text-center px-2 space-y-6">
+            <!-- Icon-only Gains dumbbell mark -->
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="1.45" y="8.65" width="2.3" height="6.7" rx="1.05" fill="#0A84FF"/>
+              <rect x="4.75" y="6.65" width="2.75" height="10.7" rx="1.2" fill="#0A84FF"/>
+              <rect x="8.5" y="10.85" width="7.0" height="2.3" fill="#FFFFFF"/>
+              <rect x="16.5" y="6.65" width="2.75" height="10.7" rx="1.2" fill="#0A84FF"/>
+              <rect x="20.25" y="8.65" width="2.3" height="6.7" rx="1.05" fill="#0A84FF"/>
+            </svg>
+
+            <div class="space-y-2">
               <h1 id="onboardingWelcomeTitle" class="text-[40px] leading-[44px] font-extrabold tracking-tight">
                 <span class="text-white">Welcome to</span> <span style="color: #0A84FF;">Gains</span>
               </h1>
-              <p class="text-[16px] leading-[22px] max-w-[290px] mx-auto" style="color: rgba(235,235,245,0.62);">
-                Fast, focused workout tracking built around your equipment.
+              <p class="text-[17px] leading-[23px] font-medium max-w-[290px] mx-auto" style="color: rgba(235,235,245,0.68);">
+                Simple workout tracking, built for your gym.
               </p>
             </div>
+
+            <!-- Concise account benefits directly on pure black (no cards) -->
+            <div class="w-full max-w-[310px] pt-3 space-y-3.5 text-left">
+              <div class="flex items-start gap-3">
+                <span class="mt-0.5 shrink-0" style="color: #0A84FF;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+                </span>
+                <div>
+                  <div class="text-[14px] font-bold text-white">Cloud Backup</div>
+                  <div class="text-[12.5px]" style="color: rgba(235,235,245,0.55);">Keep every workout, note, and PR safe.</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="mt-0.5 shrink-0" style="color: #0A84FF;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                </span>
+                <div>
+                  <div class="text-[14px] font-bold text-white">Multi-Device Sync</div>
+                  <div class="text-[12.5px]" style="color: rgba(235,235,245,0.55);">Pick up seamlessly on iPhone, iPad, or desktop.</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="mt-0.5 shrink-0" style="color: #0A84FF;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </span>
+                <div>
+                  <div class="text-[14px] font-bold text-white">Private &amp; Secure</div>
+                  <div class="text-[12.5px]" style="color: rgba(235,235,245,0.55);">Protected with Passkey (Face ID) or Email.</div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="space-y-3 pt-4">
-            <button type="button" onclick="goToOnboardingStep(1)" class="solid-pill w-full h-[54px] text-[17px] font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
-              Get Started
+
+          <div class="space-y-2.5 pt-5">
+            <button type="button" onclick="startOnboardingCreateAccount()" class="solid-pill w-full h-[52px] text-[16px] font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
+              Create Account
             </button>
-            <button type="button" onclick="skipOnboardingToSignIn()" class="w-full py-2 text-center text-[14px] font-semibold" style="color: #0A84FF;">
-              Already have an account? Sign In
+            <button type="button" onclick="goToOnboardingStep(1)" class="glass glass--clear glass--pill glass-interactive w-full h-[52px] text-[16px] font-bold text-white">
+              Sign In
+            </button>
+            <button type="button" onclick="startOnboardingWithoutAccount()" class="w-full py-2.5 text-center text-[14px] font-semibold" style="color: rgba(235,235,245,0.58);">
+              Continue Without Account
             </button>
           </div>
         </div>
       </div>
 
-      <!-- STEP 1: ACCOUNT BASICS (FIRST NAME, LAST NAME, DOB, GENDER) -->
+      <!-- SLIDE 1: IN-ONBOARDING RETURNING USER SIGN IN -->
+      <div class="onboarding-slide">
+        <div class="max-w-md w-full mx-auto flex-1 flex flex-col">
+          <div class="flex items-center justify-between min-h-[44px]">
+            <button type="button" onclick="goToOnboardingStep(0)" aria-label="Back" class="glass glass--clear glass--circle-44 glass-interactive">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <span></span>
+          </div>
+          <div class="pt-6 pb-7 space-y-1.5">
+            <h2 class="text-[32px] leading-[36px] font-extrabold tracking-tight text-white">Sign In</h2>
+            <p class="text-[15px]" style="color: rgba(235,235,245,0.58);">Welcome back. Sync your workouts from the cloud.</p>
+          </div>
+          <div class="flex-1 space-y-3.5">
+            <button type="button" onclick="obSignInWithPasskey()" class="solid-pill w-full h-[52px] text-[16px] font-bold gap-2" style="background-color: #0A84FF; color: #FFFFFF;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>Sign in with Passkey</span>
+            </button>
+            <button type="button" id="obToggleSignInEmailBtn" onclick="toggleObSignInEmailFields()" class="glass glass--clear glass--pill glass-interactive w-full h-[52px] text-[16px] font-bold text-white gap-2">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <span>Sign in with Email</span>
+            </button>
+
+            <div id="obSignInEmailWrap" class="hidden pt-3 space-y-3">
+              <input type="email" id="obSignInEmailInput" autocomplete="email" placeholder="Email address" class="ob-glass-input" />
+              <input type="password" id="obSignInPasswordInput" autocomplete="current-password" placeholder="Password" class="ob-glass-input" />
+              <button type="button" onclick="obSubmitEmailSignIn()" class="solid-pill w-full h-[52px] text-[16px] font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
+                Continue
+              </button>
+            </div>
+            <p id="obSignInNotice" class="hidden text-[13px] font-semibold text-center pt-1" style="color: #64D2FF;"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 2: ACCOUNT BASICS (FIRST NAME, LAST NAME, DOB, GENDER) -->
       <div class="onboarding-slide">
         <div class="max-w-md w-full mx-auto flex-1 flex flex-col">
           <div class="flex items-center justify-between min-h-[44px]">
@@ -2736,74 +2807,111 @@
             </button>
             <button type="button" onclick="skipOnboardingFlow()" class="text-[15px] font-semibold px-2 py-1" style="color: rgba(235,235,245,0.58);">Skip</button>
           </div>
-          <div class="pt-6 pb-6 space-y-1.5">
+          <div class="pt-5 pb-5 space-y-1.5">
             <h2 class="text-[32px] leading-[36px] font-extrabold tracking-tight text-white">About You</h2>
-            <p class="text-[15px]" style="color: rgba(235,235,245,0.58);">Required details to set up your Gains profile.</p>
+            <p class="text-[15px]" style="color: rgba(235,235,245,0.58);">Basic profile details for your Gains account.</p>
           </div>
-          <div class="flex-1 space-y-6">
-            <div class="space-y-1">
-              <label for="obFirstNameInput" class="block text-[12px] font-bold uppercase tracking-wider" style="color: rgba(235,235,245,0.55);">First Name</label>
-              <input type="text" id="obFirstNameInput" autocomplete="given-name" oninput="validateOnboardingStep1()" placeholder="Enter first name" class="ob-plain-input" />
+          <div class="flex-1 space-y-4">
+            <div class="space-y-1.5">
+              <label for="obFirstNameInput" class="block text-[12px] font-bold uppercase tracking-wider px-0.5" style="color: rgba(235,235,245,0.55);">First Name</label>
+              <input type="text" id="obFirstNameInput" autocomplete="given-name" oninput="validateOnboardingStep1()" placeholder="Enter first name" class="ob-glass-input" />
             </div>
-            <div class="space-y-1">
-              <label for="obLastNameInput" class="block text-[12px] font-bold uppercase tracking-wider" style="color: rgba(235,235,245,0.55);">Last Name</label>
-              <input type="text" id="obLastNameInput" autocomplete="family-name" oninput="validateOnboardingStep1()" placeholder="Enter last name" class="ob-plain-input" />
+            <div class="space-y-1.5">
+              <label for="obLastNameInput" class="block text-[12px] font-bold uppercase tracking-wider px-0.5" style="color: rgba(235,235,245,0.55);">Last Name</label>
+              <input type="text" id="obLastNameInput" autocomplete="family-name" oninput="validateOnboardingStep1()" placeholder="Enter last name" class="ob-glass-input" />
             </div>
-            <div class="space-y-1">
-              <label for="obDobInput" class="block text-[12px] font-bold uppercase tracking-wider" style="color: rgba(235,235,245,0.55);">Date of Birth</label>
-              <input type="date" id="obDobInput" onchange="validateOnboardingStep1()" oninput="validateOnboardingStep1()" class="ob-plain-input" />
+            <div class="space-y-1.5">
+              <label for="obDobInput" class="block text-[12px] font-bold uppercase tracking-wider px-0.5" style="color: rgba(235,235,245,0.55);">Date of Birth</label>
+              <input type="date" id="obDobInput" onchange="validateOnboardingStep1()" oninput="validateOnboardingStep1()" class="ob-glass-input" />
             </div>
-            <div class="space-y-2.5">
-              <div class="text-[12px] font-bold uppercase tracking-wider" style="color: rgba(235,235,245,0.55);">Gender</div>
+            <div class="space-y-2">
+              <div class="text-[12px] font-bold uppercase tracking-wider px-0.5" style="color: rgba(235,235,245,0.55);">Gender</div>
               <div id="obGenderChips" class="grid grid-cols-2 gap-3"></div>
             </div>
           </div>
-          <div class="pt-6">
-            <button type="button" id="obStep1NextBtn" disabled onclick="goToOnboardingStep(2)" class="solid-pill w-full h-[54px] text-[17px] font-bold transition-all duration-200" style="background-color: #0A84FF; color: #FFFFFF; opacity: 0.32; pointer-events: none;">
+          <div class="pt-5">
+            <button type="button" id="obStep1NextBtn" disabled onclick="goToOnboardingStep(3)" class="solid-pill w-full h-[54px] text-[17px] font-bold transition-all duration-200" style="background-color: #0A84FF; color: #FFFFFF; opacity: 0.32; pointer-events: none;">
               Next
             </button>
           </div>
         </div>
       </div>
 
-      <!-- STEP 2: TRAINING PREFERENCES (COLORFUL SUBJECTIVE SELECTIONS) -->
+      <!-- SLIDE 3: TRAINING PREFERENCES (COLORFUL SUBJECTIVE SELECTIONS, BLUE MAIN ACCENT) -->
       <div class="onboarding-slide">
         <div class="max-w-md w-full mx-auto flex-1 flex flex-col">
           <div class="flex items-center justify-between min-h-[44px]">
-            <button type="button" onclick="goToOnboardingStep(1)" aria-label="Back" class="glass glass--clear glass--circle-44 glass-interactive">
+            <button type="button" onclick="goToOnboardingStep(2)" aria-label="Back" class="glass glass--clear glass--circle-44 glass-interactive">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
             <button type="button" onclick="skipOnboardingFlow()" class="text-[15px] font-semibold px-2 py-1" style="color: rgba(235,235,245,0.58);">Skip</button>
           </div>
-          <div class="pt-5 pb-5 space-y-1.5">
+          <div class="pt-4 pb-5 space-y-1.5">
             <h2 class="text-[32px] leading-[36px] font-extrabold tracking-tight text-white">Your Training</h2>
-            <p class="text-[15px]" style="color: rgba(235,235,245,0.58);">Personalize your goals — change anytime in Profile.</p>
+            <p class="text-[15px]" style="color: rgba(235,235,245,0.58);">Personalize your goals — editable anytime in Profile.</p>
           </div>
-          <div class="flex-1 space-y-6">
+          <div class="flex-1 space-y-5">
             <div class="space-y-2">
-              <div class="text-[12px] font-bold uppercase tracking-wider" style="color: rgba(235,235,245,0.55);">Primary Goal</div>
+              <div class="text-[12px] font-bold uppercase tracking-wider px-0.5" style="color: rgba(235,235,245,0.55);">Primary Goal</div>
               <div id="obGoalChips" class="grid grid-cols-2 gap-2.5"></div>
             </div>
             <div class="space-y-2">
-              <div class="text-[12px] font-bold uppercase tracking-wider" style="color: rgba(235,235,245,0.55);">Experience Level</div>
+              <div class="text-[12px] font-bold uppercase tracking-wider px-0.5" style="color: rgba(235,235,245,0.55);">Experience Level</div>
               <div id="obLevelChips" class="grid grid-cols-2 gap-2.5"></div>
             </div>
             <div class="space-y-2">
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between px-0.5">
                 <span class="text-[12px] font-bold uppercase tracking-wider" style="color: rgba(235,235,245,0.55);">Weekly Workout Target</span>
-                <span id="obTargetLabel" class="text-[13px] font-bold" style="color: #30D158;">3 / week</span>
+                <span id="obTargetLabel" class="text-[13px] font-bold" style="color: #0A84FF;">3 / week</span>
               </div>
               <div id="obTargetChips" class="grid grid-cols-7 gap-1.5"></div>
             </div>
             <div class="space-y-2">
-              <div class="text-[12px] font-bold uppercase tracking-wider" style="color: rgba(235,235,245,0.55);">Weight Units</div>
+              <div class="text-[12px] font-bold uppercase tracking-wider px-0.5" style="color: rgba(235,235,245,0.55);">Weight Units</div>
               <div id="obUnitChips" class="grid grid-cols-2 gap-2.5"></div>
             </div>
           </div>
-          <div class="pt-6">
-            <button type="button" onclick="completeOnboardingSetup()" class="solid-pill w-full h-[54px] text-[17px] font-bold" style="background-color: #30D158; color: #FFFFFF;">
-              Finish Setup
+          <div class="pt-5">
+            <button type="button" id="obStep3PrimaryBtn" onclick="handleOnboardingTrainingNext()" class="solid-pill w-full h-[54px] text-[17px] font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
+              Continue
             </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4: PASSKEY & ACCOUNT CREATION SETUP -->
+      <div class="onboarding-slide">
+        <div class="max-w-md w-full mx-auto flex-1 flex flex-col">
+          <div class="flex items-center justify-between min-h-[44px]">
+            <button type="button" onclick="goToOnboardingStep(3)" aria-label="Back" class="glass glass--clear glass--circle-44 glass-interactive">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button type="button" onclick="completeOnboardingSetup()" class="text-[15px] font-semibold px-2 py-1" style="color: rgba(235,235,245,0.58);">Skip</button>
+          </div>
+          <div class="pt-5 pb-6 space-y-1.5">
+            <h2 class="text-[32px] leading-[36px] font-extrabold tracking-tight text-white">Create Account</h2>
+            <p class="text-[15px]" style="color: rgba(235,235,245,0.58);">Set up a Passkey for instant, private cloud sync across your devices.</p>
+          </div>
+          <div class="flex-1 space-y-3.5">
+            <div class="space-y-1.5">
+              <label for="obSignUpEmailInput" class="block text-[12px] font-bold uppercase tracking-wider px-0.5" style="color: rgba(235,235,245,0.55);">Email Address</label>
+              <input type="email" id="obSignUpEmailInput" autocomplete="email" placeholder="you@example.com" class="ob-glass-input" />
+            </div>
+            <button type="button" onclick="obCreateAccountWithPasskey()" class="solid-pill w-full h-[52px] text-[16px] font-bold gap-2" style="background-color: #0A84FF; color: #FFFFFF;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>Set Up Passkey</span>
+            </button>
+            <button type="button" onclick="toggleObSignUpPasswordFields()" class="glass glass--clear glass--pill glass-interactive w-full h-[52px] text-[16px] font-bold text-white">
+              Use Email &amp; Password Instead
+            </button>
+
+            <div id="obSignUpPasswordWrap" class="hidden pt-2 space-y-3">
+              <input type="password" id="obSignUpPasswordInput" autocomplete="new-password" placeholder="Create password (8+ characters)" class="ob-glass-input" />
+              <button type="button" onclick="obCreateAccountWithPassword()" class="solid-pill w-full h-[52px] text-[16px] font-bold" style="background-color: #0A84FF; color: #FFFFFF;">
+                Create Account
+              </button>
+            </div>
+            <p id="obSignUpNotice" class="hidden text-[13px] font-semibold text-center pt-1" style="color: #64D2FF;"></p>
           </div>
         </div>
       </div>
@@ -4816,8 +4924,9 @@
       renderWorkoutCards();
     }
 
-    // --- Full-Screen 3-Step Onboarding & Profile Preferences ---
+    // --- Full-Screen 5-Slide Onboarding & Profile Preferences ---
     let obStep = 0;
+    let obIntent = 'create'; // 'create' | 'guest'
     let obDraft = { firstName: '', lastName: '', dob: '', gender: '', goal: 'Build Muscle', level: 'Intermediate', weeklyTarget: 3, unit: 'lbs' };
 
     function updateProfileNamePart(key, val) {
@@ -4843,11 +4952,116 @@
     }
 
     function goToOnboardingStep(stepIdx) {
-      obStep = Math.max(0, Math.min(2, stepIdx));
+      obStep = Math.max(0, Math.min(4, stepIdx));
       const track = document.getElementById('onboardingTrack');
-      if (track) track.style.transform = `translate3d(${-obStep * 33.333333}%, 0, 0)`;
-      if (obStep === 1) validateOnboardingStep1();
-      if (obStep === 2) renderOnboardingChips();
+      if (track) track.style.transform = `translate3d(${-obStep * 20}%, 0, 0)`;
+      if (obStep === 2) validateOnboardingStep1();
+      if (obStep === 3) {
+        renderOnboardingChips();
+        const btn = document.getElementById('obStep3PrimaryBtn');
+        if (btn) btn.textContent = obIntent === 'create' ? 'Continue' : 'Finish Setup';
+      }
+    }
+
+    function startOnboardingCreateAccount() {
+      obIntent = 'create';
+      goToOnboardingStep(2);
+    }
+
+    function startOnboardingWithoutAccount() {
+      obIntent = 'guest';
+      goToOnboardingStep(2);
+    }
+
+    function handleOnboardingTrainingNext() {
+      if (obIntent === 'create') {
+        goToOnboardingStep(4);
+      } else {
+        completeOnboardingSetup();
+      }
+    }
+
+    function toggleObSignInEmailFields() {
+      const wrap = document.getElementById('obSignInEmailWrap');
+      if (wrap) {
+        wrap.classList.toggle('hidden');
+        if (!wrap.classList.contains('hidden')) {
+          const inp = document.getElementById('obSignInEmailInput');
+          if (inp) setTimeout(() => inp.focus(), 60);
+        }
+      }
+    }
+
+    function toggleObSignUpPasswordFields() {
+      const wrap = document.getElementById('obSignUpPasswordWrap');
+      if (wrap) {
+        wrap.classList.toggle('hidden');
+        if (!wrap.classList.contains('hidden')) {
+          const inp = document.getElementById('obSignUpPasswordInput');
+          if (inp) setTimeout(() => inp.focus(), 60);
+        }
+      }
+    }
+
+    async function obSignInWithPasskey() {
+      await signInPasskeyFlow(null, 'obSignInNotice');
+      if (authSession && authSession.authenticated) {
+        state.onboardingCompleted = true;
+        saveState();
+        closeOnboardingOverlay();
+        renderAll();
+      }
+    }
+
+    async function obSubmitEmailSignIn() {
+      await submitEmailPasswordAuth('ONBOARDING', 'signin', 'obSignInEmailInput', 'obSignInPasswordInput', 'obSignInNotice');
+      if (authSession && authSession.authenticated) {
+        state.onboardingCompleted = true;
+        saveState();
+        closeOnboardingOverlay();
+        renderAll();
+      }
+    }
+
+    function applyOnboardingDraftToState() {
+      const f = (document.getElementById('obFirstNameInput')?.value || obDraft.firstName || '').trim();
+      const l = (document.getElementById('obLastNameInput')?.value || obDraft.lastName || '').trim();
+      const d = (document.getElementById('obDobInput')?.value || obDraft.dob || '').trim();
+      if (f) state.userName = f;
+      state.weeklyTarget = obDraft.weeklyTarget || 3;
+      state.userProfile = {
+        firstName: f,
+        lastName: l,
+        dob: d,
+        gender: obDraft.gender || '',
+        goal: obDraft.goal || 'Build Muscle',
+        level: obDraft.level || 'Intermediate',
+        unit: obDraft.unit === 'kg' ? 'kg' : 'lbs'
+      };
+      state.onboardingCompleted = true;
+      saveState();
+    }
+
+    async function obCreateAccountWithPasskey() {
+      applyOnboardingDraftToState();
+      await registerPasskeyFlow('obSignUpEmailInput', 'obSignUpNotice');
+      if (authSession && authSession.authenticated) {
+        applyOnboardingDraftToState();
+        await pushStateToCloud();
+        closeOnboardingOverlay();
+        renderAll();
+      }
+    }
+
+    async function obCreateAccountWithPassword() {
+      applyOnboardingDraftToState();
+      await submitEmailPasswordAuth('ONBOARDING', 'signup', 'obSignUpEmailInput', 'obSignUpPasswordInput', 'obSignUpNotice');
+      if (authSession && authSession.authenticated) {
+        applyOnboardingDraftToState();
+        await pushStateToCloud();
+        closeOnboardingOverlay();
+        renderAll();
+      }
     }
 
     function validateOnboardingStep1() {
@@ -4875,7 +5089,7 @@
         ];
         genderEl.innerHTML = genders.map(g => {
           const on = obDraft.gender === g.id;
-          return `<button type="button" onclick="obDraft.gender='${g.id}'; renderOnboardingChips(); validateOnboardingStep1();" class="py-3 rounded-2xl text-[15px] font-bold text-center transition-all" style="${on ? `background: rgba(${g.rgb}, 0.22); color: ${g.color}; border: 1.5px solid ${g.color};` : 'background: rgba(255,255,255,0.06); color: rgba(235,235,245,0.78); border: 1.5px solid rgba(255,255,255,0.10);'}">${g.label}</button>`;
+          return `<button type="button" onclick="obDraft.gender='${g.id}'; renderOnboardingChips(); validateOnboardingStep1();" class="py-3 rounded-2xl text-[15px] font-bold text-center transition-all" style="${on ? `background: rgba(${g.rgb}, 0.22); color: ${g.color}; border: 1.5px solid ${g.color};` : 'background: rgba(44,44,46,0.68); color: rgba(235,235,245,0.82); border: 0.5px solid rgba(255,255,255,0.14);'}">${g.label}</button>`;
         }).join('');
       }
 
@@ -4889,7 +5103,7 @@
       if (goalEl) {
         goalEl.innerHTML = goals.map(g => {
           const on = obDraft.goal === g.id;
-          return `<button type="button" onclick="obDraft.goal='${g.id}'; renderOnboardingChips();" class="py-3 px-3 rounded-2xl text-[14px] font-bold text-center transition-all" style="${on ? `background: rgba(${g.rgb}, 0.22); color: ${g.color}; border: 1.5px solid ${g.color};` : 'background: rgba(255,255,255,0.06); color: rgba(235,235,245,0.82); border: 1.5px solid rgba(255,255,255,0.10);'}">${g.id}</button>`;
+          return `<button type="button" onclick="obDraft.goal='${g.id}'; renderOnboardingChips();" class="py-3 px-3 rounded-2xl text-[14px] font-bold text-center transition-all" style="${on ? `background: rgba(${g.rgb}, 0.22); color: ${g.color}; border: 1.5px solid ${g.color};` : 'background: rgba(44,44,46,0.68); color: rgba(235,235,245,0.82); border: 0.5px solid rgba(255,255,255,0.14);'}">${g.id}</button>`;
         }).join('');
       }
 
@@ -4903,7 +5117,7 @@
       if (lvlEl) {
         lvlEl.innerHTML = levels.map(l => {
           const on = obDraft.level === l.id;
-          return `<button type="button" onclick="obDraft.level='${l.id}'; renderOnboardingChips();" class="py-3 px-3 rounded-2xl text-[14px] font-bold text-center transition-all" style="${on ? `background: rgba(${l.rgb}, 0.22); color: ${l.color}; border: 1.5px solid ${l.color};` : 'background: rgba(255,255,255,0.06); color: rgba(235,235,245,0.82); border: 1.5px solid rgba(255,255,255,0.10);'}">${l.id}</button>`;
+          return `<button type="button" onclick="obDraft.level='${l.id}'; renderOnboardingChips();" class="py-3 px-3 rounded-2xl text-[14px] font-bold text-center transition-all" style="${on ? `background: rgba(${l.rgb}, 0.22); color: ${l.color}; border: 1.5px solid ${l.color};` : 'background: rgba(44,44,46,0.68); color: rgba(235,235,245,0.82); border: 0.5px solid rgba(255,255,255,0.14);'}">${l.id}</button>`;
         }).join('');
       }
 
@@ -4913,7 +5127,7 @@
       if (tgtEl) {
         tgtEl.innerHTML = [1,2,3,4,5,6,7].map(n => {
           const on = obDraft.weeklyTarget === n;
-          return `<button type="button" onclick="obDraft.weeklyTarget=${n}; renderOnboardingChips();" class="h-11 rounded-xl text-[15px] font-extrabold transition-all" style="${on ? 'background: #30D158; color: #FFFFFF;' : 'background: rgba(255,255,255,0.07); color: rgba(235,235,245,0.78);'}">${n}</button>`;
+          return `<button type="button" onclick="obDraft.weeklyTarget=${n}; renderOnboardingChips();" class="h-11 rounded-xl text-[15px] font-extrabold transition-all" style="${on ? 'background: #0A84FF; color: #FFFFFF;' : 'background: rgba(44,44,46,0.68); color: rgba(235,235,245,0.80); border: 0.5px solid rgba(255,255,255,0.12);'}">${n}</button>`;
         }).join('');
       }
 
@@ -4924,7 +5138,7 @@
           { id: 'kg', label: 'kg (Kilograms)' }
         ].map(u => {
           const on = obDraft.unit === u.id;
-          return `<button type="button" onclick="obDraft.unit='${u.id}'; renderOnboardingChips();" class="py-3 rounded-2xl text-[14px] font-bold text-center transition-all" style="${on ? 'background: rgba(10, 132, 255, 0.22); color: #0A84FF; border: 1.5px solid #0A84FF;' : 'background: rgba(255,255,255,0.06); color: rgba(235,235,245,0.82); border: 1.5px solid rgba(255,255,255,0.10);'}">${u.label}</button>`;
+          return `<button type="button" onclick="obDraft.unit='${u.id}'; renderOnboardingChips();" class="py-3 rounded-2xl text-[14px] font-bold text-center transition-all" style="${on ? 'background: rgba(10, 132, 255, 0.22); color: #0A84FF; border: 1.5px solid #0A84FF;' : 'background: rgba(44,44,46,0.68); color: rgba(235,235,245,0.82); border: 0.5px solid rgba(255,255,255,0.14);'}">${u.label}</button>`;
         }).join('');
       }
     }
@@ -4932,6 +5146,7 @@
     function openOnboardingFlow() {
       const p = state.userProfile || {};
       obStep = 0;
+      obIntent = 'create';
       obDraft = {
         firstName: p.firstName || state.userName || '',
         lastName: p.lastName || '',
@@ -4981,31 +5196,9 @@
     }
 
     function completeOnboardingSetup() {
-      const f = (document.getElementById('obFirstNameInput')?.value || obDraft.firstName || '').trim();
-      const l = (document.getElementById('obLastNameInput')?.value || obDraft.lastName || '').trim();
-      const d = (document.getElementById('obDobInput')?.value || obDraft.dob || '').trim();
-      if (f) state.userName = f;
-      state.weeklyTarget = obDraft.weeklyTarget || 3;
-      state.userProfile = {
-        firstName: f,
-        lastName: l,
-        dob: d,
-        gender: obDraft.gender || '',
-        goal: obDraft.goal || 'Build Muscle',
-        level: obDraft.level || 'Intermediate',
-        unit: obDraft.unit === 'kg' ? 'kg' : 'lbs'
-      };
-      state.onboardingCompleted = true;
-      saveState();
+      applyOnboardingDraftToState();
       closeOnboardingOverlay();
       renderAll();
-    }
-
-    function skipOnboardingToSignIn() {
-      state.onboardingCompleted = true;
-      saveState();
-      closeOnboardingOverlay();
-      openAccountModal();
     }
 
     async function signOutNativeAuth() {
