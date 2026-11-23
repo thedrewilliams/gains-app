@@ -714,16 +714,36 @@
       will-change: transform, opacity;
     }
 
-    /* Stops iOS 26/27 WebKit standalone PWA from painting a system progressive blur/gradient over the top controls */
+    /* Solid safe-area plate prevents iOS 26/27 PWA status-bar progressive blur over top controls */
     .ios-statusbar-plate {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      height: 4px;
+      height: max(4px, env(safe-area-inset-top, 4px));
       background-color: #000000;
       z-index: 49;
       pointer-events: none;
+    }
+
+    .ios-back-btn {
+      width: 44px;
+      height: 44px;
+      min-height: 44px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(34, 34, 38, 0.94);
+      border: 0.5px solid rgba(255, 255, 255, 0.18);
+      color: #FFFFFF;
+      cursor: pointer;
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.18s ease;
+    }
+
+    .ios-back-btn:active {
+      transform: scale(0.95);
+      background: rgba(50, 50, 56, 0.96);
     }
 
     .sticky-compact-header {
@@ -732,13 +752,13 @@
       left: 0;
       right: 0;
       z-index: 48 !important;
-      padding-top: calc(env(safe-area-inset-top, 12px) + 18px);
+      padding-top: calc(env(safe-area-inset-top, 12px) + 22px);
       padding-bottom: 10px;
       background: transparent;
       border-bottom: 0.5px solid transparent;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.2s ease, background-color 0.22s ease, border-color 0.22s ease;
+      transition: opacity 0.52s ease, background-color 0.52s ease, border-color 0.52s ease;
       isolation: isolate;
     }
 
@@ -748,7 +768,7 @@
     }
 
     .sticky-compact-header.is-pinned.has-scrolled-bar {
-      background: rgba(10, 10, 12, 0.88);
+      background: rgba(10, 10, 12, 0.90);
       -webkit-backdrop-filter: blur(22px) saturate(180%);
       backdrop-filter: blur(22px) saturate(180%);
       border-bottom-color: rgba(255, 255, 255, 0.14);
@@ -757,8 +777,8 @@
     .sticky-compact-header .sticky-compact-title {
       display: inline-block;
       opacity: 0;
-      transform: translate3d(0, 4px, 0);
-      transition: opacity 0.2s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+      transform: translate3d(0, 5px, 0);
+      transition: opacity 0.52s ease, transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .sticky-compact-header .sticky-compact-title.is-visible {
@@ -781,14 +801,14 @@
       padding: 10px 16px;
     }
 
-    /* Dim & Lock Top Chrome + Tab Bar While Editing a Completed Workout, letting cards scroll above the header */
+    /* Deeply fade & lock background chrome while editing a completed workout so focused cards stand out */
     body.is-editing-completed .log-fixed-header,
     body.is-editing-completed #logCalendarDrawer,
     body.is-editing-completed #floatingTabBar {
-      opacity: 0.28;
-      filter: saturate(0.2);
+      opacity: 0.08;
+      filter: saturate(0) blur(2px);
       pointer-events: none !important;
-      transition: opacity 0.24s ease, filter 0.24s ease;
+      transition: opacity 0.32s ease, filter 0.32s ease;
     }
 
     body.is-editing-completed .log-fixed-header {
@@ -1712,12 +1732,7 @@
          VIEW 1: WELCOME (SUMMARY — TODAY & THIS WEEK)
          ===================================================================== -->
     <section id="summaryView" class="space-y-5 relative">
-      <div id="welcomeBlobsLayer" class="welcome-blobs-layer" aria-hidden="true">
-        <div id="welcomeBlobWrap1" class="welcome-blob-wrap"><div class="welcome-blob welcome-blob--1"></div></div>
-        <div id="welcomeBlobWrap2" class="welcome-blob-wrap"><div class="welcome-blob welcome-blob--2"></div></div>
-        <div id="welcomeBlobWrap3" class="welcome-blob-wrap"><div class="welcome-blob welcome-blob--3"></div></div>
-        <div id="welcomeBlobWrap4" class="welcome-blob-wrap"><div class="welcome-blob welcome-blob--4"></div></div>
-      </div>
+      <!-- Colored ambient blobs removed for clean pure-black Home background -->
 
       <div id="summaryHeroHeader" class="collapsible-hero flex items-center justify-between gap-3 relative z-10">
         <h1 id="welcomeHeroTitle" class="collapsible-hero-title text-white text-left flex flex-wrap items-center justify-start gap-x-2.5 min-w-0">
@@ -1737,14 +1752,14 @@
       </div>
 
       <!-- Clean Signed-Out Prompt (auto-hidden once signed in) -->
-      <div id="homeSignInBanner" class="hidden fitness-card p-4 flex items-center justify-between gap-3 relative z-10" style="background: linear-gradient(135deg, rgba(10, 132, 255, 0.14) 0%, rgba(28, 28, 30, 0.96) 100%); border: 0.5px solid rgba(10, 132, 255, 0.34);">
+      <div id="homeSignInBanner" class="hidden fitness-card p-4 flex items-center justify-between gap-3 relative z-10" style="background: #1C1C1E; border: 0.5px solid rgba(10, 132, 255, 0.30);">
         <div class="flex items-center gap-3 min-w-0">
-          <span class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style="background: rgba(10, 132, 255, 0.20); color: #0A84FF;">
+          <span class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style="background: rgba(10, 132, 255, 0.18); color: #0A84FF;">
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
           </span>
           <div class="min-w-0">
-            <div class="type-subhead font-bold text-white truncate">Back up &amp; sync your workouts</div>
-            <div class="type-caption truncate" style="color: var(--label-secondary);">Sign in with Passkey or Email</div>
+            <div class="type-subhead font-bold text-white">Sign in to sync</div>
+            <div class="type-caption" style="color: var(--label-secondary);">Passkey or Email</div>
           </div>
         </div>
         <button type="button" onclick="openAccountModal()" class="solid-pill px-4 py-2 text-[13px] font-bold shrink-0" style="background-color: #0A84FF; color: #FFFFFF;">
@@ -2144,7 +2159,7 @@
 
       <!-- Push-In Subpage Container -->
       <div id="menuSubpageContainer" class="hidden space-y-4">
-        <div id="menuSubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 74px);"></div>
+        <div id="menuSubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 78px);"></div>
         <div id="menuSubpageBody" class="space-y-4"></div>
       </div>
     </section>
@@ -5087,10 +5102,27 @@
       triggerCelebration(state.sessions[dateStr]);
     }
 
+    function smoothScrollLogBodyToTop(durationMs = 460) {
+      const scroller = document.getElementById('logScrollBody');
+      if (!scroller) return;
+      const startTop = scroller.scrollTop;
+      if (startTop <= 2) return;
+      const startTime = performance.now();
+      const step = (now) => {
+        const t = Math.min(1, (now - startTime) / durationMs);
+        // Fast start, smooth quick deceleration at the end (easeOutQuart)
+        const eased = 1 - Math.pow(1 - t, 4);
+        scroller.scrollTop = startTop * (1 - eased);
+        if (t < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+
     function startEditingCompletedWorkout() {
       isEditingCompletedWorkout = true;
       deleteWorkoutArmed = false;
       renderWorkoutCards();
+      requestAnimationFrame(() => smoothScrollLogBodyToTop(460));
     }
 
     function finishEditingCompletedWorkout() {
@@ -6760,9 +6792,9 @@
         }
       }
       const parentBarHtml = `
-        <div class="fixed top-0 left-0 right-0 z-10 pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 12px) + 14px);">
+        <div class="fixed top-0 left-0 right-0 z-10 pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 12px) + 22px);">
           <div class="max-w-lg mx-auto px-4 min-h-[44px] flex items-center justify-between gap-3">
-            <span class="glass glass--clear glass--circle-44 inline-flex items-center justify-center">
+            <span class="ios-back-btn">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </span>
             <span class="type-headline text-white font-bold truncate">${esc(parentBarTitle)}</span>
@@ -6774,7 +6806,7 @@
       return `
         ${parentBarHtml}
         <div class="space-y-4">
-          <div style="padding-top: calc(env(safe-area-inset-top, 12px) + 68px);">${parentHeroHtml}</div>
+          <div style="padding-top: calc(env(safe-area-inset-top, 12px) + 78px);">${parentHeroHtml}</div>
           <div class="space-y-4">${parentBodyHtml}</div>
         </div>
       `;
@@ -6853,18 +6885,22 @@
         subEl.style.opacity = '';
       }
       if (hdrEl) {
+        hdrEl.style.transition = 'none';
+        hdrEl.classList.remove('has-scrolled-bar');
         if (hideHeaderInstant) {
-          hdrEl.style.transition = 'none';
-          hdrEl.classList.remove('is-pinned', 'has-scrolled-bar');
-          hdrEl.style.transform = '';
-          hdrEl.style.opacity = '';
-          void hdrEl.offsetWidth;
-          hdrEl.style.transition = '';
-        } else {
-          hdrEl.style.transition = '';
-          hdrEl.style.transform = '';
-          hdrEl.style.opacity = '';
+          hdrEl.classList.remove('is-pinned');
         }
+        const tSpan = hdrEl.querySelector('.sticky-compact-title');
+        if (tSpan) {
+          tSpan.style.transition = 'none';
+          tSpan.classList.remove('is-visible');
+          void tSpan.offsetWidth;
+          tSpan.style.transition = '';
+        }
+        hdrEl.style.transform = '';
+        hdrEl.style.opacity = '';
+        void hdrEl.offsetWidth;
+        hdrEl.style.transition = '';
       }
     }
 
@@ -8151,7 +8187,7 @@
         stickyBar.classList.toggle('has-scrolled-bar', titlePassedTop);
         if (!leftSlot.firstElementChild) {
           leftSlot.innerHTML = `
-            <button type="button" onclick="closeMenuSubpage()" aria-label="Back to Menu" class="glass glass--clear glass--circle-44 glass-interactive">
+            <button type="button" onclick="closeMenuSubpage()" aria-label="Back to Menu" class="ios-back-btn">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
           `;
@@ -8161,19 +8197,13 @@
         return;
       }
 
-      // 2. Top-Level Scrollable Pages (Home, Activity, Settings Root): same iOS 26 scroll mechanic
-      if (state.activeTab === 'SUMMARY' || state.activeTab === 'ACTIVITY' || (state.activeTab === 'MENU' && !activeMenuSubpage)) {
-        const headingEl = state.activeTab === 'SUMMARY'
-          ? document.getElementById('welcomeHeroTitle')
-          : state.activeTab === 'ACTIVITY'
-            ? document.querySelector('#activityHeroHeader h1')
-            : document.querySelector('#menuHeroHeader h1');
+      // 2. Top-Level Scrollable Pages (Activity & Settings Root only — Home has no sticky header)
+      if (state.activeTab === 'ACTIVITY' || (state.activeTab === 'MENU' && !activeMenuSubpage)) {
+        const headingEl = state.activeTab === 'ACTIVITY'
+          ? document.querySelector('#activityHeroHeader h1')
+          : document.querySelector('#menuHeroHeader h1');
 
-        const compactTitle = state.activeTab === 'SUMMARY'
-          ? ((state.userName || '').trim() ? `Welcome, ${(state.userName || '').trim()}` : 'Home')
-          : state.activeTab === 'ACTIVITY'
-            ? 'Activity'
-            : 'Settings';
+        const compactTitle = state.activeTab === 'ACTIVITY' ? 'Activity' : 'Settings';
 
         const titlePassedTop = headingEl ? headingEl.getBoundingClientRect().bottom <= headerBottom - 2 : isScrolled;
 
@@ -8733,8 +8763,8 @@
         </div>
         ${(hasExercises && (!isCompleted || isEditingThis)) ? `
           <div class="flex items-center justify-center gap-3 pt-1">
-            <button type="button" ${interactive ? 'onclick="openSavePresetModal()"' : 'tabindex="-1"'} aria-label="Save as Preset" title="Save as Preset" class="solid-pill w-[44px] h-[44px] min-h-[44px] !p-0 shrink-0" style="background-color: #30D158; color: #FFFFFF;">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2.2" fill="#FFFFFF"/><rect x="13" y="3" width="8" height="8" rx="2.2" fill="#FFFFFF" fill-opacity="0.82"/><rect x="3" y="13" width="8" height="8" rx="2.2" fill="#FFFFFF" fill-opacity="0.82"/><rect x="13" y="13" width="8" height="8" rx="2.2" fill="#FFFFFF"/></svg>
+            <button type="button" ${interactive ? 'onclick="openSavePresetModal()"' : 'tabindex="-1"'} aria-label="Save as Preset" title="Save as Preset" class="glass glass--clear glass--circle-44 glass-interactive shrink-0">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2.2" fill="#0A84FF"/><rect x="13" y="3" width="8" height="8" rx="2.2" fill="#FFD60A"/><rect x="3" y="13" width="8" height="8" rx="2.2" fill="#30D158"/><rect x="13" y="13" width="8" height="8" rx="2.2" fill="#FF375F"/></svg>
             </button>
             <button type="button" ${interactive ? 'onclick="openAddExerciseSheet(\'SESSION\')"' : 'tabindex="-1"'} aria-label="Add Exercise" class="glass glass--clear glass--circle-48 glass-interactive">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
