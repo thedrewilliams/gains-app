@@ -314,7 +314,7 @@
     }
 
     .floating-tab-bar.is-active-touch {
-      transform: scale(1.015);
+      transform: scale(1.008);
     }
 
     /* Clean translucent Liquid Glass without refraction distortion */
@@ -397,32 +397,16 @@
 
     .tab-active-pill.is-tap-bloom,
     .tab-active-pill.is-dragging {
-      z-index: 5;
-      background: radial-gradient(
-        ellipse 84% 78% at 50% 50%,
-        rgba(0, 0, 0, 0.45) 0%,
-        rgba(0, 0, 0, 0.22) 70%,
-        rgba(255, 255, 255, 0.12) 100%
-      );
-      -webkit-backdrop-filter: blur(0.2px) saturate(260%) brightness(1.22);
-      backdrop-filter: blur(0.2px) saturate(260%) brightness(1.22);
-      box-shadow:
-        0 0 0 0.05px rgba(255, 255, 255, 0.55),
-        inset 0 1px 1.2px rgba(255, 255, 255, 0.65),
-        inset 0 -1px 1.5px rgba(110, 215, 255, 0.42),
-        inset 1.2px 0 2px rgba(188, 127, 239, 0.32),
-        inset -1.2px 0 2px rgba(255, 92, 92, 0.28);
+      z-index: 3;
+      background: rgba(255, 255, 255, 0.13);
+      box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.16);
     }
 
     .tab-active-pill.is-tap-bloom::before,
-    .tab-active-pill.is-dragging::before {
-      opacity: 1;
-      padding: 0.05px;
-    }
-
+    .tab-active-pill.is-dragging::before,
     .tab-active-pill.is-tap-bloom::after,
     .tab-active-pill.is-dragging::after {
-      opacity: 1;
+      opacity: 0;
     }
 
     /* Refraction removed on hold/drag for clean iOS 26 Liquid Glass pill */
@@ -726,18 +710,21 @@
     }
 
     /* Smooth Calendar Fit for Empty Log State (never locks document scroll) */
+    body.is-log-empty main.app-stage {
+      padding-bottom: 0 !important;
+    }
 
     .log-empty-state {
-      min-height: 46dvh;
-      padding: 24px 16px;
+      min-height: 38dvh;
+      padding: 20px 16px;
       transition:
         min-height 0.38s cubic-bezier(0.32, 0.72, 0, 1),
         padding 0.38s cubic-bezier(0.32, 0.72, 0, 1);
     }
 
     body.is-log-cal-open .log-empty-state {
-      min-height: 152px;
-      padding: 12px 16px;
+      min-height: 136px;
+      padding: 10px 16px;
     }
 
     /* Dim & Lock Top Chrome + Tab Bar While Editing a Completed Workout */
@@ -816,6 +803,18 @@
       overflow: visible;
     }
 
+    #logPrevDayPane,
+    #logNextDayPane {
+      max-height: 0;
+      overflow: hidden;
+    }
+
+    #logDayCarouselTrack.is-swiping #logPrevDayPane,
+    #logDayCarouselTrack.is-swiping #logNextDayPane {
+      max-height: none;
+      overflow: visible;
+    }
+
     .log-calendar-drawer {
       display: grid;
       grid-template-rows: 0fr;
@@ -885,11 +884,44 @@
       margin-left: 16px;
     }
 
-    /* iOS Settings-Style Push-In Subpage Container */
+    /* iOS Settings-Style Parallax Push/Pop Subpage Layers */
     #menuRootContainer,
     #menuSubpageContainer {
       will-change: transform, opacity;
-      transition: transform 0.34s var(--motion-ease), opacity 0.26s ease;
+    }
+
+    #menuSwipeUnderlay {
+      position: fixed;
+      inset: 0;
+      z-index: 24;
+      background: #000000;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    #menuSwipeUnderlayInner {
+      will-change: transform;
+      min-height: 100dvh;
+    }
+
+    #menuSwipeUnderlayScrim {
+      position: absolute;
+      inset: 0;
+      background: #000000;
+      pointer-events: none;
+      will-change: opacity;
+    }
+
+    #menuSubpageContainer.is-ios-swiping {
+      position: relative;
+      z-index: 28;
+      background: #000000;
+      min-height: 100dvh;
+      margin-left: -16px;
+      margin-right: -16px;
+      padding-left: 16px;
+      padding-right: 16px;
+      box-shadow: -14px 0 34px rgba(0, 0, 0, 0.72);
     }
 
     .menu-subpage-hero-card {
@@ -1964,6 +1996,12 @@
         </div>
       </div>
 
+      <!-- Apple Settings Parallax Underlay Layer (visible underneath during swipe-back / pop) -->
+      <div id="menuSwipeUnderlay" class="hidden" aria-hidden="true">
+        <div id="menuSwipeUnderlayInner" class="w-full max-w-lg mx-auto px-4 pb-32"></div>
+        <div id="menuSwipeUnderlayScrim"></div>
+      </div>
+
       <!-- Push-In Subpage Container -->
       <div id="menuSubpageContainer" class="hidden space-y-4">
         <div id="menuSubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 60px);"></div>
@@ -3022,10 +3060,12 @@
           if (!lockedAxis) {
             if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
             lockedAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+            if (lockedAxis === 'x') track.classList.add('is-swiping');
           }
 
           if (lockedAxis === 'y') {
             tracking = false;
+            track.classList.remove('is-swiping');
             track.style.transition = '';
             track.style.transform = '';
             return;
@@ -3059,6 +3099,7 @@
               void track.offsetWidth;
               track.style.transition = '';
               track.style.transform = '';
+              track.classList.remove('is-swiping');
               isDayTransitioning = false;
             }, 225);
           } else if (currentDx >= threshold) {
@@ -3072,6 +3113,7 @@
               void track.offsetWidth;
               track.style.transition = '';
               track.style.transform = '';
+              track.classList.remove('is-swiping');
               isDayTransitioning = false;
             }, 225);
           } else {
@@ -3080,6 +3122,7 @@
             setTimeout(() => {
               track.style.transition = '';
               track.style.transform = '';
+              track.classList.remove('is-swiping');
             }, 225);
           }
         };
@@ -3116,69 +3159,94 @@
       let edgeStartY = 0;
       let edgeDx = 0;
       let edgeTracking = false;
+      let edgeActive = false;
 
       document.addEventListener('touchstart', (e) => {
         if (state.activeTab !== 'MENU' || !activeMenuSubpage || e.touches.length !== 1) return;
+        if (document.body.classList.contains('has-sheet-open')) return;
         const touch = e.touches[0];
         if (touch.clientX > 44) return;
         edgeStartX = touch.clientX;
         edgeStartY = touch.clientY;
         edgeDx = 0;
         edgeTracking = true;
-        const subEl = document.getElementById('menuSubpageContainer');
-        const hdrEl = document.getElementById('stickyCompactHeader');
-        if (subEl) subEl.style.transition = 'none';
-        if (hdrEl) hdrEl.style.transition = 'none';
+        edgeActive = false;
       }, { passive: true });
 
       document.addEventListener('touchmove', (e) => {
         if (!edgeTracking || e.touches.length !== 1) return;
         const dx = e.touches[0].clientX - edgeStartX;
         const dy = e.touches[0].clientY - edgeStartY;
-        if (Math.abs(dy) > Math.abs(dx) && dx < 14) {
-          edgeTracking = false;
-          const subEl = document.getElementById('menuSubpageContainer');
-          const hdrEl = document.getElementById('stickyCompactHeader');
-          if (subEl) { subEl.style.transition = ''; subEl.style.transform = ''; }
-          if (hdrEl) { hdrEl.style.transition = ''; hdrEl.style.transform = ''; }
-          return;
+        if (!edgeActive) {
+          if (Math.abs(dy) > Math.abs(dx) && dx < 14) {
+            edgeTracking = false;
+            return;
+          }
+          if (dx < 8) return;
+          edgeActive = true;
+          prepareMenuSwipeUnderlay();
         }
         edgeDx = Math.max(0, dx);
+        const w = window.innerWidth || 390;
+        const progress = Math.min(1, edgeDx / w);
         const subEl = document.getElementById('menuSubpageContainer');
         const hdrEl = document.getElementById('stickyCompactHeader');
+        const underInner = document.getElementById('menuSwipeUnderlayInner');
+        const underScrim = document.getElementById('menuSwipeUnderlayScrim');
         if (subEl) subEl.style.transform = `translate3d(${edgeDx}px, 0, 0)`;
         if (hdrEl) hdrEl.style.transform = `translate3d(${edgeDx}px, 0, 0)`;
+        if (underInner) underInner.style.transform = `translate3d(${(-28 * (1 - progress)).toFixed(2)}%, 0, 0)`;
+        if (underScrim) underScrim.style.opacity = `${(0.46 * (1 - progress)).toFixed(3)}`;
       }, { passive: true });
 
       const finishEdgeBack = () => {
         if (!edgeTracking) return;
         edgeTracking = false;
+        if (!edgeActive) return;
+        edgeActive = false;
+        const w = window.innerWidth || 390;
+        const threshold = Math.min(105, w * 0.27);
         const subEl = document.getElementById('menuSubpageContainer');
         const hdrEl = document.getElementById('stickyCompactHeader');
-        const threshold = Math.min(95, window.innerWidth * 0.25);
+        const underInner = document.getElementById('menuSwipeUnderlayInner');
+        const underScrim = document.getElementById('menuSwipeUnderlayScrim');
+        const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
+
         if (edgeDx >= threshold) {
           [subEl, hdrEl].forEach(el => {
             if (!el) return;
-            el.style.transition = 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease';
-            el.style.transform = `translate3d(${window.innerWidth}px, 0, 0)`;
-            el.style.opacity = '0';
+            el.style.transition = `transform 0.25s ${ease}`;
+            el.style.transform = `translate3d(${w}px, 0, 0)`;
           });
+          if (underInner) {
+            underInner.style.transition = `transform 0.25s ${ease}`;
+            underInner.style.transform = 'translate3d(0%, 0, 0)';
+          }
+          if (underScrim) {
+            underScrim.style.transition = 'opacity 0.25s ease';
+            underScrim.style.opacity = '0';
+          }
           setTimeout(() => {
-            [subEl, hdrEl].forEach(el => {
-              if (!el) return;
-              el.style.transition = '';
-              el.style.transform = '';
-              el.style.opacity = '';
-            });
-            closeMenuSubpage();
-          }, 210);
+            cleanupMenuSwipeUnderlay();
+            closeMenuSubpage(true);
+          }, 255);
         } else {
           [subEl, hdrEl].forEach(el => {
             if (!el) return;
-            el.style.transition = 'transform 0.24s cubic-bezier(0.22, 1, 0.36, 1)';
+            el.style.transition = `transform 0.24s ${ease}`;
             el.style.transform = 'translate3d(0, 0, 0)';
-            setTimeout(() => { el.style.transition = ''; el.style.transform = ''; }, 245);
           });
+          if (underInner) {
+            underInner.style.transition = `transform 0.24s ${ease}`;
+            underInner.style.transform = 'translate3d(-28%, 0, 0)';
+          }
+          if (underScrim) {
+            underScrim.style.transition = 'opacity 0.24s ease';
+            underScrim.style.opacity = '0.46';
+          }
+          setTimeout(() => {
+            cleanupMenuSwipeUnderlay();
+          }, 245);
         }
       };
 
@@ -4324,7 +4392,7 @@
           container.classList.add('is-active-touch');
           pill.classList.remove('is-dragging');
           pill.classList.add('is-tap-bloom');
-          pill.style.transform = `translateX(${touchedIdx * 100}%) scale(1.22, 1.30)`;
+          pill.style.transform = `translateX(${touchedIdx * 100}%) scale(1, 1)`;
         }
         highlightSliderPreview(containerId, touchedIdx);
 
@@ -4357,26 +4425,26 @@
             const overshootPx = rawSlot < 0 ? rawSlot * segWidth : (rawSlot - (count - 1)) * segWidth;
             const absOver = Math.abs(overshootPx);
             const sign = Math.sign(overshootPx);
-            // iOS 26 rubber-band damping
-            const dampedPx = sign * Math.min(28, (absOver * 0.30) / (1 + absOver * 0.0075));
-            const stretchX = 1.015 + (Math.abs(dampedPx) / rect.width) * 1.45;
-            const stretchY = Math.max(0.955, 1.015 - (Math.abs(dampedPx) / rect.width) * 0.34);
-            const shiftX = dampedPx * 0.42;
+            // Subtle iOS 26 edge-stretch cap matching video
+            const dampedPx = sign * Math.min(8.5, (absOver * 0.14) / (1 + absOver * 0.015));
+            const stretchX = 1.008 + (Math.abs(dampedPx) / rect.width) * 0.72;
+            const stretchY = Math.max(0.984, 1.008 - (Math.abs(dampedPx) / rect.width) * 0.22);
+            const shiftX = dampedPx * 0.45;
 
             container.style.transition = 'none';
             container.style.transformOrigin = sign < 0 ? 'right center' : 'left center';
             container.style.transform = `translate3d(${shiftX.toFixed(2)}px, 0, 0) scale(${stretchX.toFixed(4)}, ${stretchY.toFixed(4)})`;
 
-            const pillNudgePct = (dampedPx / segWidth) * 18;
-            pill.style.transform = `translateX(${(clampedSlot * 100 + pillNudgePct).toFixed(2)}%) scale(1.24, 1.28)`;
+            const pillNudgePct = (dampedPx / segWidth) * 10;
+            pill.style.transform = `translateX(${(clampedSlot * 100 + pillNudgePct).toFixed(2)}%) scale(1, 1)`;
           } else {
             if (containerId === 'floatingTabBar' && wasOvershooting) {
               wasOvershooting = false;
               container.style.transition = 'transform 0.14s ease-out';
               container.style.transformOrigin = 'center center';
-              container.style.transform = 'scale(1.015)';
+              container.style.transform = 'scale(1.008)';
             }
-            pill.style.transform = `translateX(${clampedSlot * 100}%) scale(1.22, 1.30)`;
+            pill.style.transform = `translateX(${clampedSlot * 100}%) scale(1, 1)`;
           }
 
           const nearest = clamp(Math.round(clampedSlot), 0, count - 1);
@@ -4404,7 +4472,7 @@
         container.classList.remove('is-active-touch');
         if (containerId === 'floatingTabBar') {
           if (didOvershoot) {
-            container.style.transition = 'transform 0.44s cubic-bezier(0.22, 1.28, 0.36, 1)';
+            container.style.transition = 'transform 0.38s cubic-bezier(0.22, 1.22, 0.36, 1)';
             container.style.transform = 'translate3d(0, 0, 0) scale(1, 1)';
             setTimeout(() => {
               if (!pointerId) {
@@ -4412,7 +4480,7 @@
                 container.style.transform = '';
                 container.style.transformOrigin = 'center center';
               }
-            }, 460);
+            }, 400);
           } else {
             container.style.transition = '';
             container.style.transform = '';
@@ -4425,12 +4493,12 @@
           pill.classList.remove('is-tap-bloom');
           pill.style.transform = `translateX(${targetIdx * 100}%) scale(1, 1)`;
         } else {
-          pill.style.transform = `translateX(${targetIdx * 100}%) scale(1.22, 1.30)`;
+          pill.style.transform = `translateX(${targetIdx * 100}%) scale(1, 1)`;
           tapContractTimer = setTimeout(() => {
             pill.classList.remove('is-tap-bloom');
             pill.style.transform = `translateX(${targetIdx * 100}%) scale(1, 1)`;
             tapContractTimer = null;
-          }, 170);
+          }, 120);
         }
         onSelectIndex(targetIdx);
       };
@@ -5171,8 +5239,11 @@
 
     function updateLogEmptyScrollLock() {
       const isLog = state.activeTab === 'LOG';
+      const dateStr = state.activeDate || getTodayDateStr();
+      const hasEx = getExercisesForDate(dateStr).length > 0;
       document.documentElement.classList.remove('is-log-empty-locked');
       document.body.classList.remove('is-log-empty-locked');
+      document.body.classList.toggle('is-log-empty', isLog && !hasEx);
       document.body.classList.toggle('is-editing-completed', isLog && isEditingCompletedWorkout);
     }
 
@@ -5794,7 +5865,132 @@
       updateCollapsibleHeaderOnScroll();
     }
 
-    function closeMenuSubpage() {
+    let isMenuPopping = false;
+
+    function buildMenuParentPreviewHtml() {
+      const rootEl = document.getElementById('menuRootContainer');
+      const isNested =
+        (activeMenuSubpage === 'PRESETS' && presetsSubViewMode !== 'LIST') ||
+        (activeMenuSubpage === 'EQUIPMENT' && equipSubViewMode !== 'LIST') ||
+        (activeMenuSubpage === 'LIBRARY' && librarySubViewMode !== 'LIST');
+
+      if (!isNested) {
+        return rootEl ? `<div class="space-y-4 pt-1">${rootEl.innerHTML}</div>` : '';
+      }
+
+      // Render parent subpage into a detached snapshot without mutating live DOM
+      const savedPresetsMode = presetsSubViewMode;
+      const savedEquipMode = equipSubViewMode;
+      const savedLibMode = librarySubViewMode;
+      const savedLibField = editingLibraryFieldKey;
+
+      const heroEl = document.getElementById('menuSubpageHero');
+      const bodyEl = document.getElementById('menuSubpageBody');
+      const curHeroHtml = heroEl ? heroEl.innerHTML : '';
+      const curBodyHtml = bodyEl ? bodyEl.innerHTML : '';
+
+      if (activeMenuSubpage === 'PRESETS') {
+        presetsSubViewMode = 'LIST';
+      } else if (activeMenuSubpage === 'EQUIPMENT') {
+        equipSubViewMode = equipSubViewMode === 'FIELD_TEXT' ? 'EDIT' : 'LIST';
+      } else if (activeMenuSubpage === 'LIBRARY') {
+        if (librarySubViewMode === 'FIELD_TEXT' || librarySubViewMode === 'FIELD_PICKER') {
+          librarySubViewMode = 'EDIT';
+        } else {
+          librarySubViewMode = 'LIST';
+        }
+      }
+
+      renderMenuSubpageContent(activeMenuSubpage);
+      const parentHeroHtml = heroEl ? heroEl.innerHTML : '';
+      const parentBodyHtml = bodyEl ? bodyEl.innerHTML : '';
+
+      // Restore current subpage state & live DOM immediately
+      presetsSubViewMode = savedPresetsMode;
+      equipSubViewMode = savedEquipMode;
+      librarySubViewMode = savedLibMode;
+      editingLibraryFieldKey = savedLibField;
+      if (heroEl) heroEl.innerHTML = curHeroHtml;
+      if (bodyEl) bodyEl.innerHTML = curBodyHtml;
+
+      const meta = MENU_SUBPAGE_META[activeMenuSubpage] || {};
+      const parentBarHtml = `
+        <div class="fixed top-0 left-0 right-0 z-10 pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 12px) + 6px);">
+          <div class="max-w-lg mx-auto px-4 min-h-[44px] flex items-center justify-between gap-3">
+            <span class="glass glass--clear glass--circle-44 inline-flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </span>
+            <span class="type-headline text-white font-bold truncate">${esc(meta.title || '')}</span>
+            <span class="min-w-[44px]"></span>
+          </div>
+        </div>
+      `;
+
+      return `
+        ${parentBarHtml}
+        <div class="space-y-4">
+          <div style="padding-top: calc(env(safe-area-inset-top, 12px) + 60px);">${parentHeroHtml}</div>
+          <div class="space-y-4">${parentBodyHtml}</div>
+        </div>
+      `;
+    }
+
+    function prepareMenuSwipeUnderlay() {
+      const under = document.getElementById('menuSwipeUnderlay');
+      const underInner = document.getElementById('menuSwipeUnderlayInner');
+      const underScrim = document.getElementById('menuSwipeUnderlayScrim');
+      const subEl = document.getElementById('menuSubpageContainer');
+      const hdrEl = document.getElementById('stickyCompactHeader');
+      if (!under || !underInner || !underScrim) return;
+
+      underInner.innerHTML = buildMenuParentPreviewHtml();
+      underInner.style.transition = 'none';
+      underInner.style.transform = 'translate3d(-28%, 0, 0)';
+      underScrim.style.transition = 'none';
+      underScrim.style.opacity = '0.46';
+      under.classList.remove('hidden');
+
+      if (subEl) {
+        subEl.classList.add('is-ios-swiping');
+        subEl.style.transition = 'none';
+        subEl.style.transform = 'translate3d(0, 0, 0)';
+      }
+      if (hdrEl) {
+        hdrEl.style.transition = 'none';
+        hdrEl.style.transform = 'translate3d(0, 0, 0)';
+      }
+    }
+
+    function cleanupMenuSwipeUnderlay() {
+      const under = document.getElementById('menuSwipeUnderlay');
+      const underInner = document.getElementById('menuSwipeUnderlayInner');
+      const underScrim = document.getElementById('menuSwipeUnderlayScrim');
+      const subEl = document.getElementById('menuSubpageContainer');
+      const hdrEl = document.getElementById('stickyCompactHeader');
+      if (under) under.classList.add('hidden');
+      if (underInner) {
+        underInner.innerHTML = '';
+        underInner.style.transition = '';
+        underInner.style.transform = '';
+      }
+      if (underScrim) {
+        underScrim.style.transition = '';
+        underScrim.style.opacity = '';
+      }
+      if (subEl) {
+        subEl.classList.remove('is-ios-swiping');
+        subEl.style.transition = '';
+        subEl.style.transform = '';
+        subEl.style.opacity = '';
+      }
+      if (hdrEl) {
+        hdrEl.style.transition = '';
+        hdrEl.style.transform = '';
+        hdrEl.style.opacity = '';
+      }
+    }
+
+    function commitCloseMenuSubpageImmediate() {
       if (activeMenuSubpage === 'PRESETS' && presetsSubViewMode !== 'LIST') {
         presetsSubViewMode = 'LIST';
         editingPresetId = null;
@@ -5837,20 +6033,46 @@
         updateCollapsibleHeaderOnScroll();
         return;
       }
-      const rootEl = document.getElementById('menuRootContainer');
       activeMenuSubpage = null;
       window.scrollTo({ top: 0, behavior: 'instant' });
       renderMenuView();
-      if (rootEl) {
-        rootEl.style.transition = 'none';
-        rootEl.style.transform = 'translateX(-28px)';
-        rootEl.style.opacity = '0';
-        void rootEl.offsetWidth;
-        rootEl.style.transition = 'transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease';
-        rootEl.style.transform = 'translateX(0)';
-        rootEl.style.opacity = '1';
-      }
       updateCollapsibleHeaderOnScroll();
+    }
+
+    function closeMenuSubpage(skipAnim = false) {
+      if (skipAnim === true) {
+        commitCloseMenuSubpageImmediate();
+        return;
+      }
+      if (isMenuPopping || !activeMenuSubpage) return;
+      isMenuPopping = true;
+      prepareMenuSwipeUnderlay();
+      const w = window.innerWidth || 390;
+      const subEl = document.getElementById('menuSubpageContainer');
+      const hdrEl = document.getElementById('stickyCompactHeader');
+      const underInner = document.getElementById('menuSwipeUnderlayInner');
+      const underScrim = document.getElementById('menuSwipeUnderlayScrim');
+      const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
+
+      if (subEl) void subEl.offsetWidth;
+      [subEl, hdrEl].forEach(el => {
+        if (!el) return;
+        el.style.transition = `transform 0.28s ${ease}`;
+        el.style.transform = `translate3d(${w}px, 0, 0)`;
+      });
+      if (underInner) {
+        underInner.style.transition = `transform 0.28s ${ease}`;
+        underInner.style.transform = 'translate3d(0%, 0, 0)';
+      }
+      if (underScrim) {
+        underScrim.style.transition = 'opacity 0.28s ease';
+        underScrim.style.opacity = '0';
+      }
+      setTimeout(() => {
+        cleanupMenuSwipeUnderlay();
+        commitCloseMenuSubpageImmediate();
+        isMenuPopping = false;
+      }, 285);
     }
 
     const MENU_SUBPAGE_META = {
@@ -5952,7 +6174,28 @@
                 </div>
               </div>
 
-              <div class="space-y-2">
+              <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                  <select id="presetAddExSelect" onchange="updatePresetAddBtnState()" aria-label="Add exercise to preset" class="fitness-field flex-1 min-w-0 !py-2.5 !px-3.5 !rounded-full text-[14px] font-semibold">
+                    <option value="">Add exercise from library…</option>
+                    ${libOptions.map(ex => `<option value="${esc(ex.id)}">${esc(ex.name)}</option>`).join('')}
+                  </select>
+                  <button
+                    type="button"
+                    id="presetAddExBtn"
+                    disabled
+                    onclick="addExerciseToPresetFromSelect('${esc(preset.id)}')"
+                    aria-label="Add Exercise to Preset"
+                    class="solid-pill w-[44px] h-[44px] min-h-[44px] !p-0 shrink-0 transition-all duration-200"
+                    style="background-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.45); opacity: 0.45; pointer-events: none;"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                      <line x1="12" y1="5" x2="12" y2="19"/>
+                      <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                  </button>
+                </div>
+
                 <div class="flex items-center justify-between px-1">
                   <span class="type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Exercises (${(preset.exercises || []).length})</span>
                 </div>
@@ -5981,33 +6224,10 @@
                   </div>
                 ` : `
                   <div class="settings-group px-4 py-5 text-center">
-                    <p class="type-caption" style="color: var(--label-secondary);">No exercises in this preset yet. Add one below.</p>
+                    <p class="type-caption" style="color: var(--label-secondary);">No exercises in this preset yet. Pick one above to add it.</p>
                   </div>
                 `}
-
-                <div class="flex items-center gap-2 pt-1">
-                  <select id="presetAddExSelect" aria-label="Add exercise to preset" class="fitness-field flex-1 min-w-0 !py-2.5 !px-3.5 !rounded-full text-[14px] font-semibold">
-                    <option value="">Add exercise from library…</option>
-                    ${libOptions.map(ex => `<option value="${esc(ex.id)}">${esc(ex.name)}</option>`).join('')}
-                  </select>
-                  <button
-                    type="button"
-                    onclick="addExerciseToPresetFromSelect('${esc(preset.id)}')"
-                    aria-label="Add Exercise to Preset"
-                    class="solid-pill w-[44px] h-[44px] min-h-[44px] !p-0 shrink-0"
-                    style="background-color: #30D158; color: #FFFFFF;"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
-                      <line x1="12" y1="5" x2="12" y2="19"/>
-                      <line x1="5" y1="12" x2="19" y2="12"/>
-                    </svg>
-                  </button>
-                </div>
               </div>
-
-              <button type="button" onclick="loadPresetIntoActiveDate('${esc(preset.id)}'); switchTab('LOG');" class="solid-pill w-full h-[50px] type-headline" style="background-color: #30D158; color: #FFFFFF;">
-                Load Into Active Date
-              </button>
 
               <div class="settings-group">
                 <button type="button" onclick="deleteSavedPreset('${esc(preset.id)}')" class="settings-row justify-center">
@@ -6627,6 +6847,18 @@
       presetsSubViewMode = 'EDIT';
       renderMenuView();
       updateCollapsibleHeaderOnScroll();
+    }
+
+    function updatePresetAddBtnState() {
+      const sel = document.getElementById('presetAddExSelect');
+      const btn = document.getElementById('presetAddExBtn');
+      if (!sel || !btn) return;
+      const hasSel = Boolean(sel.value);
+      btn.disabled = !hasSel;
+      btn.style.backgroundColor = hasSel ? '#30D158' : 'rgba(255,255,255,0.12)';
+      btn.style.color = hasSel ? '#FFFFFF' : 'rgba(255,255,255,0.45)';
+      btn.style.opacity = hasSel ? '1' : '0.45';
+      btn.style.pointerEvents = hasSel ? 'auto' : 'none';
     }
 
     function addExerciseToPresetFromSelect(presetId) {
