@@ -714,7 +714,7 @@
       will-change: transform, opacity;
     }
 
-    /* Solid safe-area plate prevents iOS 26/27 PWA status-bar progressive blur over top controls */
+    /* Solid safe-area plate keeps iOS status bar pure #000000 with zero content color bleed */
     .ios-statusbar-plate {
       position: fixed;
       top: 0;
@@ -724,6 +724,8 @@
       background-color: #000000;
       z-index: 49;
       pointer-events: none;
+      transform: translate3d(0, 0, 0);
+      -webkit-transform: translate3d(0, 0, 0);
     }
 
     .ios-back-btn {
@@ -734,7 +736,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      background: rgba(34, 34, 38, 0.94);
+      background: rgba(34, 34, 38, 0.96);
       border: 0.5px solid rgba(255, 255, 255, 0.18);
       color: #FFFFFF;
       cursor: pointer;
@@ -743,7 +745,7 @@
 
     .ios-back-btn:active {
       transform: scale(0.95);
-      background: rgba(50, 50, 56, 0.96);
+      background: rgba(50, 50, 56, 0.98);
     }
 
     .sticky-compact-header {
@@ -752,14 +754,31 @@
       left: 0;
       right: 0;
       z-index: 48 !important;
-      padding-top: calc(env(safe-area-inset-top, 12px) + 22px);
+      padding-top: calc(env(safe-area-inset-top, 12px) + 18px);
       padding-bottom: 10px;
       background: transparent;
       border-bottom: 0.5px solid transparent;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.52s ease, background-color 0.52s ease, border-color 0.52s ease;
-      isolation: isolate;
+      transform: translate3d(0, 0, 0);
+      -webkit-transform: translate3d(0, 0, 0);
+      will-change: opacity, transform;
+      transition: opacity 0.25s ease;
+    }
+
+    /* Separate animated backdrop layer so #000000 top blends seamlessly into frosted bar + hairline divider without moving/hiding back button */
+    .sticky-compact-header::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #000000 0%, #000000 52%, rgba(12, 12, 14, 0.92) 100%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      backdrop-filter: blur(20px) saturate(160%);
+      border-bottom: 0.5px solid rgba(255, 255, 255, 0.14);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 0;
+      transition: opacity 0.52s ease;
     }
 
     .sticky-compact-header.is-pinned {
@@ -767,15 +786,16 @@
       pointer-events: auto;
     }
 
-    .sticky-compact-header.is-pinned.has-scrolled-bar {
-      background: rgba(10, 10, 12, 0.90);
-      -webkit-backdrop-filter: blur(22px) saturate(180%);
-      backdrop-filter: blur(22px) saturate(180%);
-      border-bottom-color: rgba(255, 255, 255, 0.14);
+    .sticky-compact-header.is-pinned.has-scrolled-bar::before {
+      opacity: 1;
     }
 
     .sticky-compact-header .sticky-compact-title {
       display: inline-block;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       opacity: 0;
       transform: translate3d(0, 5px, 0);
       transition: opacity 0.52s ease, transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
@@ -1098,7 +1118,6 @@
       padding: 0;
       min-height: 100%;
       width: 100%;
-      overflow-x: clip;
       background: #000000 !important;
       background-color: #000000 !important;
     }
@@ -1107,7 +1126,6 @@
       margin: 0;
       padding: 0;
       width: 100%;
-      max-width: 100vw;
       min-height: 100%;
       min-height: 100dvh;
       background: #000000 !important;
@@ -1116,7 +1134,6 @@
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
       -webkit-font-smoothing: antialiased;
       -webkit-overflow-scrolling: touch;
-      overflow-x: clip;
       overscroll-behavior-x: none;
     }
 
@@ -1718,10 +1735,10 @@
 
   <!-- Pinned Compact Header (appears only after large title scrolls past) -->
   <header id="stickyCompactHeader" class="sticky-compact-header">
-    <div class="max-w-lg mx-auto px-4 min-h-[44px] flex items-center justify-between gap-3">
-      <div id="stickyHeaderLeft" class="flex items-center gap-2.5 min-w-0"></div>
-      <div id="stickyHeaderCenter" class="flex-1 text-center truncate"></div>
-      <div id="stickyHeaderRight" class="flex items-center gap-2 min-w-[44px] justify-end"></div>
+    <div class="relative max-w-lg mx-auto px-4 min-h-[44px] flex items-center justify-between">
+      <div id="stickyHeaderLeft" class="flex items-center gap-2.5 min-w-[44px] shrink-0"></div>
+      <div id="stickyHeaderCenter" class="absolute left-[68px] right-[68px] top-1/2 -translate-y-1/2 text-center pointer-events-none truncate"></div>
+      <div id="stickyHeaderRight" class="flex items-center gap-2 min-w-[44px] justify-end shrink-0"></div>
     </div>
   </header>
 
@@ -2159,7 +2176,7 @@
 
       <!-- Push-In Subpage Container -->
       <div id="menuSubpageContainer" class="hidden space-y-4">
-        <div id="menuSubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 78px);"></div>
+        <div id="menuSubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 74px);"></div>
         <div id="menuSubpageBody" class="space-y-4"></div>
       </div>
     </section>
@@ -6792,12 +6809,12 @@
         }
       }
       const parentBarHtml = `
-        <div class="fixed top-0 left-0 right-0 z-10 pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 12px) + 22px);">
-          <div class="max-w-lg mx-auto px-4 min-h-[44px] flex items-center justify-between gap-3">
+        <div class="fixed top-0 left-0 right-0 z-10 pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 12px) + 18px);">
+          <div class="relative max-w-lg mx-auto px-4 min-h-[44px] flex items-center justify-between">
             <span class="ios-back-btn">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </span>
-            <span class="type-headline text-white font-bold truncate">${esc(parentBarTitle)}</span>
+            <span class="absolute left-[68px] right-[68px] top-1/2 -translate-y-1/2 text-center type-headline text-white font-bold truncate">${esc(parentBarTitle)}</span>
             <span class="min-w-[44px]"></span>
           </div>
         </div>
@@ -6806,7 +6823,7 @@
       return `
         ${parentBarHtml}
         <div class="space-y-4">
-          <div style="padding-top: calc(env(safe-area-inset-top, 12px) + 78px);">${parentHeroHtml}</div>
+          <div style="padding-top: calc(env(safe-area-inset-top, 12px) + 74px);">${parentHeroHtml}</div>
           <div class="space-y-4">${parentBodyHtml}</div>
         </div>
       `;
@@ -8179,9 +8196,10 @@
           }
         }
 
-        const heroCard = document.getElementById('subpageHeroCard');
+        const heroCard = document.querySelector('#menuSubpageContainer #subpageHeroCard');
         const heroHeading = heroCard ? heroCard.querySelector('h1') : null;
-        const titlePassedTop = isDetailWithoutHero || (heroHeading ? heroHeading.getBoundingClientRect().bottom <= headerBottom - 2 : isScrolled);
+        const headerBottomMeasured = stickyBar.getBoundingClientRect().bottom || 82;
+        const titlePassedTop = isDetailWithoutHero || (heroHeading ? heroHeading.getBoundingClientRect().bottom <= headerBottomMeasured + 4 : isScrolled);
 
         stickyBar.classList.add('is-pinned');
         stickyBar.classList.toggle('has-scrolled-bar', titlePassedTop);
@@ -8210,13 +8228,9 @@
         if (leftSlot.innerHTML) leftSlot.innerHTML = ``;
         if (rightSlot.innerHTML) rightSlot.innerHTML = ``;
 
-        if (titlePassedTop) {
-          stickyBar.classList.add('is-pinned', 'has-scrolled-bar');
-          setCompactCenterTitle(compactTitle, true);
-        } else {
-          stickyBar.classList.remove('is-pinned', 'has-scrolled-bar');
-          if (centerSlot.innerHTML) centerSlot.innerHTML = ``;
-        }
+        stickyBar.classList.toggle('is-pinned', titlePassedTop);
+        stickyBar.classList.toggle('has-scrolled-bar', titlePassedTop);
+        setCompactCenterTitle(compactTitle, titlePassedTop);
         return;
       }
 
