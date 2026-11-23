@@ -754,7 +754,7 @@
       left: 0;
       right: 0;
       z-index: 48 !important;
-      padding-top: calc(env(safe-area-inset-top, 12px) + 18px);
+      padding-top: calc(env(safe-area-inset-top, 12px) + 28px);
       padding-bottom: 10px;
       background: transparent;
       border-bottom: 0.5px solid transparent;
@@ -766,14 +766,12 @@
       transition: opacity 0.25s ease;
     }
 
-    /* Separate animated backdrop layer so #000000 top blends seamlessly into frosted bar + hairline divider without moving/hiding back button */
+    /* Clean solid #000000 header fill + hairline divider on scroll (zero blur/gradient covering controls) */
     .sticky-compact-header::before {
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, #000000 0%, #000000 52%, rgba(12, 12, 14, 0.92) 100%);
-      -webkit-backdrop-filter: blur(20px) saturate(160%);
-      backdrop-filter: blur(20px) saturate(160%);
+      background: #000000;
       border-bottom: 0.5px solid rgba(255, 255, 255, 0.14);
       opacity: 0;
       pointer-events: none;
@@ -859,9 +857,19 @@
     }
 
     .sticky-compact-header #stickyHeaderLeft,
-    .sticky-compact-header #stickyHeaderCenter,
     .sticky-compact-header #stickyHeaderRight {
       position: relative;
+      z-index: 5;
+    }
+
+    .sticky-compact-header #stickyHeaderCenter {
+      position: absolute;
+      left: 68px;
+      right: 68px;
+      top: 50%;
+      transform: translateY(-50%);
+      text-align: center;
+      pointer-events: none;
       z-index: 5;
     }
 
@@ -2176,7 +2184,7 @@
 
       <!-- Push-In Subpage Container -->
       <div id="menuSubpageContainer" class="hidden space-y-4">
-        <div id="menuSubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 74px);"></div>
+        <div id="menuSubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 84px);"></div>
         <div id="menuSubpageBody" class="space-y-4"></div>
       </div>
     </section>
@@ -6809,7 +6817,7 @@
         }
       }
       const parentBarHtml = `
-        <div class="fixed top-0 left-0 right-0 z-10 pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 12px) + 18px);">
+        <div class="fixed top-0 left-0 right-0 z-10 pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 12px) + 28px);">
           <div class="relative max-w-lg mx-auto px-4 min-h-[44px] flex items-center justify-between">
             <span class="ios-back-btn">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -6823,7 +6831,7 @@
       return `
         ${parentBarHtml}
         <div class="space-y-4">
-          <div style="padding-top: calc(env(safe-area-inset-top, 12px) + 74px);">${parentHeroHtml}</div>
+          <div style="padding-top: calc(env(safe-area-inset-top, 12px) + 84px);">${parentHeroHtml}</div>
           <div class="space-y-4">${parentBodyHtml}</div>
         </div>
       `;
