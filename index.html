@@ -1348,7 +1348,53 @@
 
     #summaryView > :not(#summaryHeroHeader),
     #homeProfileBtn {
-      transition: filter 0.72s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.72s ease;
+      transition: filter 0.76s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.76s ease;
+    }
+
+    /* Animated dark-blue -> light-blue perimeter stroke sweep for Home Sign-In card */
+    .signin-stroke-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .signin-stroke-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 4;
+      opacity: 0;
+    }
+
+    .signin-stroke-card.is-sweeping .signin-stroke-svg {
+      animation: signInBorderVisibility 1.65s ease-out forwards;
+    }
+
+    .signin-stroke-rect {
+      fill: none;
+      stroke: url(#signInStrokeGrad);
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-dasharray: 280 900;
+      stroke-dashoffset: 280;
+    }
+
+    .signin-stroke-card.is-sweeping .signin-stroke-rect {
+      animation: signInStrokeTrace 1.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes signInStrokeTrace {
+      0% { stroke-dashoffset: 280; stroke-dasharray: 180 1000; }
+      45% { stroke-dashoffset: -420; stroke-dasharray: 1050 200; }
+      100% { stroke-dashoffset: -1150; stroke-dasharray: 1150 100; }
+    }
+
+    @keyframes signInBorderVisibility {
+      0% { opacity: 0; }
+      10% { opacity: 1; }
+      72% { opacity: 0.95; }
+      100% { opacity: 0; }
     }
 
     .fitness-field:focus {
@@ -1862,36 +1908,6 @@
         </button>
       </div>
 
-      <!-- Signed-Out Account Benefits Card (auto-hidden once signed in) -->
-      <div id="homeSignInBanner" class="hidden fitness-card p-4 space-y-3.5 relative z-10" style="background: #1C1C1E; border: 0.5px solid rgba(10, 132, 255, 0.30);">
-        <div class="flex items-center justify-between gap-3">
-          <div class="type-headline font-bold text-white">Sign In to Sync Your Workouts</div>
-          <button type="button" onclick="openAccountModal()" class="solid-pill px-4 py-1.5 text-[13px] font-bold shrink-0" style="background-color: #0A84FF; color: #FFFFFF;">
-            Sign In
-          </button>
-        </div>
-        <div class="space-y-2.5">
-          <div class="flex items-center gap-2.5">
-            <span class="shrink-0" style="color: #0A84FF;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
-            </span>
-            <span class="text-[13px] text-white/85"><strong class="text-white">Cloud Backup</strong> — Keep every workout, note, and PR safe.</span>
-          </div>
-          <div class="flex items-center gap-2.5">
-            <span class="shrink-0" style="color: #0A84FF;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-            </span>
-            <span class="text-[13px] text-white/85"><strong class="text-white">Multi-Device Sync</strong> — Seamless across iPhone, iPad, and desktop.</span>
-          </div>
-          <div class="flex items-center gap-2.5">
-            <span class="shrink-0" style="color: #0A84FF;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            </span>
-            <span class="text-[13px] text-white/85"><strong class="text-white">Private &amp; Secure</strong> — Protected with Passkey or Email.</span>
-          </div>
-        </div>
-      </div>
-
       <!-- Today's Session Card -->
       <div id="bentoNextCard" onclick="launchNextWorkout()" class="fitness-card fitness-card-interactive p-5 space-y-2.5">
         <div class="flex items-center justify-between gap-3">
@@ -1933,6 +1949,29 @@
         </div>
       </div>
 
+      <!-- Consolidated Signed-Out Card (below Weekly Target & Push/Pull, normal border + animated blue stroke sweep) -->
+      <div id="homeSignInBanner" class="hidden fitness-card signin-stroke-card p-4 space-y-2 relative z-10">
+        <svg class="signin-stroke-svg" viewBox="0 0 360 112" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="signInStrokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#003EB3"/>
+              <stop offset="50%" stop-color="#0A84FF"/>
+              <stop offset="100%" stop-color="#64D2FF"/>
+            </linearGradient>
+          </defs>
+          <rect class="signin-stroke-rect" x="1.5" y="1.5" width="357" height="109" rx="23" ry="23"/>
+        </svg>
+        <div class="flex items-center justify-between gap-3 relative z-10">
+          <div class="min-w-0">
+            <div class="type-headline font-bold text-white">Sign In to Sync</div>
+            <p class="text-[12.5px] leading-snug mt-0.5" style="color: var(--label-secondary);">Cloud backup, multi-device sync &amp; private Passkey security.</p>
+          </div>
+          <button type="button" onclick="openAccountModal()" class="solid-pill px-4 py-2 text-[13px] font-bold shrink-0" style="background-color: #0A84FF; color: #FFFFFF;">
+            Sign In
+          </button>
+        </div>
+      </div>
+
       <!-- Scrollable Highlights (Current-Week Actionable Cues Only) -->
       <div class="pt-6 pb-0.5 flex items-baseline justify-between">
         <h2 class="type-title-2 text-white">This Week</h2>
@@ -1954,11 +1993,11 @@
         </div>
       </div>
 
-      <!-- Widget 2: Quick-Start Presets -->
+      <!-- Widget 2: Quick Presets -->
       <div id="homeWidgetPresets" class="fitness-card p-5 space-y-3">
         <div class="flex items-center justify-between gap-2">
-          <span class="type-headline text-white">Quick-Start Presets</span>
-          <span class="type-caption" style="color: var(--label-secondary);">1-tap load</span>
+          <span class="type-headline text-white">Quick Presets</span>
+          <button type="button" onclick="switchTab('MENU'); openMenuSubpage('PRESETS');" class="type-caption font-semibold" style="color: #0A84FF;">Edit Presets ›</button>
         </div>
         <div id="homePresetsList" class="space-y-2"></div>
       </div>
@@ -1969,7 +2008,7 @@
           <span class="type-headline text-white">Fresh Muscles</span>
           <span id="homeFreshCount" class="type-caption font-semibold" style="color: var(--label-secondary);">Untrained this week</span>
         </div>
-        <div id="homeFreshMusclesRow" class="flex flex-wrap gap-1.5"></div>
+        <div id="homeFreshMusclesRow" class="space-y-3"></div>
       </div>
 
       <!-- Widget 4: PR / 1RM Spotlight (Links to Activity) -->
@@ -2172,6 +2211,18 @@
               </div>
             </div>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button type="button" onclick="openMenuSubpage('PLAN')" class="settings-row">
+            <div class="flex items-center gap-3">
+              <span class="settings-icon-badge">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><polygon points="12 2.5 14.9 8.4 21.5 9.3 16.7 13.9 17.8 20.5 12 17.4 6.2 20.5 7.3 13.9 2.5 9.3 9.1 8.4 12 2.5" fill="#FFD60A"/></svg>
+              </span>
+              <span class="type-headline text-white">Gains Pro &amp; Plan</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="type-subhead font-semibold" style="color: #0A84FF;">Free Plan</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
           </button>
         </div>
 
@@ -5361,6 +5412,15 @@
       releaseBodyScrollLockIfClear();
     }
 
+    function triggerSignInCardSweep() {
+      if (authSession && authSession.authenticated) return;
+      const card = document.getElementById('homeSignInBanner');
+      if (!card || card.classList.contains('hidden')) return;
+      card.classList.remove('is-sweeping');
+      void card.offsetWidth;
+      card.classList.add('is-sweeping');
+    }
+
     function playWelcomeSwoopIntro() {
       state.activeTab = 'SUMMARY';
       renderAll();
@@ -5368,29 +5428,38 @@
       if (!titleEl) return;
 
       document.body.classList.add('is-welcome-intro');
+      // Measure true natural width of the Welcome text so horizontal centering is exact
+      titleEl.style.transition = 'none';
+      titleEl.style.transform = 'none';
+      titleEl.style.width = 'max-content';
+      titleEl.style.maxWidth = 'calc(100vw - 32px)';
+      void titleEl.offsetWidth;
+
       const rect = titleEl.getBoundingClientRect();
-      const targetCenterY = window.innerHeight * 0.42;
+      const targetCenterY = window.innerHeight * 0.5;
       const targetCenterX = window.innerWidth * 0.5;
       const curCenterY = rect.top + rect.height / 2;
       const curCenterX = rect.left + rect.width / 2;
       const dy = targetCenterY - curCenterY;
       const dx = targetCenterX - curCenterX;
 
-      titleEl.style.transition = 'none';
       titleEl.style.transformOrigin = 'center center';
       titleEl.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(1.16)`;
       void titleEl.offsetWidth;
 
       setTimeout(() => {
-        titleEl.style.transition = 'transform 0.76s cubic-bezier(0.22, 1, 0.36, 1)';
+        titleEl.style.transition = 'transform 0.82s cubic-bezier(0.22, 1, 0.36, 1)';
         titleEl.style.transform = 'translate3d(0, 0, 0) scale(1)';
         document.body.classList.remove('is-welcome-intro');
         setTimeout(() => {
           titleEl.style.transition = '';
           titleEl.style.transform = '';
           titleEl.style.transformOrigin = '';
-        }, 780);
-      }, 950);
+          titleEl.style.width = '';
+          titleEl.style.maxWidth = '';
+          triggerSignInCardSweep();
+        }, 840);
+      }, 1900);
     }
 
     function skipOnboardingFlow() {
@@ -6473,7 +6542,7 @@
       const sessions = getSortedSessions();
       const targetPerWeek = Number(state.weeklyTarget) || 3;
 
-      const { startStr, endStr } = getStartAndEndOfCalendarWeek(state.activeDate || todayStr);
+      const { startStr, endStr } = getStartAndEndOfCalendarWeek(todayStr);
       const weekSessions = sessions.filter(s => s.date >= startStr && s.date <= endStr);
       const weekCount = weekSessions.length;
       const weeklyPct = Math.min(100, Math.round((weekCount / targetPerWeek) * 100));
@@ -6631,9 +6700,25 @@
           if (cntEl) cntEl.textContent = freshMuscles.length ? `${freshMuscles.length} ready to train` : 'All 12 hit this week!';
           if (rowEl) {
             if (freshMuscles.length) {
-              rowEl.innerHTML = freshMuscles.map(m =>
-                `<span class="text-[11px] font-semibold px-2.5 py-1 rounded-full" style="background: rgba(191,90,242,0.16); color: #E2B8FF; border: 0.5px solid rgba(191,90,242,0.32);">${esc(m)}</span>`
-              ).join('');
+              const freshSet = new Set(freshMuscles);
+              const bodyZones = [
+                { label: 'Upper Push', muscles: ['Pec', 'Shoulders', 'Tricep'], hex: '#64D2FF', rgb: '10, 132, 255' },
+                { label: 'Upper Pull', muscles: ['Lats', 'Traps', 'Bicep', 'Forearm'], hex: '#FFD60A', rgb: '255, 214, 10' },
+                { label: 'Lower Body', muscles: ['Quad', 'Hamstring', 'Glute', 'Calf'], hex: '#FF6B8A', rgb: '255, 55, 95' },
+                { label: 'Core', muscles: ['Core'], hex: '#30D158', rgb: '48, 209, 88' }
+              ];
+              rowEl.innerHTML = bodyZones.map(zone => {
+                const zoneFresh = zone.muscles.filter(m => freshSet.has(m));
+                if (!zoneFresh.length) return '';
+                return `
+                  <div class="space-y-1.5">
+                    <div class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--label-secondary);">${zone.label}</div>
+                    <div class="flex flex-wrap gap-1.5">
+                      ${zoneFresh.map(m => `<span class="text-[11px] font-semibold px-2.5 py-1 rounded-full" style="background: rgba(${zone.rgb}, 0.16); color: ${zone.hex}; border: 0.5px solid rgba(${zone.rgb}, 0.34);">${esc(m)}</span>`).join('')}
+                    </div>
+                  </div>
+                `;
+              }).join('');
             } else {
               rowEl.innerHTML = `<span class="type-caption font-semibold" style="color: #30D158;">Balanced week — every primary muscle trained ✓</span>`;
             }
@@ -7788,6 +7873,12 @@
     }
 
     const MENU_SUBPAGE_META = {
+      PLAN: {
+        title: 'Gains Pro & Plan',
+        color: '#FFD60A',
+        desc: 'Manage your Gains plan, upcoming Pro features, and App Store subscription settings.',
+        svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><polygon points="12 2.5 14.9 8.4 21.5 9.3 16.7 13.9 17.8 20.5 12 17.4 6.2 20.5 7.3 13.9 2.5 9.3 9.1 8.4 12 2.5" fill="#FFD60A"/></svg>`
+      },
       PROFILE: {
         title: 'Profile',
         color: '#0A84FF',
@@ -8552,6 +8643,40 @@
               `}
             </div>
             <p id="profileSubpageAuthNotice" class="hidden type-caption text-center" style="color: #64D2FF;"></p>
+          </div>
+        `;
+      } else if (section === 'PLAN') {
+        body.innerHTML = `
+          <div class="settings-group">
+            <div class="settings-row !cursor-default">
+              <span class="type-headline text-white">Current Plan</span>
+              <span class="type-subhead font-bold" style="color: #0A84FF;">Free</span>
+            </div>
+            <div class="settings-row !cursor-default">
+              <span class="type-headline text-white">Status</span>
+              <span class="type-subhead" style="color: var(--label-secondary);">All core features active</span>
+            </div>
+          </div>
+
+          <div class="fitness-card p-4 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="type-headline text-white font-bold">Gains Pro</span>
+              <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full" style="background: rgba(255, 214, 10, 0.16); color: #FFD60A;">Coming Soon</span>
+            </div>
+            <p class="type-footnote" style="color: var(--label-secondary);">Future upgrades and App Store subscription or lifetime unlock options will live right here:</p>
+            <ul class="space-y-2 text-[13.5px] text-white/85 pt-0.5">
+              <li class="flex items-center gap-2"><span style="color: #30D158;">✓</span> Private multi-device Cloud Sync &amp; Backup</li>
+              <li class="flex items-center gap-2"><span style="color: #30D158;">✓</span> Unlimited Saved Workout Presets</li>
+              <li class="flex items-center gap-2"><span style="color: #30D158;">✓</span> Full Activity &amp; 1RM Progression History</li>
+              <li class="flex items-center gap-2"><span style="color: #30D158;">✓</span> Per-Set Logging &amp; Apple Health Integration</li>
+            </ul>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-row !cursor-default">
+              <span class="type-subhead" style="color: var(--label-secondary);">Restore Purchases</span>
+              <span class="type-caption" style="color: var(--label-tertiary);">Available on iOS App Store</span>
+            </div>
           </div>
         `;
       } else if (section === 'GENERAL') {
@@ -9759,7 +9884,12 @@
       });
 
       renderTabBar();
-      if (state.activeTab === 'SUMMARY') renderSummaryView();
+      if (state.activeTab === 'SUMMARY') {
+        renderSummaryView();
+        if (!document.body.classList.contains('is-welcome-intro')) {
+          setTimeout(triggerSignInCardSweep, 120);
+        }
+      }
       else if (state.activeTab === 'LOG') renderLogView();
       else if (state.activeTab === 'ACTIVITY') renderActivityView();
       else if (state.activeTab === 'MENU') renderMenuView();
@@ -10273,6 +10403,10 @@
       activeMenuSubpage = null;
       maybeShowInitialOnboarding();
       renderAll();
+      const obElBoot = document.getElementById('onboardingBackdrop');
+      if (!obElBoot || !obElBoot.classList.contains('is-open')) {
+        playWelcomeSwoopIntro();
+      }
       syncWithCloudOnBoot();
     });
   </script>
