@@ -687,8 +687,8 @@
       top: 0;
       left: 0;
       right: 0;
-      z-index: 30;
-      padding-top: calc(env(safe-area-inset-top, 12px) + 8px);
+      z-index: 35;
+      padding-top: calc(env(safe-area-inset-top, 12px) + 14px);
       padding-bottom: 10px;
       background: transparent;
       border-bottom: 0.5px solid transparent;
@@ -748,34 +748,27 @@
       z-index: 2;
     }
 
-    /* Seamless Sticky Log Date Header */
+    /* Immovable Fixed Log Date + Slider Header */
     .log-fixed-header {
-      position: sticky;
+      position: fixed;
       top: 0;
-      z-index: 26;
-      margin-left: -16px;
-      margin-right: -16px;
-      padding-left: 16px;
-      padding-right: 16px;
-      padding-top: calc(env(safe-area-inset-top, 12px) + 56px);
-      padding-bottom: 22px;
-      background: #000000;
-      pointer-events: none;
-    }
-
-    .log-fixed-header::before {
-      content: "";
-      position: absolute;
       left: 0;
       right: 0;
-      bottom: 100%;
-      height: 160px;
+      z-index: 28;
+      padding-top: calc(env(safe-area-inset-top, 12px) + 46px);
+      padding-bottom: 10px;
       background: #000000;
-      pointer-events: none;
+      border-bottom: 0.5px solid rgba(255, 255, 255, 0.06);
+      pointer-events: auto;
     }
 
-    .log-fixed-header > * {
-      pointer-events: auto;
+    .log-fixed-header-inner {
+      width: 100%;
+      max-width: 32rem;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 16px;
+      padding-right: 16px;
     }
 
     /* 1:1 Finger-Tracking Horizontal 3-Panel Carousel Stages */
@@ -921,7 +914,7 @@
       margin-right: -16px;
       padding-left: 16px;
       padding-right: 16px;
-      box-shadow: -14px 0 34px rgba(0, 0, 0, 0.72);
+      box-shadow: none;
     }
 
     .menu-subpage-hero-card {
@@ -1716,37 +1709,40 @@
     <!-- =====================================================================
          VIEW 2: LOG (COMBINED DAILY LOG + WEEK STRIP + EXPANDABLE CALENDAR)
          ===================================================================== -->
-    <section id="logView" class="hidden space-y-4">
-      <div class="log-fixed-header !pb-3 space-y-3">
-        <div class="flex items-end justify-between gap-3">
-          <div onclick="jumpToToday()" class="cursor-pointer select-none min-w-0">
-            <div id="logDayOfWeekLabel" class="text-[12px] font-bold tracking-[0.14em] uppercase mb-0.5" style="color: #0A84FF;">TUESDAY</div>
-            <div class="flex items-center gap-2">
-              <h1 id="logMonthDayTitle" class="collapsible-hero-title text-white uppercase">NOV 17</h1>
-              <span id="logTodayChip" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: rgba(255,255,255,0.12); color: var(--label-secondary);">Today</span>
+    <section id="logView" class="hidden">
+      <div id="logFixedHeader" class="log-fixed-header">
+        <div class="log-fixed-header-inner space-y-3">
+          <div class="flex items-end justify-between gap-3">
+            <div onclick="jumpToToday()" class="cursor-pointer select-none min-w-0">
+              <div id="logDayOfWeekLabel" class="text-[12px] font-bold tracking-[0.14em] uppercase mb-0.5" style="color: #0A84FF;">TUESDAY</div>
+              <div class="flex items-center gap-2">
+                <h1 id="logMonthDayTitle" class="collapsible-hero-title text-white uppercase">NOV 17</h1>
+                <span id="logTodayChip" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: rgba(255,255,255,0.12); color: var(--label-secondary);">Today</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0 pb-1">
+              <button type="button" id="logCalendarToggleBtn" onclick="toggleLogCalendarDrawer()" aria-label="Toggle Month Calendar" aria-expanded="false" class="glass glass--clear glass--circle-36 glass-interactive">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </button>
+              <button type="button" id="logNavPrevBtn" onclick="handleLogHeaderNav(-1)" aria-label="Previous Day" class="glass glass--clear glass--circle-36 glass-interactive">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button type="button" id="logNavNextBtn" onclick="handleLogHeaderNav(1)" aria-label="Next Day" class="glass glass--clear glass--circle-36 glass-interactive">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
             </div>
           </div>
-          <div class="flex items-center gap-2 shrink-0 pb-1">
-            <button type="button" id="logCalendarToggleBtn" onclick="toggleLogCalendarDrawer()" aria-label="Toggle Month Calendar" aria-expanded="false" class="glass glass--clear glass--circle-36 glass-interactive">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </button>
-            <button type="button" id="logNavPrevBtn" onclick="handleLogHeaderNav(-1)" aria-label="Previous Day" class="glass glass--clear glass--circle-36 glass-interactive">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <button type="button" id="logNavNextBtn" onclick="handleLogHeaderNav(1)" aria-label="Next Day" class="glass glass--clear glass--circle-36 glass-interactive">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          </div>
-        </div>
 
-        <!-- Smooth ±14-Day Horizontal Slider (Folds away smoothly when Month Calendar opens) -->
-        <div id="logWeekStripWrap" class="log-week-strip-wrap">
-          <div class="log-week-strip-inner">
-            <div id="logWeekStrip" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1" style="-webkit-overflow-scrolling: touch; touch-action: pan-x; overscroll-behavior-x: contain;"></div>
+          <!-- Smooth ±14-Day Horizontal Slider (Folds away smoothly when Month Calendar opens) -->
+          <div id="logWeekStripWrap" class="log-week-strip-wrap">
+            <div class="log-week-strip-inner">
+              <div id="logWeekStrip" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1" style="-webkit-overflow-scrolling: touch; touch-action: pan-x; overscroll-behavior-x: contain;"></div>
+            </div>
           </div>
         </div>
       </div>
 
+      <div id="logScrollBody" class="space-y-4" style="padding-top: calc(env(safe-area-inset-top, 12px) + 188px);">
       <!-- Smooth Spring-Accordion Month Calendar Drawer -->
       <div id="logCalendarDrawer" class="log-calendar-drawer" aria-hidden="true">
         <div class="log-calendar-drawer-inner">
@@ -1778,6 +1774,7 @@
 
           <div id="logNextDayPane" class="carousel-pane carousel-pane-next space-y-4" aria-hidden="true"></div>
         </div>
+      </div>
       </div>
     </section>
 
@@ -2004,7 +2001,7 @@
 
       <!-- Push-In Subpage Container -->
       <div id="menuSubpageContainer" class="hidden space-y-4">
-        <div id="menuSubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 60px);"></div>
+        <div id="menuSubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 68px);"></div>
         <div id="menuSubpageBody" class="space-y-4"></div>
       </div>
     </section>
@@ -5237,6 +5234,26 @@
       return Math.ceil((firstDow + daysInMonth) / 7);
     }
 
+    let logHeaderResizeBound = false;
+
+    function syncLogFixedHeaderSpacer() {
+      const hdr = document.getElementById('logFixedHeader');
+      const bodyWrap = document.getElementById('logScrollBody');
+      if (!hdr || !bodyWrap) return;
+      const h = hdr.offsetHeight;
+      if (h > 40) {
+        bodyWrap.style.paddingTop = `${h + 10}px`;
+      }
+      if (!logHeaderResizeBound && typeof ResizeObserver !== 'undefined') {
+        logHeaderResizeBound = true;
+        const ro = new ResizeObserver(() => {
+          const curH = hdr.offsetHeight;
+          if (curH > 40) bodyWrap.style.paddingTop = `${curH + 10}px`;
+        });
+        ro.observe(hdr);
+      }
+    }
+
     function updateLogEmptyScrollLock() {
       const isLog = state.activeTab === 'LOG';
       const dateStr = state.activeDate || getTodayDateStr();
@@ -5245,6 +5262,7 @@
       document.body.classList.remove('is-log-empty-locked');
       document.body.classList.toggle('is-log-empty', isLog && !hasEx);
       document.body.classList.toggle('is-editing-completed', isLog && isEditingCompletedWorkout);
+      if (isLog) requestAnimationFrame(syncLogFixedHeaderSpacer);
     }
 
     let logStripAnchorDate = null;
@@ -5875,7 +5893,7 @@
         (activeMenuSubpage === 'LIBRARY' && librarySubViewMode !== 'LIST');
 
       if (!isNested) {
-        return rootEl ? `<div class="space-y-4 pt-1">${rootEl.innerHTML}</div>` : '';
+        return rootEl ? `<div class="space-y-5">${rootEl.innerHTML}</div>` : '';
       }
 
       // Render parent subpage into a detached snapshot without mutating live DOM
@@ -5915,7 +5933,7 @@
 
       const meta = MENU_SUBPAGE_META[activeMenuSubpage] || {};
       const parentBarHtml = `
-        <div class="fixed top-0 left-0 right-0 z-10 pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 12px) + 6px);">
+        <div class="fixed top-0 left-0 right-0 z-10 pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 12px) + 14px);">
           <div class="max-w-lg mx-auto px-4 min-h-[44px] flex items-center justify-between gap-3">
             <span class="glass glass--clear glass--circle-44 inline-flex items-center justify-center">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -5929,7 +5947,7 @@
       return `
         ${parentBarHtml}
         <div class="space-y-4">
-          <div style="padding-top: calc(env(safe-area-inset-top, 12px) + 60px);">${parentHeroHtml}</div>
+          <div style="padding-top: calc(env(safe-area-inset-top, 12px) + 68px);">${parentHeroHtml}</div>
           <div class="space-y-4">${parentBodyHtml}</div>
         </div>
       `;
@@ -7657,51 +7675,65 @@
 
         return `
           <article class="fitness-card p-4 space-y-3" style="${oneRmCardStyle}">
-            <div class="flex items-start justify-between gap-2">
-              <div class="min-w-0">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  ${isOneRepMax ? `<span class="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full" style="background: linear-gradient(90deg, rgba(255,214,10,0.28), rgba(255,159,10,0.28)); color: #FFD60A; border: 0.5px solid rgba(255,214,10,0.55);">1RM ★</span>` : ''}
-                  <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: rgba(${dirColor.rgb}, 0.20); color: ${dirColor.hex};">${esc(dir)}</span>
-                  ${muscles.map(m => `<span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: rgba(255,255,255,0.08); color: rgba(235,235,245,0.88); border: 0.5px solid rgba(255,255,255,0.12);">${esc(m)}</span>`).join('')}
-                  ${ex.equipment ? `<span class="text-[10px] font-medium px-2 py-0.5 rounded-full" style="background: rgba(255,255,255,0.06); color: var(--label-secondary);">${esc(ex.equipment)}</span>` : ''}
-                </div>
-                <h3 class="type-headline text-white mt-1.5">${esc(ex.name)}</h3>
-              </div>
-              <div class="flex items-center gap-2 shrink-0">
-                ${lastNoteBubbleHtml}
-                ${showLastBtn ? `
-                  <button type="button" onclick="copyPreviousLog('${esc(ex.id)}')" class="glass glass--clear glass--pill glass-interactive px-4 py-2 text-[13px] font-semibold text-white shrink-0">
-                    Last: ${esc(prevSummary)}
+            <!-- Block 1: Full-Width Title + Compact Icon Controls -->
+            <div class="space-y-2">
+              <div class="flex items-start justify-between gap-2.5">
+                <h3 class="text-[17px] leading-[22px] font-bold text-white tracking-tight min-w-0 pt-0.5">${esc(ex.name)}</h3>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  ${lastNoteBubbleHtml}
+                  <button type="button" onclick="openRemoveExerciseConfirm('${esc(ex.id)}')" aria-label="Remove ${esc(ex.name)}" class="glass glass--clear glass--circle-36 glass-interactive shrink-0">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
-                ` : ''}
+                </div>
+              </div>
 
-                <button type="button" onclick="openRemoveExerciseConfirm('${esc(ex.id)}')" aria-label="Remove ${esc(ex.name)}" class="glass glass--clear glass--circle-36 glass-interactive shrink-0">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
+              <!-- Block 2: Full-Width Metadata Chips -->
+              <div class="flex items-center gap-1.5 flex-wrap">
+                ${isOneRepMax ? `<span class="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full" style="background: linear-gradient(90deg, rgba(255,214,10,0.28), rgba(255,159,10,0.28)); color: #FFD60A; border: 0.5px solid rgba(255,214,10,0.55);">1RM ★</span>` : ''}
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: rgba(${dirColor.rgb}, 0.20); color: ${dirColor.hex};">${esc(dir)}</span>
+                ${muscles.map(m => `<span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: rgba(255,255,255,0.08); color: rgba(235,235,245,0.88);">${esc(m)}</span>`).join('')}
+                ${ex.equipment ? `<span class="text-[10px] font-medium px-2 py-0.5 rounded-full" style="background: rgba(255,255,255,0.05); color: var(--label-secondary);">${esc(ex.equipment)}</span>` : ''}
               </div>
             </div>
 
-            <div>
+            <!-- Block 3: Dedicated Last-Session Quick-Fill Strip -->
+            ${showLastBtn ? `
+              <button
+                type="button"
+                onclick="copyPreviousLog('${esc(ex.id)}')"
+                class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-left transition-opacity active:opacity-75"
+                style="background: rgba(10, 132, 255, 0.10); border: 1px solid rgba(10, 132, 255, 0.24);"
+              >
+                <span class="flex items-center gap-1.5 min-w-0 text-[12.5px] font-semibold text-white/90 truncate">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+                  <span class="truncate">Last: ${esc(prevSummary)}</span>
+                </span>
+                <span class="text-[11px] font-bold uppercase tracking-wider shrink-0" style="color: #0A84FF;">Fill</span>
+              </button>
+            ` : ''}
+
+            <!-- Block 4: Setup & Logging Metrics -->
+            <div class="space-y-2.5 pt-0.5">
               <input
                 type="text"
                 value="${esc(ex.setting || '')}"
                 oninput="updateSetting('${esc(ex.id)}', this.value)"
                 placeholder="Setup / attachment..."
-                class="fitness-field !py-2"
+                class="fitness-field !py-2 !text-[14px]"
               />
+              ${metricsHtml}
             </div>
 
-            ${metricsHtml}
-
-            <div class="space-y-2">
+            <!-- Block 5: Notes -->
+            <div class="space-y-2 pt-0.5">
               <textarea
-                rows="2"
+                rows="1"
                 oninput="updateNotes('${esc(ex.id)}', this.value, this)"
                 placeholder="Session notes..."
-                class="fitness-field auto-grow-notes !py-2"
+                class="fitness-field auto-grow-notes !py-2 !text-[14px]"
               >${esc(log.notes || '')}</textarea>
               <div class="flex items-start gap-2 rounded-2xl px-3 py-2" style="background: rgba(255, 159, 10, 0.08); border: 1px solid rgba(255, 159, 10, 0.22);">
-                <span class="mt-1" style="color: #FF9F0A;">${cueIconSvg}</span>
+                <span class="mt-0.5" style="color: #FF9F0A;">${cueIconSvg}</span>
                 <textarea
                   rows="1"
                   oninput="updateNextNotes('${esc(ex.id)}', this.value, this)"
