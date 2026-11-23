@@ -746,10 +746,7 @@
       border-bottom: none;
     }
 
-    /* Smooth Calendar Fit for Empty Log State (never locks document scroll) */
-    body.is-log-empty main.app-stage {
-      padding-bottom: 0 !important;
-    }
+    /* Smooth Calendar Fit for Empty Log State (never alters main.app-stage scroll clearance) */
 
     .log-empty-state {
       min-height: 38dvh;
@@ -1038,7 +1035,7 @@
       padding: 0;
       min-height: 100%;
       width: 100%;
-      overflow-x: hidden;
+      overflow-x: clip;
       background: #000000 !important;
       background-color: #000000 !important;
     }
@@ -1056,7 +1053,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
       -webkit-font-smoothing: antialiased;
       -webkit-overflow-scrolling: touch;
-      overflow-x: hidden;
+      overflow-x: clip;
       overscroll-behavior-x: none;
     }
 
@@ -1076,6 +1073,7 @@
     }
 
     .app-stage {
+      padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 128px);
       transition:
         transform 0.42s cubic-bezier(0.32, 0.72, 0, 1),
         border-radius 0.42s cubic-bezier(0.32, 0.72, 0, 1),
@@ -8827,6 +8825,7 @@
       else if (state.activeTab === 'ACTIVITY') renderActivityView();
       else if (state.activeTab === 'MENU') renderMenuView();
 
+      updateLogEmptyScrollLock();
       updateCollapsibleHeaderOnScroll();
     }
 
