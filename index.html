@@ -664,21 +664,33 @@
     .apple-sheet-close-btn {
       width: 44px;
       height: 44px;
+      min-height: 44px;
       border-radius: 9999px;
-      background: #252528;
-      border: 0.5px solid rgba(255, 255, 255, 0.12);
-      color: rgba(235, 235, 245, 0.82);
+      background: radial-gradient(
+        ellipse 92% 84% at 50% 50%,
+        rgba(28, 28, 30, 0.72) 0%,
+        rgba(34, 34, 38, 0.64) 68%,
+        rgba(72, 72, 78, 0.56) 100%
+      );
+      -webkit-backdrop-filter: blur(1.2px) saturate(240%) brightness(1.14);
+      backdrop-filter: blur(1.2px) saturate(240%) brightness(1.14);
+      box-shadow:
+        0 0 0 0.25px rgba(255, 255, 255, 0.36),
+        inset 0 1px 1px rgba(255, 255, 255, 0.38),
+        inset 0 -1px 1px rgba(255, 255, 255, 0.22),
+        inset 0 0 16px rgba(255, 255, 255, 0.05);
+      border: none;
+      color: #FFFFFF;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       flex-shrink: 0;
-      transition: transform 0.18s var(--motion-ease), background-color 0.18s ease;
+      transition: transform 0.18s var(--motion-ease), background 0.18s ease;
     }
 
     .apple-sheet-close-btn:active {
-      transform: scale(0.93);
-      background: #323236;
+      transform: scale(1.015);
     }
 
     .liquid-sheet .settings-group {
@@ -1315,6 +1327,28 @@
 
     input[type="date"] {
       color-scheme: dark;
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    /* Post-Onboarding Home Welcome Swoop Intro */
+    body.is-welcome-intro #summaryView > :not(#summaryHeroHeader),
+    body.is-welcome-intro #homeProfileBtn,
+    body.is-welcome-intro #floatingTabBar {
+      filter: blur(16px);
+      opacity: 0.34;
+      pointer-events: none;
+      transition: filter 0.72s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.72s ease;
+    }
+
+    #summaryView > :not(#summaryHeroHeader),
+    #homeProfileBtn {
+      transition: filter 0.72s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.72s ease;
     }
 
     .fitness-field:focus {
@@ -1823,7 +1857,7 @@
           aria-label="Account and Sign In"
           class="glass glass--clear glass--circle-44 glass-interactive relative shrink-0"
         >
-          <span id="homeProfileInitial" class="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[14px] font-extrabold text-white" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">G</span>
+          <span id="homeProfileInitial" class="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[14px] font-extrabold text-white" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">P</span>
           <span id="homeProfileAuthDot" class="hidden absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full" style="background-color: #30D158; box-shadow: 0 0 0 2px #000000;"></span>
         </button>
       </div>
@@ -1831,7 +1865,7 @@
       <!-- Signed-Out Account Benefits Card (auto-hidden once signed in) -->
       <div id="homeSignInBanner" class="hidden fitness-card p-4 space-y-3.5 relative z-10" style="background: #1C1C1E; border: 0.5px solid rgba(10, 132, 255, 0.30);">
         <div class="flex items-center justify-between gap-3">
-          <div class="type-headline font-bold text-white">Back Up Your Workouts</div>
+          <div class="type-headline font-bold text-white">Sign In to Sync Your Workouts</div>
           <button type="button" onclick="openAccountModal()" class="solid-pill px-4 py-1.5 text-[13px] font-bold shrink-0" style="background-color: #0A84FF; color: #FFFFFF;">
             Sign In
           </button>
@@ -2131,7 +2165,7 @@
         <div class="settings-group">
           <button type="button" onclick="openMenuSubpage('PROFILE')" class="settings-row !py-3.5">
             <div class="flex items-center gap-3.5 min-w-0">
-              <span id="menuRowProfileInitial" class="w-11 h-11 rounded-full flex items-center justify-center text-[18px] font-extrabold text-white shrink-0" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">G</span>
+              <span id="menuRowProfileInitial" class="w-11 h-11 rounded-full flex items-center justify-center text-[18px] font-extrabold text-white shrink-0" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">P</span>
               <div class="min-w-0">
                 <div id="menuRowProfileName" class="type-headline text-white font-bold truncate">Your Profile</div>
                 <div id="menuRowProfileSub" class="type-caption truncate" style="color: var(--label-secondary);">Profile, Email &amp; Passkey Sign-In</div>
@@ -2141,29 +2175,20 @@
           </button>
         </div>
 
-        <!-- Inline Weekly Target Card -->
-        <div class="fitness-card p-4 space-y-3.5 overflow-hidden">
-          <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3 min-w-0">
-              <span class="settings-icon-badge shrink-0">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9.5" stroke="#FF375F" stroke-width="2.4"/><circle cx="12" cy="12" r="5.5" stroke="#FFFFFF" stroke-width="2.2"/><circle cx="12" cy="12" r="2.5" fill="#30D158"/></svg>
-              </span>
-              <div class="min-w-0">
-                <div class="type-headline text-white font-bold">Weekly Target</div>
-                <div id="menuInlineGoalSub" class="type-caption truncate" style="color: var(--label-secondary);">3 workouts per week</div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2.5 shrink-0">
-              <button type="button" onclick="adjustWeeklyGoal(-1)" aria-label="Decrease Weekly Target" class="glass glass--clear glass--circle-36 glass-interactive text-lg font-bold text-white">−</button>
-              <span id="menuInlineGoalVal" class="fitness-metric text-[24px] min-w-[26px] text-center" style="color: #30D158;">3</span>
-              <button type="button" onclick="adjustWeeklyGoal(1)" aria-label="Increase Weekly Target" class="glass glass--clear glass--circle-36 glass-interactive text-lg font-bold text-white">+</button>
-            </div>
-          </div>
-          <div id="menuInlineGoalDots" class="grid grid-cols-7 gap-1.5 pt-0.5" aria-hidden="true"></div>
-        </div>
-
         <!-- Group 1: Training & Equipment -->
         <div class="settings-group">
+          <button type="button" onclick="openMenuSubpage('GOAL')" class="settings-row">
+            <div class="flex items-center gap-3">
+              <span class="settings-icon-badge">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9.5" stroke="#FF375F" stroke-width="2.4"/><circle cx="12" cy="12" r="5.5" stroke="#FFFFFF" stroke-width="2.2"/><circle cx="12" cy="12" r="2.5" fill="#30D158"/></svg>
+              </span>
+              <span class="type-headline text-white">Training &amp; Goals</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span id="menuRowGoalVal" class="type-subhead" style="color: var(--label-secondary);">3 / wk · lbs</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </button>
 
           <button type="button" onclick="openMenuSubpage('LIBRARY')" class="settings-row">
             <div class="flex items-center gap-3">
@@ -2449,7 +2474,7 @@
     <div class="ios-alert-dialog text-left" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
       <div class="apple-sheet-header !pb-3.5">
         <div class="flex items-center gap-3 min-w-0">
-          <div id="accountModalAvatar" class="w-11 h-11 rounded-full flex items-center justify-center text-[17px] font-extrabold text-white shrink-0" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">G</div>
+          <div id="accountModalAvatar" class="w-11 h-11 rounded-full flex items-center justify-center text-[17px] font-extrabold text-white shrink-0" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">P</div>
           <div class="min-w-0">
             <h3 id="accountModalTitle" class="type-headline text-white font-bold truncate">Sign in to Gains</h3>
             <p id="accountModalSubtitle" class="type-caption truncate flex items-center gap-1.5" style="color: var(--label-secondary);">Sync your workouts privately</p>
@@ -2872,7 +2897,7 @@
       <div class="onboarding-slide">
         <div class="max-w-md w-full mx-auto flex-1 flex flex-col">
           <div class="flex items-center justify-between min-h-[44px]">
-            <button type="button" onclick="goToOnboardingStep(2)" aria-label="Back" class="glass glass--clear glass--circle-44 glass-interactive">
+            <button type="button" onclick="goToOnboardingBackFromTraining()" aria-label="Back" class="glass glass--clear glass--circle-44 glass-interactive">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
             <button type="button" onclick="skipOnboardingFlow()" class="text-[15px] font-semibold px-2 py-1" style="color: rgba(235,235,245,0.58);">Skip</button>
@@ -3763,7 +3788,7 @@
         if (state.activeTab !== 'MENU' || !activeMenuSubpage || e.touches.length !== 1) return;
         if (document.body.classList.contains('has-sheet-open')) return;
         const touch = e.touches[0];
-        if (touch.clientX > 44) return;
+        if (touch.clientX > 72) return;
         edgeStartX = touch.clientX;
         edgeStartY = touch.clientY;
         edgeDx = 0;
@@ -3780,10 +3805,11 @@
             edgeTracking = false;
             return;
           }
-          if (dx < 8) return;
+          if (dx < 6) return;
           edgeActive = true;
           prepareMenuSwipeUnderlay();
         }
+        if (e.cancelable) e.preventDefault();
         edgeDx = Math.max(0, dx);
         const w = window.innerWidth || 390;
         const progress = Math.min(1, edgeDx / w);
@@ -3797,7 +3823,62 @@
         if (hdrEl) hdrEl.style.setProperty('--hdr-backdrop-opacity', (1 - progress).toFixed(3));
         if (underInner) underInner.style.transform = `translate3d(${(-28 * (1 - progress)).toFixed(2)}%, 0, 0)`;
         if (underScrim) underScrim.style.opacity = `${(0.46 * (1 - progress)).toFixed(3)}`;
-      }, { passive: true });
+      }, { passive: false });
+
+      // 1:1 Finger-Tracking Swipe-Back inside Onboarding
+      let obSwipeStartX = 0, obSwipeStartY = 0, obSwipeDx = 0, obSwipeTrack = false, obSwipeActive = false;
+      const obEl = document.getElementById('onboardingBackdrop');
+      if (obEl) {
+        obEl.addEventListener('touchstart', (e) => {
+          if (!obEl.classList.contains('is-open') || obStep <= 0 || e.touches.length !== 1) return;
+          if (e.touches[0].clientX > 72) return;
+          obSwipeStartX = e.touches[0].clientX;
+          obSwipeStartY = e.touches[0].clientY;
+          obSwipeDx = 0;
+          obSwipeTrack = true;
+          obSwipeActive = false;
+        }, { passive: true });
+
+        obEl.addEventListener('touchmove', (e) => {
+          if (!obSwipeTrack || e.touches.length !== 1) return;
+          const dx = e.touches[0].clientX - obSwipeStartX;
+          const dy = e.touches[0].clientY - obSwipeStartY;
+          if (!obSwipeActive) {
+            if (Math.abs(dy) > Math.abs(dx) && dx < 14) { obSwipeTrack = false; return; }
+            if (dx < 6) return;
+            obSwipeActive = true;
+          }
+          if (e.cancelable) e.preventDefault();
+          obSwipeDx = Math.max(0, dx);
+          const track = document.getElementById('onboardingTrack');
+          const w = window.innerWidth || 390;
+          const targetPrev = getOnboardingPrevStep(obStep);
+          const curPct = -obStep * 20;
+          const prevPct = -targetPrev * 20;
+          const frac = Math.min(1, obSwipeDx / w);
+          if (track) {
+            track.style.transition = 'none';
+            track.style.transform = `translate3d(${(curPct + (prevPct - curPct) * frac).toFixed(3)}%, 0, 0)`;
+          }
+        }, { passive: false });
+
+        const finishObSwipe = () => {
+          if (!obSwipeTrack) return;
+          obSwipeTrack = false;
+          if (!obSwipeActive) return;
+          obSwipeActive = false;
+          const track = document.getElementById('onboardingTrack');
+          if (track) track.style.transition = '';
+          const w = window.innerWidth || 390;
+          if (obSwipeDx >= Math.min(95, w * 0.25)) {
+            goToOnboardingStep(getOnboardingPrevStep(obStep));
+          } else {
+            goToOnboardingStep(obStep);
+          }
+        };
+        obEl.addEventListener('touchend', finishObSwipe, { passive: true });
+        obEl.addEventListener('touchcancel', finishObSwipe, { passive: true });
+      }
 
       const finishEdgeBack = () => {
         if (!edgeTracking) return;
@@ -4999,7 +5080,7 @@
         const profInitEl = document.getElementById('menuRowProfileInitial');
         const clean = state.userName || 'Your Profile';
         if (profNameEl) profNameEl.textContent = clean;
-        if (profInitEl) profInitEl.textContent = clean.charAt(0).toUpperCase();
+        if (profInitEl) profInitEl.textContent = getProfileAvatarLetter();
       }
       saveState();
     }
@@ -5009,6 +5090,8 @@
       state.userProfile[key] = val;
       saveState();
       if (activeMenuSubpage === 'PROFILE') renderMenuSubpageContent('PROFILE');
+      else if (activeMenuSubpage === 'GOAL') renderMenuSubpageContent('GOAL');
+      renderMenuView();
     }
 
     function goToOnboardingStep(stepIdx) {
@@ -5028,9 +5111,28 @@
       goToOnboardingStep(2);
     }
 
+    function getProfileAvatarLetter() {
+      const pFirst = (state.userProfile && state.userProfile.firstName || '').trim();
+      const uName = (state.userName || '').trim();
+      const aName = (authSession && authSession.name || '').trim();
+      const chosen = pFirst || uName || aName;
+      return chosen ? chosen.charAt(0).toUpperCase() : 'P';
+    }
+
+    function getOnboardingPrevStep(step) {
+      if (step === 1 || step === 2) return 0;
+      if (step === 3) return obIntent === 'create' ? 2 : 0;
+      if (step === 4) return 3;
+      return 0;
+    }
+
+    function goToOnboardingBackFromTraining() {
+      goToOnboardingStep(getOnboardingPrevStep(3));
+    }
+
     function startOnboardingWithoutAccount() {
       obIntent = 'guest';
-      goToOnboardingStep(2);
+      goToOnboardingStep(3);
     }
 
     function handleOnboardingTrainingNext() {
@@ -5210,7 +5312,7 @@
       obDraft = {
         firstName: p.firstName || state.userName || '',
         lastName: p.lastName || '',
-        dob: p.dob || '',
+        dob: p.dob || '2000-01-01',
         gender: p.gender || '',
         goal: p.goal || 'Build Muscle',
         level: p.level || 'Intermediate',
@@ -5259,17 +5361,49 @@
       releaseBodyScrollLockIfClear();
     }
 
+    function playWelcomeSwoopIntro() {
+      state.activeTab = 'SUMMARY';
+      renderAll();
+      const titleEl = document.getElementById('welcomeHeroTitle');
+      if (!titleEl) return;
+
+      document.body.classList.add('is-welcome-intro');
+      const rect = titleEl.getBoundingClientRect();
+      const targetCenterY = window.innerHeight * 0.42;
+      const targetCenterX = window.innerWidth * 0.5;
+      const curCenterY = rect.top + rect.height / 2;
+      const curCenterX = rect.left + rect.width / 2;
+      const dy = targetCenterY - curCenterY;
+      const dx = targetCenterX - curCenterX;
+
+      titleEl.style.transition = 'none';
+      titleEl.style.transformOrigin = 'center center';
+      titleEl.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(1.16)`;
+      void titleEl.offsetWidth;
+
+      setTimeout(() => {
+        titleEl.style.transition = 'transform 0.76s cubic-bezier(0.22, 1, 0.36, 1)';
+        titleEl.style.transform = 'translate3d(0, 0, 0) scale(1)';
+        document.body.classList.remove('is-welcome-intro');
+        setTimeout(() => {
+          titleEl.style.transition = '';
+          titleEl.style.transform = '';
+          titleEl.style.transformOrigin = '';
+        }, 780);
+      }, 950);
+    }
+
     function skipOnboardingFlow() {
       state.onboardingCompleted = true;
       saveState();
       closeOnboardingOverlay();
-      renderAll();
+      playWelcomeSwoopIntro();
     }
 
     function completeOnboardingSetup() {
       applyOnboardingDraftToState();
       closeOnboardingOverlay();
-      renderAll();
+      playWelcomeSwoopIntro();
     }
 
     async function signOutNativeAuth() {
@@ -6237,7 +6371,7 @@
     function renderAccountModalBody() {
       const isAuthed = Boolean(authSession.authenticated && authSession.email);
       const cleanName = (state.userName || '').trim() || (authSession.name || '').trim() || (isAuthed ? authSession.email.split('@')[0] : 'Sign in to Gains');
-      const initial = (isAuthed ? cleanName : (state.userName || 'G')).trim().charAt(0).toUpperCase() || 'G';
+      const initial = getProfileAvatarLetter();
       const av = document.getElementById('accountModalAvatar');
       const title = document.getElementById('accountModalTitle');
       const sub = document.getElementById('accountModalSubtitle');
@@ -6322,7 +6456,7 @@
       const prefixEl = document.getElementById('welcomeGreetingPrefix');
       const nameEl = document.getElementById('welcomeUserNameSpan');
       const profileInit = document.getElementById('homeProfileInitial');
-      if (profileInit) profileInit.textContent = (cleanName || 'G').charAt(0).toUpperCase();
+      if (profileInit) profileInit.textContent = getProfileAvatarLetter();
       if (prefixEl && nameEl) {
         if (cleanName) {
           prefixEl.textContent = 'Welcome,';
@@ -7296,24 +7430,16 @@
       const profNameEl = document.getElementById('menuRowProfileName');
       const profInitEl = document.getElementById('menuRowProfileInitial');
       if (profNameEl) profNameEl.textContent = cleanName;
-      if (profInitEl) profInitEl.textContent = cleanName.charAt(0).toUpperCase();
+      if (profInitEl) profInitEl.textContent = getProfileAvatarLetter();
 
       const goalTarget = state.weeklyTarget || 3;
-      const inlineGoalVal = document.getElementById('menuInlineGoalVal');
-      const inlineGoalSub = document.getElementById('menuInlineGoalSub');
-      const inlineGoalDots = document.getElementById('menuInlineGoalDots');
+      const unitLabel = (state.userProfile && state.userProfile.unit === 'kg') ? 'kg' : 'lbs';
+      const goalValEl = document.getElementById('menuRowGoalVal');
       const typesValEl = document.getElementById('menuRowTypesVal');
       const libValEl = document.getElementById('menuRowLibraryVal');
       const equipValEl = document.getElementById('menuRowEquipVal');
       const widgetsValEl = document.getElementById('menuRowWidgetsVal');
-      if (inlineGoalVal) inlineGoalVal.textContent = String(goalTarget);
-      if (inlineGoalSub) inlineGoalSub.textContent = `${goalTarget} workout${goalTarget === 1 ? '' : 's'} per week`;
-      if (inlineGoalDots) {
-        inlineGoalDots.innerHTML = Array.from({ length: 7 }, (_, i) => {
-          const active = i < goalTarget;
-          return `<span class="h-1.5 rounded-full transition-all duration-200" style="background: ${active ? '#30D158' : 'rgba(255,255,255,0.12)'};"></span>`;
-        }).join('');
-      }
+      if (goalValEl) goalValEl.textContent = `${goalTarget} / wk · ${unitLabel}`;
       if (typesValEl) typesValEl.textContent = `${(state.savedPresets || []).length} Presets`;
       if (libValEl) libValEl.textContent = `${(state.exerciseLibrary || []).length}`;
       if (equipValEl) {
@@ -7669,9 +7795,9 @@
         svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="4.2" fill="#64D2FF"/><path d="M4.5 20c0-3.8 3.4-6.2 7.5-6.2s7.5 2.4 7.5 6.2" fill="#0A84FF"/></svg>`
       },
       GOAL: {
-        title: 'Weekly Target',
-        color: '#55B318',
-        desc: 'Set how many workouts per week you want to complete. Your Home progress bar adapts automatically.',
+        title: 'Training & Goals',
+        color: '#0A84FF',
+        desc: 'Configure your weekly workout target, primary goal, experience level, and preferred weight units.',
         svg: `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9.5" stroke="#FF375F" stroke-width="2.4"/><circle cx="12" cy="12" r="5.5" stroke="#FFFFFF" stroke-width="2.2"/><circle cx="12" cy="12" r="2.5" fill="#30D158"/></svg>`
       },
       PRESETS: {
@@ -7734,16 +7860,50 @@
       `;
 
       if (section === 'GOAL') {
+        const prof = state.userProfile || {};
+        const goalTarget = state.weeklyTarget || 3;
+        const goalOpts = ['Build Muscle', 'Get Stronger', 'Stay Consistent', 'General Fitness'];
+        const levelOpts = ['Beginner', 'Intermediate', 'Advanced', 'Athlete'];
+        const currentUnit = (prof.unit === 'kg') ? 'kg' : 'lbs';
         body.innerHTML = `
-          <div class="fitness-card p-4 flex items-center justify-between">
-            <div>
-              <div class="type-headline text-white">Sessions Per Week</div>
-              <p class="type-caption mt-0.5" style="color: var(--label-secondary);">1 to 7 workouts per week</p>
+          <div class="fitness-card p-4 space-y-3.5">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <div class="type-headline text-white font-bold">Weekly Workout Target</div>
+                <p class="type-caption mt-0.5" style="color: var(--label-secondary);">${goalTarget} workout${goalTarget === 1 ? '' : 's'} per week</p>
+              </div>
+              <div class="flex items-center gap-2.5 shrink-0">
+                <button type="button" onclick="adjustWeeklyGoal(-1)" aria-label="Decrease Goal" class="glass glass--clear glass--circle-36 glass-interactive text-lg font-bold text-white">−</button>
+                <span class="fitness-metric text-[26px] min-w-[28px] text-center" style="color: #0A84FF;">${goalTarget}</span>
+                <button type="button" onclick="adjustWeeklyGoal(1)" aria-label="Increase Goal" class="glass glass--clear glass--circle-36 glass-interactive text-lg font-bold text-white">+</button>
+              </div>
             </div>
-            <div class="flex items-center gap-3">
-              <button type="button" onclick="adjustWeeklyGoal(-1)" aria-label="Decrease Goal" class="glass glass--clear glass--circle-36 glass-interactive text-lg font-bold text-white">−</button>
-              <span class="fitness-metric text-[28px] min-w-[34px] text-center" style="color: #0275e7;">${state.weeklyTarget || 3}</span>
-              <button type="button" onclick="adjustWeeklyGoal(1)" aria-label="Increase Goal" class="glass glass--clear glass--circle-36 glass-interactive text-lg font-bold text-white">+</button>
+            <div class="grid grid-cols-7 gap-1.5 pt-0.5" aria-hidden="true">
+              ${Array.from({ length: 7 }, (_, i) => `<span class="h-1.5 rounded-full" style="background: ${i < goalTarget ? '#0A84FF' : 'rgba(255,255,255,0.12)'};"></span>`).join('')}
+            </div>
+          </div>
+
+          <div class="fitness-card p-4 space-y-4">
+            <div class="space-y-1.5">
+              <label class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Primary Goal</label>
+              <select onchange="updateProfileField('goal', this.value)" class="fitness-field !py-2.5 !px-3.5 text-[15px] font-semibold">
+                ${goalOpts.map(g => `<option value="${esc(g)}" ${(prof.goal || 'Build Muscle') === g ? 'selected' : ''}>${esc(g)}</option>`).join('')}
+              </select>
+            </div>
+            <div class="space-y-1.5">
+              <label class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Experience Level</label>
+              <select onchange="updateProfileField('level', this.value)" class="fitness-field !py-2.5 !px-3.5 text-[15px] font-semibold">
+                ${levelOpts.map(l => `<option value="${esc(l)}" ${(prof.level || 'Intermediate') === l ? 'selected' : ''}>${esc(l)}</option>`).join('')}
+              </select>
+            </div>
+            <div class="space-y-1.5">
+              <label class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Weight Units</label>
+              <div class="grid grid-cols-2 gap-2">
+                ${[{ id: 'lbs', label: 'lbs (Pounds)' }, { id: 'kg', label: 'kg (Kilograms)' }].map(u => {
+                  const active = currentUnit === u.id;
+                  return `<button type="button" onclick="updateProfileField('unit', '${u.id}')" class="py-2.5 rounded-xl text-[14px] font-bold transition-colors" style="${active ? 'background: #0A84FF; color: #FFFFFF;' : 'background: #2C2C2E; color: rgba(235,235,245,0.75);'}">${u.label}</button>`;
+                }).join('')}
+              </div>
             </div>
           </div>
         `;
@@ -7865,7 +8025,7 @@
                 onclick="createBlankSavedPreset()"
                 aria-label="Add New Preset"
                 class="solid-pill w-[44px] h-[44px] min-h-[44px] !p-0 shrink-0"
-                style="background-color: #30D158; color: #FFFFFF;"
+                style="background-color: #0A84FF; color: #FFFFFF;"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
                   <line x1="12" y1="5" x2="12" y2="19"/>
@@ -8339,58 +8499,29 @@
         `;
       } else if (section === 'PROFILE') {
         const prof = state.userProfile || {};
-        const goalOpts = ['Build Muscle', 'Get Stronger', 'Stay Consistent', 'General Fitness'];
-        const levelOpts = ['Beginner', 'Intermediate', 'Advanced', 'Athlete'];
-        const unitOpts = [{ id: 'lbs', label: 'lbs' }, { id: 'kg', label: 'kg' }];
-        const currentUnit = (prof.unit === 'kg') ? 'kg' : 'lbs';
         body.innerHTML = `
           <div class="fitness-card p-4 space-y-3.5">
             <div class="grid grid-cols-2 gap-2.5">
               <div class="space-y-1">
                 <label for="menuFirstNameInput" class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">First Name</label>
-                <input type="text" id="menuFirstNameInput" value="${esc(prof.firstName || state.userName || '')}" oninput="updateProfileNamePart('firstName', this.value)" placeholder="First name" class="fitness-field !py-2 font-semibold" />
+                <input type="text" id="menuFirstNameInput" value="${esc(prof.firstName || state.userName || '')}" oninput="updateProfileNamePart('firstName', this.value)" placeholder="First name" class="fitness-field !py-2.5 font-semibold" />
               </div>
               <div class="space-y-1">
                 <label for="menuLastNameInput" class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Last Name</label>
-                <input type="text" id="menuLastNameInput" value="${esc(prof.lastName || '')}" oninput="updateProfileNamePart('lastName', this.value)" placeholder="Last name" class="fitness-field !py-2 font-semibold" />
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-2.5">
-              <div class="space-y-1">
-                <label for="menuDobInput" class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Date of Birth</label>
-                <input type="date" id="menuDobInput" value="${esc(prof.dob || '')}" onchange="updateProfileField('dob', this.value)" class="fitness-field !py-2 !px-3 text-[14px] font-semibold" />
-              </div>
-              <div class="space-y-1">
-                <label class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Gender</label>
-                <div class="grid grid-cols-2 gap-1.5">
-                  ${['M', 'F'].map(g => {
-                    const active = prof.gender === g;
-                    const bg = active ? (g === 'M' ? '#0A84FF' : '#FF64B4') : '#2C2C2E';
-                    return `<button type="button" onclick="updateProfileField('gender', '${g}')" class="py-2 rounded-xl text-[14px] font-bold transition-colors" style="background: ${bg}; color: ${active ? '#FFFFFF' : 'rgba(235,235,245,0.75)'};">${g === 'M' ? 'Male' : 'Female'}</button>`;
-                  }).join('')}
-                </div>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-2.5">
-              <div class="space-y-1">
-                <label class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Primary Goal</label>
-                <select onchange="updateProfileField('goal', this.value)" class="fitness-field !py-2 !px-3 text-[14px] font-semibold">
-                  ${goalOpts.map(g => `<option value="${esc(g)}" ${(prof.goal || 'Build Muscle') === g ? 'selected' : ''}>${esc(g)}</option>`).join('')}
-                </select>
-              </div>
-              <div class="space-y-1">
-                <label class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Experience</label>
-                <select onchange="updateProfileField('level', this.value)" class="fitness-field !py-2 !px-3 text-[14px] font-semibold">
-                  ${levelOpts.map(l => `<option value="${esc(l)}" ${(prof.level || 'Intermediate') === l ? 'selected' : ''}>${esc(l)}</option>`).join('')}
-                </select>
+                <input type="text" id="menuLastNameInput" value="${esc(prof.lastName || '')}" oninput="updateProfileNamePart('lastName', this.value)" placeholder="Last name" class="fitness-field !py-2.5 font-semibold" />
               </div>
             </div>
             <div class="space-y-1">
-              <label class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Weight Units</label>
-              <div class="grid grid-cols-2 gap-2">
-                ${unitOpts.map(u => {
-                  const active = currentUnit === u.id;
-                  return `<button type="button" onclick="updateProfileField('unit', '${u.id}')" class="py-2 rounded-xl text-[14px] font-bold transition-colors" style="${active ? 'background: #0A84FF; color: #FFFFFF;' : 'background: #2C2C2E; color: rgba(235,235,245,0.75);'}">${u.label}</button>`;
+              <label for="menuDobInput" class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Date of Birth</label>
+              <input type="date" id="menuDobInput" value="${esc(prof.dob || '2000-01-01')}" onchange="updateProfileField('dob', this.value)" class="fitness-field !py-2.5 !px-3.5 text-[15px] font-semibold" />
+            </div>
+            <div class="space-y-1.5">
+              <label class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Gender</label>
+              <div class="grid grid-cols-2 gap-2.5">
+                ${['M', 'F'].map(g => {
+                  const active = prof.gender === g;
+                  const bg = active ? (g === 'M' ? '#0A84FF' : '#FF64B4') : '#2C2C2E';
+                  return `<button type="button" onclick="updateProfileField('gender', '${g}')" class="py-2.5 rounded-xl text-[14px] font-bold transition-colors" style="background: ${bg}; color: ${active ? '#FFFFFF' : 'rgba(235,235,245,0.75)'};">${g === 'M' ? 'Male' : 'Female'}</button>`;
                 }).join('')}
               </div>
             </div>
@@ -8530,7 +8661,7 @@
       if (!sel || !btn) return;
       const hasSel = Boolean(sel.value);
       btn.disabled = !hasSel;
-      btn.style.backgroundColor = hasSel ? '#30D158' : 'rgba(255,255,255,0.12)';
+      btn.style.backgroundColor = hasSel ? '#0A84FF' : 'rgba(255,255,255,0.12)';
       btn.style.color = hasSel ? '#FFFFFF' : 'rgba(255,255,255,0.45)';
       btn.style.opacity = hasSel ? '1' : '0.45';
       btn.style.pointerEvents = hasSel ? 'auto' : 'none';
@@ -8805,7 +8936,9 @@
       if (!resetArmed) { resetArmed = true; renderMenuSubpageContent('DATA'); return; }
       resetArmed = false;
       localStorage.removeItem(getActiveStorageKey());
+      localStorage.removeItem('gains_onboarding_seen_v1');
       state = loadState();
+      state.onboardingCompleted = false;
       saveState();
       activeMenuSubpage = null;
       renderAll();
