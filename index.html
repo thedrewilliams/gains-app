@@ -785,7 +785,11 @@
     }
 
     .sticky-compact-header.is-pinned.has-scrolled-bar::before {
-      opacity: 1;
+      opacity: var(--hdr-backdrop-opacity, 1);
+    }
+
+    .sticky-compact-header.is-swiping-back::before {
+      transition: none !important;
     }
 
     .sticky-compact-header .sticky-compact-title {
@@ -3494,10 +3498,12 @@
         const progress = Math.min(1, edgeDx / w);
         const subEl = document.getElementById('menuSubpageContainer');
         const hdrEl = document.getElementById('stickyCompactHeader');
+        const centerEl = document.getElementById('stickyHeaderCenter');
         const underInner = document.getElementById('menuSwipeUnderlayInner');
         const underScrim = document.getElementById('menuSwipeUnderlayScrim');
         if (subEl) subEl.style.transform = `translate3d(${edgeDx}px, 0, 0)`;
-        if (hdrEl) hdrEl.style.transform = `translate3d(${edgeDx}px, 0, 0)`;
+        if (centerEl) centerEl.style.transform = `translate3d(${edgeDx}px, -50%, 0)`;
+        if (hdrEl) hdrEl.style.setProperty('--hdr-backdrop-opacity', (1 - progress).toFixed(3));
         if (underInner) underInner.style.transform = `translate3d(${(-28 * (1 - progress)).toFixed(2)}%, 0, 0)`;
         if (underScrim) underScrim.style.opacity = `${(0.46 * (1 - progress)).toFixed(3)}`;
       }, { passive: true });
@@ -3511,34 +3517,55 @@
         const threshold = Math.min(105, w * 0.27);
         const subEl = document.getElementById('menuSubpageContainer');
         const hdrEl = document.getElementById('stickyCompactHeader');
+        const leftEl = document.getElementById('stickyHeaderLeft');
+        const centerEl = document.getElementById('stickyHeaderCenter');
         const underInner = document.getElementById('menuSwipeUnderlayInner');
         const underScrim = document.getElementById('menuSwipeUnderlayScrim');
         const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
+        const goingToRoot = !isCurrentSettingsSubpageNested();
 
         if (edgeDx >= threshold) {
-          [subEl, hdrEl].forEach(el => {
-            if (!el) return;
-            el.style.transition = `transform 0.25s ${ease}`;
-            el.style.transform = `translate3d(${w}px, 0, 0)`;
-          });
+          if (subEl) {
+            subEl.style.transition = `transform 0.26s ${ease}`;
+            subEl.style.transform = `translate3d(${w}px, 0, 0)`;
+          }
+          if (centerEl) {
+            centerEl.style.transition = `transform 0.26s ${ease}`;
+            centerEl.style.transform = `translate3d(${w}px, -50%, 0)`;
+          }
+          if (hdrEl) {
+            hdrEl.classList.remove('is-swiping-back');
+            hdrEl.style.setProperty('--hdr-backdrop-opacity', '0');
+          }
+          if (goingToRoot && leftEl) {
+            leftEl.style.transition = 'opacity 0.22s ease';
+            leftEl.style.opacity = '0';
+          }
           if (underInner) {
-            underInner.style.transition = `transform 0.25s ${ease}`;
+            underInner.style.transition = `transform 0.26s ${ease}`;
             underInner.style.transform = 'translate3d(0%, 0, 0)';
           }
           if (underScrim) {
-            underScrim.style.transition = 'opacity 0.25s ease';
+            underScrim.style.transition = 'opacity 0.26s ease';
             underScrim.style.opacity = '0';
           }
           setTimeout(() => {
-            cleanupMenuSwipeUnderlay(!isCurrentSettingsSubpageNested());
+            cleanupMenuSwipeUnderlay(goingToRoot);
             closeMenuSubpage(true);
-          }, 255);
+          }, 265);
         } else {
-          [subEl, hdrEl].forEach(el => {
-            if (!el) return;
-            el.style.transition = `transform 0.24s ${ease}`;
-            el.style.transform = 'translate3d(0, 0, 0)';
-          });
+          if (subEl) {
+            subEl.style.transition = `transform 0.24s ${ease}`;
+            subEl.style.transform = 'translate3d(0, 0, 0)';
+          }
+          if (centerEl) {
+            centerEl.style.transition = `transform 0.24s ${ease}`;
+            centerEl.style.transform = 'translate3d(0, -50%, 0)';
+          }
+          if (hdrEl) {
+            hdrEl.classList.remove('is-swiping-back');
+            hdrEl.style.setProperty('--hdr-backdrop-opacity', '1');
+          }
           if (underInner) {
             underInner.style.transition = `transform 0.24s ${ease}`;
             underInner.style.transform = 'translate3d(-28%, 0, 0)';
@@ -3548,7 +3575,7 @@
             underScrim.style.opacity = '0.46';
           }
           setTimeout(() => {
-            cleanupMenuSwipeUnderlay();
+            cleanupMenuSwipeUnderlay(false);
           }, 245);
         }
       };
@@ -6816,17 +6843,15 @@
           parentBarTitle = editingEquipName;
         }
       }
-      const parentBarHtml = `
+      const parentBarHtml = parentBarTitle ? `
         <div class="fixed top-0 left-0 right-0 z-10 pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 12px) + 28px);">
           <div class="relative max-w-lg mx-auto px-4 min-h-[44px] flex items-center justify-between">
-            <span class="ios-back-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-            </span>
+            <span class="min-w-[44px]"></span>
             <span class="absolute left-[68px] right-[68px] top-1/2 -translate-y-1/2 text-center type-headline text-white font-bold truncate">${esc(parentBarTitle)}</span>
             <span class="min-w-[44px]"></span>
           </div>
         </div>
-      `;
+      ` : '';
 
       return `
         ${parentBarHtml}
@@ -6874,9 +6899,21 @@
         subEl.style.transition = 'none';
         subEl.style.transform = 'translate3d(0, 0, 0)';
       }
+      const leftEl = document.getElementById('stickyHeaderLeft');
+      const centerEl = document.getElementById('stickyHeaderCenter');
       if (hdrEl) {
+        hdrEl.classList.add('is-swiping-back');
         hdrEl.style.transition = 'none';
         hdrEl.style.transform = 'translate3d(0, 0, 0)';
+        hdrEl.style.setProperty('--hdr-backdrop-opacity', '1');
+      }
+      if (leftEl) {
+        leftEl.style.transition = 'none';
+        leftEl.style.opacity = '1';
+      }
+      if (centerEl) {
+        centerEl.style.transition = 'none';
+        centerEl.style.transform = 'translate3d(0, -50%, 0)';
       }
     }
 
@@ -6909,9 +6946,12 @@
         subEl.style.transform = '';
         subEl.style.opacity = '';
       }
+      const leftEl = document.getElementById('stickyHeaderLeft');
+      const centerEl = document.getElementById('stickyHeaderCenter');
       if (hdrEl) {
         hdrEl.style.transition = 'none';
-        hdrEl.classList.remove('has-scrolled-bar');
+        hdrEl.classList.remove('is-swiping-back', 'has-scrolled-bar');
+        hdrEl.style.removeProperty('--hdr-backdrop-opacity');
         if (hideHeaderInstant) {
           hdrEl.classList.remove('is-pinned');
         }
@@ -6926,6 +6966,14 @@
         hdrEl.style.opacity = '';
         void hdrEl.offsetWidth;
         hdrEl.style.transition = '';
+      }
+      if (leftEl) {
+        leftEl.style.transition = '';
+        leftEl.style.opacity = '';
+      }
+      if (centerEl) {
+        centerEl.style.transition = '';
+        centerEl.style.transform = '';
       }
     }
 
@@ -6989,16 +7037,30 @@
       const w = window.innerWidth || 390;
       const subEl = document.getElementById('menuSubpageContainer');
       const hdrEl = document.getElementById('stickyCompactHeader');
+      const leftEl = document.getElementById('stickyHeaderLeft');
+      const centerEl = document.getElementById('stickyHeaderCenter');
       const underInner = document.getElementById('menuSwipeUnderlayInner');
       const underScrim = document.getElementById('menuSwipeUnderlayScrim');
       const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
+      const goingToRoot = !isCurrentSettingsSubpageNested();
 
       if (subEl) void subEl.offsetWidth;
-      [subEl, hdrEl].forEach(el => {
-        if (!el) return;
-        el.style.transition = `transform 0.28s ${ease}`;
-        el.style.transform = `translate3d(${w}px, 0, 0)`;
-      });
+      if (subEl) {
+        subEl.style.transition = `transform 0.28s ${ease}`;
+        subEl.style.transform = `translate3d(${w}px, 0, 0)`;
+      }
+      if (centerEl) {
+        centerEl.style.transition = `transform 0.28s ${ease}`;
+        centerEl.style.transform = `translate3d(${w}px, -50%, 0)`;
+      }
+      if (hdrEl) {
+        hdrEl.classList.remove('is-swiping-back');
+        hdrEl.style.setProperty('--hdr-backdrop-opacity', '0');
+      }
+      if (goingToRoot && leftEl) {
+        leftEl.style.transition = 'opacity 0.22s ease';
+        leftEl.style.opacity = '0';
+      }
       if (underInner) {
         underInner.style.transition = `transform 0.28s ${ease}`;
         underInner.style.transform = 'translate3d(0%, 0, 0)';
@@ -7008,7 +7070,7 @@
         underScrim.style.opacity = '0';
       }
       setTimeout(() => {
-        cleanupMenuSwipeUnderlay(!isCurrentSettingsSubpageNested());
+        cleanupMenuSwipeUnderlay(goingToRoot);
         commitCloseMenuSubpageImmediate();
         isMenuPopping = false;
       }, 285);
