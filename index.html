@@ -481,10 +481,7 @@
        ========================================================================= */
     .sheet-backdrop {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: -80px;
+      inset: 0;
       background: rgba(0, 0, 0, 0.56);
       z-index: 50;
       display: flex;
@@ -504,11 +501,11 @@
       position: relative;
       width: 100%;
       max-width: 540px;
-      height: calc(92dvh + 80px);
-      max-height: calc(92dvh + 80px);
-      border-top-left-radius: 38px;
-      border-top-right-radius: 38px;
-      padding: 16px 16px calc(80px + max(22px, env(safe-area-inset-bottom, 34px)));
+      height: 88dvh;
+      max-height: 88dvh;
+      border-top-left-radius: 34px;
+      border-top-right-radius: 34px;
+      padding: 16px 16px calc(env(safe-area-inset-bottom, 0px) + 18px);
       display: flex;
       flex-direction: column;
       background: #141416;
@@ -519,7 +516,18 @@
       transform: translate3d(0, 104%, 0);
       transition: transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
       will-change: transform;
-      overflow: hidden;
+      overflow: visible;
+    }
+
+    .liquid-sheet::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      height: 80px;
+      background: #141416;
+      pointer-events: none;
     }
 
     .liquid-sheet--compact {
@@ -1720,12 +1728,29 @@
          VIEW 3: ACTIVITY (HISTORICAL DATA VISUALIZATION & PROGRESSION)
          ===================================================================== -->
     <section id="activityView" class="hidden space-y-4">
-      <div id="activityHeroHeader" class="collapsible-hero flex items-end justify-between gap-2">
-        <h1 class="collapsible-hero-title text-white">Activity</h1>
-        <div id="activityRangePills" class="flex items-center gap-1 p-1 rounded-full" style="background: #1C1C1E; border: 0.5px solid rgba(255,255,255,0.08);">
-          <button type="button" onclick="setActivityRange('4W')" data-range="4W" class="px-3 py-1 rounded-full text-[12px] font-bold transition-colors">4W</button>
-          <button type="button" onclick="setActivityRange('3M')" data-range="3M" class="px-3 py-1 rounded-full text-[12px] font-bold transition-colors">3M</button>
-          <button type="button" onclick="setActivityRange('ALL')" data-range="ALL" class="px-3 py-1 rounded-full text-[12px] font-bold transition-colors">All</button>
+      <div id="activityHeroHeader" class="collapsible-hero space-y-3">
+        <div class="flex items-end justify-between gap-2">
+          <h1 class="collapsible-hero-title text-white">Activity</h1>
+          <span id="activityRangeSummaryLabel" class="type-caption font-semibold pb-1.5" style="color: var(--label-secondary);">Last 30 Days</span>
+        </div>
+        <div id="activityRangePills" class="flex items-center justify-between gap-0.5 p-1 rounded-full overflow-x-auto no-scrollbar" style="background: #1C1C1E; border: 0.5px solid rgba(255,255,255,0.08);">
+          <button type="button" onclick="setActivityRange('1W')" data-range="1W" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">1W</button>
+          <button type="button" onclick="setActivityRange('1M')" data-range="1M" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">1M</button>
+          <button type="button" onclick="setActivityRange('3M')" data-range="3M" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">3M</button>
+          <button type="button" onclick="setActivityRange('6M')" data-range="6M" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">6M</button>
+          <button type="button" onclick="setActivityRange('1Y')" data-range="1Y" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">1Y</button>
+          <button type="button" onclick="setActivityRange('ALL')" data-range="ALL" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">All</button>
+          <button type="button" onclick="setActivityRange('CUSTOM')" data-range="CUSTOM" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">Custom</button>
+        </div>
+        <div id="activityCustomRangeRow" class="hidden grid grid-cols-2 gap-2 pt-0.5">
+          <div class="rounded-2xl px-3 py-2" style="background: #1C1C1E; border: 0.5px solid rgba(255,255,255,0.08);">
+            <label for="activityCustomStart" class="block text-[10px] font-bold uppercase tracking-wider mb-0.5" style="color: var(--label-secondary);">From</label>
+            <input type="date" id="activityCustomStart" onchange="updateActivityCustomRange()" class="w-full bg-transparent text-white text-[14px] font-semibold outline-none" />
+          </div>
+          <div class="rounded-2xl px-3 py-2" style="background: #1C1C1E; border: 0.5px solid rgba(255,255,255,0.08);">
+            <label for="activityCustomEnd" class="block text-[10px] font-bold uppercase tracking-wider mb-0.5" style="color: var(--label-secondary);">To</label>
+            <input type="date" id="activityCustomEnd" onchange="updateActivityCustomRange()" class="w-full bg-transparent text-white text-[14px] font-semibold outline-none" />
+          </div>
         </div>
       </div>
 
@@ -1921,35 +1946,23 @@
        ========================================================================= -->
   <div id="addExSheetBackdrop" class="sheet-backdrop" onclick="if(event.target===this) closeAddExerciseSheet()">
     <div id="addExLiquidSheet" class="liquid-sheet" role="dialog" aria-modal="true" aria-labelledby="addExSheetTitle">
-      <!-- Apple Account-Style Header -->
-      <div class="apple-sheet-header">
-        <div class="flex items-center gap-3 min-w-0">
-          <div id="addExHeaderBadge" class="apple-sheet-icon-badge">
-            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <rect x="1.45" y="8.65" width="2.3" height="6.7" rx="1.05" fill="#0275e7"/>
-              <rect x="4.75" y="6.65" width="2.75" height="10.7" rx="1.2" fill="#0275e7"/>
-              <rect x="8.5" y="10.85" width="7.0" height="2.3" fill="#FFFFFF"/>
-              <rect x="16.5" y="6.65" width="2.75" height="10.7" rx="1.2" fill="#0275e7"/>
-              <rect x="20.25" y="8.65" width="2.3" height="6.7" rx="1.05" fill="#0275e7"/>
-            </svg>
-          </div>
-          <div class="min-w-0">
-            <h3 id="addExSheetTitle" class="type-headline text-white font-bold truncate">Add Exercises</h3>
-            <p id="addExSheetEyebrow" class="type-caption truncate" style="color: var(--label-secondary);">Upper • NOV 17</p>
-          </div>
+      <!-- Clean Minimal Header -->
+      <div class="apple-sheet-header !pb-3">
+        <div class="min-w-0 pl-0.5">
+          <h3 id="addExSheetTitle" class="type-title-2 text-white font-bold truncate">Add Exercises</h3>
+          <p id="addExSheetEyebrow" class="hidden type-caption truncate" style="color: var(--label-secondary);"></p>
         </div>
         <button type="button" onclick="closeAddExerciseSheet()" class="apple-sheet-close-btn" aria-label="Close">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
 
-      <!-- SESSION MODE: Exercise Library Search + Filter/Sort + Multi-Select List -->
+      <!-- SESSION MODE: Exercise Library Search + Streamlined Filter Row + Multi-Select List -->
       <div id="sessionAddPickerSection" class="flex-1 flex flex-col min-h-0">
-        <!-- Sticky Search + Filter/Sort Controls (Identical to Exercise Library) -->
         <div class="space-y-2.5 pb-3 flex-shrink-0">
-          <div class="flex items-center gap-2.5">
+          <div class="flex items-center gap-2">
             <div class="ios-search-pill flex-1">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.88)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true">
                 <circle cx="11" cy="11" r="7.5"/>
                 <line x1="16.65" y1="16.65" x2="21" y2="21"/>
               </svg>
@@ -1966,30 +1979,29 @@
             <button
               type="button"
               onclick="navigateToCreateInExerciseLibrary()"
-              aria-label="Open Exercise Library to Create New Exercise"
-              title="Create in Exercise Library"
-              class="solid-pill h-[44px] min-h-[44px] px-3.5 gap-1.5 shrink-0 text-[13px]"
-              style="background-color: #232326; color: #0275e7; border: 0.5px solid rgba(255,255,255,0.12);"
+              aria-label="Add New Exercise"
+              class="solid-pill h-[44px] min-h-[44px] px-4 shrink-0 text-[14px] font-bold"
+              style="background-color: #0275e7; color: #FFFFFF;"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19"/>
-                <line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              <span>Library</span>
+              Add New
             </button>
           </div>
 
-          <!-- 2-Tap Quick Filter Strip: Direction Pills + Equipment / Muscle / Sort -->
-          <div id="addSheetDirectionPills" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5"></div>
-
-          <div class="grid grid-cols-3 gap-2">
-            <select id="addSheetEquipSelect" onchange="updateAddSheetEquipFilter(this.value)" aria-label="Filter by Equipment" class="fitness-field !py-2 !px-2.5 !rounded-full text-[12px] font-semibold"></select>
+          <!-- Single Compact Filter & Sort Row -->
+          <div class="grid grid-cols-4 gap-1.5">
+            <select id="addSheetDirSelect" onchange="updateAddSheetDirectionFilter(this.value)" aria-label="Filter by Type" class="fitness-field !py-2 !px-2.5 !rounded-full text-[12px] font-semibold">
+              <option value="All">All</option>
+              <option value="Push">Push</option>
+              <option value="Pull">Pull</option>
+              <option value="Cardio">Cardio</option>
+            </select>
             <select id="addSheetMuscleSelect" onchange="updateAddSheetMuscleFilter(this.value)" aria-label="Filter by Muscle" class="fitness-field !py-2 !px-2.5 !rounded-full text-[12px] font-semibold"></select>
+            <select id="addSheetEquipSelect" onchange="updateAddSheetEquipFilter(this.value)" aria-label="Filter by Equipment" class="fitness-field !py-2 !px-2.5 !rounded-full text-[12px] font-semibold"></select>
             <select id="addSheetSortSelect" onchange="updateAddSheetSort(this.value)" aria-label="Sort Exercises" class="fitness-field !py-2 !px-2.5 !rounded-full text-[12px] font-semibold">
               <option value="name-asc">A–Z</option>
               <option value="name-desc">Z–A</option>
-              <option value="direction">Push / Pull</option>
-              <option value="equipment">Equipment</option>
+              <option value="direction">Type</option>
+              <option value="equipment">Gear</option>
             </select>
           </div>
         </div>
@@ -2367,20 +2379,45 @@
       muscle: { hex: '#BF5AF2', rgb: '191, 90, 242', textHex: '#FFFFFF' }  // Primary Muscle Accent / Violet
     };
 
-    const GRADIENT_WHEEL_ORDER = ['#0A84FF', '#30D158', '#FFD60A', '#FF375F'];
+    // Vibrant 7-Hue Body-Region Palette for Calendar & Date Strip Borders
+    const REGION_COLOR_MAP = {
+      Chest:     '#0A84FF', // Electric Blue
+      Back:      '#30D158', // Emerald Green
+      Shoulders: '#FF9F0A', // Vivid Amber
+      Arms:      '#BF5AF2', // Violet
+      Legs:      '#FF375F', // Coral-Red
+      Core:      '#FFD60A', // Gold
+      Cardio:    '#32ADE6'  // Cyan
+    };
+    const REGION_WHEEL_ORDER = ['#0A84FF', '#32ADE6', '#30D158', '#FFD60A', '#FF9F0A', '#FF375F', '#BF5AF2'];
 
     function getMuscleColor() {
       return SUMMER_PALETTE.muscle;
     }
 
     function getSessionGradientColors(items) {
-      const seen = new Set();
+      const regionHits = new Map();
+      const bump = (hex) => regionHits.set(hex, (regionHits.get(hex) || 0) + 1);
+
       (items || []).forEach(item => {
         const mod = getModality(item);
-        const dir = getDirection(item);
-        seen.add(getDirectionColor(dir, mod).hex);
+        if (mod === 'Cardio') bump(REGION_COLOR_MAP.Cardio);
+        normalizeMuscles(item).forEach(m => {
+          if (m === 'Pec') bump(REGION_COLOR_MAP.Chest);
+          else if (m === 'Lats' || m === 'Traps') bump(REGION_COLOR_MAP.Back);
+          else if (m === 'Shoulders') bump(REGION_COLOR_MAP.Shoulders);
+          else if (m === 'Bicep' || m === 'Tricep' || m === 'Forearm') bump(REGION_COLOR_MAP.Arms);
+          else if (m === 'Quad' || m === 'Hamstring' || m === 'Glute' || m === 'Calf') bump(REGION_COLOR_MAP.Legs);
+          else if (m === 'Core') bump(REGION_COLOR_MAP.Core);
+        });
       });
-      const ordered = GRADIENT_WHEEL_ORDER.filter(hex => seen.has(hex));
+
+      // Keep top 4 dominant regions ordered along the color wheel for rich, smooth gradients
+      const topHexes = Array.from(regionHits.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 4)
+        .map(([hex]) => hex);
+      const ordered = REGION_WHEEL_ORDER.filter(hex => topHexes.includes(hex));
       if (!ordered.length) return ['#0A84FF', '#30D158'];
       if (ordered.length === 1) return [ordered[0], ordered[0]];
       return ordered;
@@ -2573,7 +2610,9 @@
     let deleteWorkoutArmed = false;
     let isLogCalendarOpen = false;
     let lastLogStripDate = '';
-    let activityRange = '4W';
+    let activityRange = '1M';
+    let activityCustomStart = '';
+    let activityCustomEnd = '';
     let activitySelectedExercise = '';
 
     function getWeightOptionsHtml() {
@@ -4876,15 +4915,17 @@
       const todayStr = getTodayDateStr();
       const activeDate = state.activeDate || todayStr;
       const legendHtml = [
-        { label: 'Push', hex: SUMMER_PALETTE.push.hex },
-        { label: 'Pull', hex: SUMMER_PALETTE.pull.hex },
-        { label: 'Push / Pull', hex: SUMMER_PALETTE.mix.hex },
-        { label: 'Cardio', hex: SUMMER_PALETTE.cardio.hex }
+        { label: 'Chest', hex: REGION_COLOR_MAP.Chest },
+        { label: 'Back', hex: REGION_COLOR_MAP.Back },
+        { label: 'Shoulders', hex: REGION_COLOR_MAP.Shoulders },
+        { label: 'Arms', hex: REGION_COLOR_MAP.Arms },
+        { label: 'Legs', hex: REGION_COLOR_MAP.Legs },
+        { label: 'Core', hex: REGION_COLOR_MAP.Core },
+        { label: 'Cardio', hex: REGION_COLOR_MAP.Cardio }
       ].map(item =>
-        `<span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="background: ${item.hex};"></span>${item.label}</span>`
+        `<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background: ${item.hex};"></span>${item.label}</span>`
       ).join('') +
-        `<span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="border: 2px solid transparent; background: linear-gradient(#161618, #161618) padding-box, linear-gradient(135deg, #0A84FF, #30D158, #FFD60A) border-box;"></span>Done</span>` +
-        `<span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="border: 1.5px dashed #64D2FF;"></span>Active</span>`;
+        `<span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="border: 1.5px dashed #64D2FF;"></span>Active</span>`;
 
       const firstDayOfWeek = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -5151,7 +5192,29 @@
     }
 
     function setActivityRange(range) {
-      activityRange = range || '4W';
+      activityRange = range || '1M';
+      if (activityRange === 'CUSTOM') {
+        const todayStr = getTodayDateStr();
+        const [ty, tm, td] = todayStr.split('-').map(Number);
+        if (!activityCustomEnd) activityCustomEnd = todayStr;
+        if (!activityCustomStart) {
+          const dt = new Date(ty, tm - 1, td - 29);
+          activityCustomStart = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+        }
+      }
+      renderActivityView();
+    }
+
+    function updateActivityCustomRange() {
+      const sEl = document.getElementById('activityCustomStart');
+      const eEl = document.getElementById('activityCustomEnd');
+      if (sEl && sEl.value) activityCustomStart = sEl.value;
+      if (eEl && eEl.value) activityCustomEnd = eEl.value;
+      if (activityCustomStart && activityCustomEnd && activityCustomStart > activityCustomEnd) {
+        const tmp = activityCustomStart;
+        activityCustomStart = activityCustomEnd;
+        activityCustomEnd = tmp;
+      }
       renderActivityView();
     }
 
@@ -5168,25 +5231,64 @@
         btn.style.color = active ? '#FFFFFF' : 'rgba(235,235,245,0.60)';
       });
 
+      const customRow = document.getElementById('activityCustomRangeRow');
+      if (customRow) customRow.classList.toggle('hidden', activityRange !== 'CUSTOM');
+
       const todayStr = getTodayDateStr();
       const [ty, tm, td] = todayStr.split('-').map(Number);
       const allCompleted = getSortedSessions().filter(s => s.completed);
+      const fmtYmd = (dObj) => `${dObj.getFullYear()}-${String(dObj.getMonth() + 1).padStart(2, '0')}-${String(dObj.getDate()).padStart(2, '0')}`;
 
       let cutoffStr = '0000-00-00';
+      let endStr = '9999-12-31';
       let weekCountWindow = 4;
-      if (activityRange === '4W') {
-        const dt = new Date(ty, tm - 1, td - 27);
-        cutoffStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+      let rangeLabel = 'All Time';
+
+      if (activityRange === '1W') {
+        cutoffStr = fmtYmd(new Date(ty, tm - 1, td - 6));
+        endStr = todayStr;
         weekCountWindow = 4;
+        rangeLabel = 'Last 7 Days';
+      } else if (activityRange === '1M') {
+        cutoffStr = fmtYmd(new Date(ty, tm - 1, td - 29));
+        endStr = todayStr;
+        weekCountWindow = 4;
+        rangeLabel = 'Last 30 Days';
       } else if (activityRange === '3M') {
-        const dt = new Date(ty, tm - 1, td - 89);
-        cutoffStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+        cutoffStr = fmtYmd(new Date(ty, tm - 1, td - 89));
+        endStr = todayStr;
         weekCountWindow = 8;
+        rangeLabel = 'Last 3 Months';
+      } else if (activityRange === '6M') {
+        cutoffStr = fmtYmd(new Date(ty, tm - 1, td - 179));
+        endStr = todayStr;
+        weekCountWindow = 10;
+        rangeLabel = 'Last 6 Months';
+      } else if (activityRange === '1Y') {
+        cutoffStr = fmtYmd(new Date(ty - 1, tm - 1, td));
+        endStr = todayStr;
+        weekCountWindow = 12;
+        rangeLabel = 'Past Year';
+      } else if (activityRange === 'CUSTOM') {
+        const sEl = document.getElementById('activityCustomStart');
+        const eEl = document.getElementById('activityCustomEnd');
+        if (sEl && activityCustomStart) sEl.value = activityCustomStart;
+        if (eEl && activityCustomEnd) eEl.value = activityCustomEnd;
+        cutoffStr = activityCustomStart || '0000-00-00';
+        endStr = activityCustomEnd || todayStr;
+        weekCountWindow = 8;
+        rangeLabel = activityCustomStart && activityCustomEnd
+          ? `${formatNiceDate(activityCustomStart).slice(5)} – ${formatNiceDate(activityCustomEnd).slice(5)}`
+          : 'Custom Range';
       } else {
         weekCountWindow = 8;
+        rangeLabel = 'All Time';
       }
 
-      const filtered = allCompleted.filter(s => s.date >= cutoffStr);
+      const rangeSummaryEl = document.getElementById('activityRangeSummaryLabel');
+      if (rangeSummaryEl) rangeSummaryEl.textContent = rangeLabel;
+
+      const filtered = allCompleted.filter(s => s.date >= cutoffStr && s.date <= endStr);
       const entries = filtered.flatMap(s => s.entries || []);
 
       let totalSets = 0;
@@ -6938,14 +7040,14 @@
       const exercises = getExercisesForDate(dateStr);
       if (!exercises.length) {
         return `
-          <div class="fitness-card p-6 text-center space-y-3">
-            <div class="space-y-1">
-              <div class="type-headline text-white">No Exercises Yet</div>
-              <p class="type-footnote" style="color: var(--label-secondary);">Pick by machine, muscle, or Push/Pull—or load a saved preset.</p>
+          <div class="py-12 px-4 text-center space-y-4">
+            <div class="space-y-1.5">
+              <div class="text-[26px] leading-[31px] font-extrabold tracking-tight text-white">No Exercises Yet</div>
+              <p class="type-subhead max-w-[280px] mx-auto" style="color: var(--label-secondary);">Pick by machine, muscle, or load a saved preset to get started.</p>
             </div>
             ${interactive ? `
               <div class="pt-1">
-                <button type="button" onclick="openAddExerciseSheet('SESSION')" class="solid-pill px-5 py-2.5 type-subhead font-bold" style="background-color: #0275e7; color: #FFFFFF;">
+                <button type="button" onclick="openAddExerciseSheet('SESSION')" class="solid-pill px-6 py-3 type-headline font-bold" style="background-color: #0275e7; color: #FFFFFF;">
                   + Pick Exercises
                 </button>
               </div>
@@ -7159,7 +7261,7 @@
       const canComplete = hasAnyWorkoutInput(dateStr);
 
       let bottomActionHtml = '';
-      if (!isCompleted) {
+      if (!isCompleted && hasExercises) {
         bottomActionHtml = `
           <button type="button" ${interactive ? 'id="completeWorkoutActionBtn" onclick="completeCurrentWorkout()"' : 'tabindex="-1"'} ${!canComplete ? 'disabled' : ''} class="solid-pill w-full py-4 px-6 type-headline text-center transition-opacity" style="background-color: #0275e7; color: #FFFFFF; opacity: ${canComplete ? '1' : '0.35'}; pointer-events: ${canComplete ? 'auto' : 'none'};">
             <span ${interactive ? 'id="completeWorkoutBtnLabel"' : ''}>Complete Workout</span>
@@ -7349,19 +7451,8 @@
     function updateAddSheetSort(val) { addSheetSortMode = val || 'name-asc'; renderAddSheetMultiSelectList(); }
 
     function renderAddSheetDirectionPills() {
-      const container = document.getElementById('addSheetDirectionPills');
-      if (!container) return;
-      container.innerHTML = DIRECTION_FILTERS.map(dir => {
-        const isSel = dir === activeAddDirectionFilter;
-        return `
-          <button
-            type="button"
-            onclick="updateAddSheetDirectionFilter('${esc(dir)}')"
-            class="${isSel ? 'solid-pill' : 'glass glass--clear glass--pill'} px-3.5 py-1 text-[12px] shrink-0"
-            style="${isSel ? 'background-color: #0275e7; color: #FFFFFF;' : 'color: #FFFFFF;'}"
-          >${esc(dir)}</button>
-        `;
-      }).join('');
+      const sel = document.getElementById('addSheetDirSelect');
+      if (sel) sel.value = activeAddDirectionFilter || 'All';
     }
 
     function renderNewExMuscleChips() {
@@ -7447,7 +7538,7 @@
         container.innerHTML = `
           <div class="settings-group p-6 text-center space-y-2">
             <p class="type-subhead text-white font-semibold">No Matching Exercises</p>
-            <p class="type-caption" style="color: var(--label-secondary);">Try clearing a filter or tap “+ Library” above to create a new movement.</p>
+            <p class="type-caption" style="color: var(--label-secondary);">Try clearing a filter or tap “Add New” above to create a new movement.</p>
           </div>
         `;
         updateAddSheetSubmitButton();
@@ -7461,8 +7552,11 @@
             const alreadyInToday = existingNames.has((item.name || '').trim().toLowerCase());
             const dir = getDirection(item);
             const mod = getModality(item);
-            const muscles = normalizeMuscles(item).join(', ');
+            const musclesArr = normalizeMuscles(item);
             const dirColor = getDirectionColor(dir, mod);
+            const musclePillsHtml = musclesArr.map(m =>
+              `<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: rgba(191, 90, 242, 0.18); color: #E2B8FF;">${esc(m)}</span>`
+            ).join('');
             return `
               <button type="button" onclick="toggleSelectAddExercise('${esc(item.id)}', this)" class="settings-row !py-3 ${isSelected ? 'is-selected' : ''}">
                 <div class="min-w-0 pr-2">
@@ -7470,10 +7564,11 @@
                     <span class="type-subhead font-semibold text-white truncate">${esc(item.name)}</span>
                     ${alreadyInToday ? `<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0" style="background: rgba(255,255,255,0.10); color: var(--label-secondary);">In Session</span>` : ''}
                   </div>
-                  <div class="flex items-center gap-1.5 mt-1 flex-wrap">
-                    <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: rgba(${dirColor.rgb}, 0.22); color: ${dirColor.hex};">${esc(dir)} · ${esc(muscles)}</span>
-                    ${item.equipment ? `<span class="type-caption truncate" style="color: var(--label-tertiary);">${esc(item.equipment)}</span>` : ''}
+                  <div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                    <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: rgba(${dirColor.rgb}, 0.22); color: ${dirColor.hex};">${esc(dir)}</span>
+                    ${musclePillsHtml}
                   </div>
+                  ${item.equipment ? `<div class="type-caption truncate mt-1" style="color: var(--label-tertiary);">${esc(item.equipment)}</div>` : ''}
                 </div>
                 <span class="multi-check-circle">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -7557,9 +7652,8 @@
       if (badgeEl) badgeEl.style.color = '#0275e7';
 
       if (eyebrowEl) {
-        eyebrowEl.textContent = isLibraryMode
-          ? 'Save new movement to Exercise Library'
-          : `Daily Session • ${formatStackedDate(state.activeDate || getTodayDateStr()).monthDay}`;
+        eyebrowEl.textContent = isLibraryMode ? 'Save new movement to Exercise Library' : '';
+        eyebrowEl.classList.toggle('hidden', !isLibraryMode);
       }
       if (titleEl) titleEl.textContent = isLibraryMode ? 'New Library Exercise' : 'Add Exercises';
 
