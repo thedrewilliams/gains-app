@@ -313,6 +313,28 @@
       100% { box-shadow: 0 0 0 0.5px rgba(255, 214, 10, 0.55), inset 0 1px 1px rgba(255, 245, 190, 0.50), 0 2px 10px rgba(255, 214, 10, 0.16); }
     }
 
+    .rest-timer-float {
+      position: fixed;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom, 12px) + 84px);
+      transform: translateX(-50%);
+      z-index: 38;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px 8px 14px;
+      border-radius: 9999px;
+      background: rgba(24, 24, 28, 0.92);
+      -webkit-backdrop-filter: blur(22px) saturate(180%);
+      backdrop-filter: blur(22px) saturate(180%);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(255, 255, 255, 0.22);
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.22s ease;
+    }
+
+    .rest-timer-float.hidden {
+      display: none;
+    }
+
     .floating-tab-bar.is-active-touch {
       transform: scale(1.008);
     }
@@ -1772,6 +1794,9 @@
                 </div>
               </div>
               <div class="flex items-center gap-2 shrink-0 pb-1">
+                <button type="button" id="logRestTimerBtn" onclick="openRestTimerModal()" aria-label="Rest Timer" title="Rest Timer" class="glass glass--clear glass--circle-36 glass-interactive">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 1.5"/><path d="M9 2h6"/><path d="M12 2v3"/></svg>
+                </button>
                 <button type="button" id="logCalendarToggleBtn" onclick="toggleLogCalendarDrawer()" aria-label="Toggle Month Calendar" aria-expanded="false" class="glass glass--clear glass--circle-36 glass-interactive">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 </button>
@@ -2428,6 +2453,129 @@
           Cancel
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       FLOATING LIVE REST TIMER PILL
+       ========================================================================= -->
+  <div id="restTimerFloatPill" class="rest-timer-float hidden" role="status" aria-live="polite">
+    <button type="button" onclick="openRestTimerModal()" class="flex items-center gap-2 text-left">
+      <span class="w-2 h-2 rounded-full" id="restTimerFloatDot" style="background: #30D158;"></span>
+      <span id="restTimerFloatText" class="text-[15px] font-extrabold tabular-nums text-white tracking-tight">1:30</span>
+    </button>
+    <div class="flex items-center gap-1.5">
+      <button type="button" onclick="adjustRestTimer(-15)" class="px-2 py-1 rounded-full text-[11px] font-bold text-white/80" style="background: rgba(255,255,255,0.10);">-15s</button>
+      <button type="button" onclick="adjustRestTimer(15)" class="px-2 py-1 rounded-full text-[11px] font-bold text-white/80" style="background: rgba(255,255,255,0.10);">+15s</button>
+      <button type="button" onclick="toggleRestTimerPause()" id="restTimerFloatPauseBtn" aria-label="Pause or Resume Timer" class="w-7 h-7 rounded-full flex items-center justify-center text-white" style="background: rgba(255,255,255,0.14);">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+      </button>
+      <button type="button" onclick="stopRestTimer()" aria-label="Stop Timer" class="w-7 h-7 rounded-full flex items-center justify-center text-white/75" style="background: rgba(255,255,255,0.09);">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       REST TIMER MODAL
+       ========================================================================= -->
+  <div id="restTimerBackdrop" class="ios-alert-backdrop" onclick="if(event.target===this) closeRestTimerModal()">
+    <div class="ios-alert-dialog text-left" role="dialog" aria-modal="true" aria-labelledby="restTimerTitle">
+      <div class="apple-sheet-header !pb-3">
+        <div class="min-w-0">
+          <h3 id="restTimerTitle" class="type-title-2 text-white font-bold">Rest Timer</h3>
+          <p class="type-caption" style="color: var(--label-secondary);">Tap a preset or adjust mid-rest</p>
+        </div>
+        <button type="button" onclick="closeRestTimerModal()" class="apple-sheet-close-btn" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="flex flex-col items-center justify-center py-3">
+        <div class="relative w-40 h-40 flex items-center justify-center">
+          <svg width="160" height="160" viewBox="0 0 160 160" class="-rotate-90">
+            <circle cx="80" cy="80" r="68" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="8"/>
+            <circle id="restTimerRing" cx="80" cy="80" r="68" fill="none" stroke="#30D158" stroke-width="8" stroke-linecap="round" stroke-dasharray="427.26" stroke-dashoffset="0" style="transition: stroke-dashoffset 0.25s linear;"/>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <span id="restTimerModalDisplay" class="text-[36px] font-extrabold tabular-nums text-white tracking-tight">1:30</span>
+            <span id="restTimerModalStatus" class="text-[11px] font-bold uppercase tracking-wider" style="color: var(--label-secondary);">Ready</span>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-5 gap-1.5 mb-3">
+        <button type="button" onclick="startRestTimer(45)" class="py-2 rounded-full text-[12px] font-bold text-white" style="background: #2C2C2E;">45s</button>
+        <button type="button" onclick="startRestTimer(60)" class="py-2 rounded-full text-[12px] font-bold text-white" style="background: #2C2C2E;">1:00</button>
+        <button type="button" onclick="startRestTimer(90)" class="py-2 rounded-full text-[12px] font-bold text-white" style="background: #2C2C2E;">1:30</button>
+        <button type="button" onclick="startRestTimer(120)" class="py-2 rounded-full text-[12px] font-bold text-white" style="background: #2C2C2E;">2:00</button>
+        <button type="button" onclick="startRestTimer(180)" class="py-2 rounded-full text-[12px] font-bold text-white" style="background: #2C2C2E;">3:00</button>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <button type="button" onclick="adjustRestTimer(-15)" class="ios-alert-pill-btn h-[46px] text-white text-[14px]">-15s</button>
+        <button type="button" id="restTimerModalPrimaryBtn" onclick="toggleRestTimerPrimary()" class="solid-pill h-[46px] text-[14px] font-bold" style="background: #30D158; color: #FFFFFF;">Start</button>
+        <button type="button" onclick="adjustRestTimer(15)" class="ios-alert-pill-btn h-[46px] text-white text-[14px]">+15s</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       PER-EXERCISE PROGRESS & PR HISTORY MODAL
+       ========================================================================= -->
+  <div id="exerciseHistoryBackdrop" class="sheet-backdrop" style="z-index: 76;" onclick="if(event.target===this) closeExerciseHistoryModal()">
+    <div class="liquid-sheet" role="dialog" aria-modal="true" aria-labelledby="exerciseHistoryTitle">
+      <div class="apple-sheet-header !pb-3">
+        <div class="min-w-0 pr-2">
+          <h3 id="exerciseHistoryTitle" class="type-title-2 text-white font-bold truncate">Exercise History</h3>
+          <p id="exerciseHistorySub" class="type-caption truncate" style="color: var(--label-secondary);">Progression &amp; past sessions</p>
+        </div>
+        <button type="button" onclick="closeExerciseHistoryModal()" class="apple-sheet-close-btn" aria-label="Close">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="exerciseHistoryBody" class="flex-1 overflow-y-auto no-scrollbar space-y-4 pb-6"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       PERMANENT ACCOUNT DELETION CONFIRMATION (APPLE GUIDELINE 5.1.1(v))
+       ========================================================================= -->
+  <div id="deleteAccountConfirmBackdrop" class="ios-alert-backdrop" style="z-index: 82;" onclick="if(event.target===this) closeDeleteAccountModal()">
+    <div class="ios-alert-dialog text-left" role="alertdialog" aria-modal="true" aria-labelledby="deleteAccountTitle">
+      <div class="apple-sheet-header !pb-3">
+        <div class="min-w-0">
+          <h3 id="deleteAccountTitle" class="type-headline text-white font-bold">Delete Account Permanently?</h3>
+          <p class="type-caption" style="color: var(--label-secondary);">This cannot be undone</p>
+        </div>
+        <button type="button" onclick="closeDeleteAccountModal()" class="apple-sheet-close-btn" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <p class="type-subhead px-0.5 mb-4" style="color: var(--label-secondary);">
+        Permanently deletes your account, passkeys, password, and all synced workout history from our servers and clears this device.
+      </p>
+      <p id="deleteAccountError" class="hidden type-caption mb-3 text-center" style="color: #FF453A;"></p>
+      <div class="space-y-2.5">
+        <button type="button" id="confirmDeleteAccountBtn" onclick="confirmPermanentAccountDeletion()" class="solid-pill w-full h-[50px] type-headline" style="background-color: #FF375F; color: #FFFFFF;">
+          Delete My Account
+        </button>
+        <button type="button" onclick="closeDeleteAccountModal()" class="ios-alert-pill-btn h-[50px] text-white">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       IN-APP PRIVACY POLICY & TERMS MODAL
+       ========================================================================= -->
+  <div id="legalSheetBackdrop" class="sheet-backdrop" style="z-index: 80;" onclick="if(event.target===this) closeLegalSheet()">
+    <div class="liquid-sheet" role="dialog" aria-modal="true" aria-labelledby="legalSheetTitle">
+      <div class="apple-sheet-header !pb-3">
+        <h3 id="legalSheetTitle" class="type-title-2 text-white font-bold truncate">Privacy Policy</h3>
+        <button type="button" onclick="closeLegalSheet()" class="apple-sheet-close-btn" aria-label="Close">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="legalSheetBody" class="flex-1 overflow-y-auto no-scrollbar space-y-3 pb-6 text-[14px] leading-relaxed" style="color: rgba(235,235,245,0.78);"></div>
     </div>
   </div>
 
@@ -3374,12 +3522,29 @@
       return parsed;
     }
 
+    function pruneOrphanedSessions(targetState) {
+      if (!targetState || !targetState.sessions) return false;
+      let changed = false;
+      const byDate = targetState.sessionExercisesByDate || {};
+      Object.keys(targetState.sessions).forEach(dateStr => {
+        const list = Array.isArray(byDate[dateStr]) ? byDate[dateStr] : [];
+        if (list.length === 0) {
+          delete targetState.sessions[dateStr];
+          ensureDeletedItemsStruct(targetState);
+          targetState.deletedItems.sessions[dateStr] = Date.now();
+          changed = true;
+        }
+      });
+      return changed;
+    }
+
     function loadState() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const clean = sanitizeLoadedState(JSON.parse(saved));
           if (clean) {
+            pruneOrphanedSessions(clean);
             clean.activeTab = 'SUMMARY';
             return clean;
           }
@@ -3858,6 +4023,453 @@
         return;
       }
       window.location.href = '/api/auth/google';
+    }
+
+    // =========================================================================
+    // APP STORE FEATURES: HAPTICS, ACCOUNT DELETION, LEGAL, REST TIMER, HISTORY & PER-SET
+    // =========================================================================
+    function triggerHaptic(style = 'light') {
+      if (state && state.hapticsEnabled === false) return;
+      try {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics) {
+          const H = window.Capacitor.Plugins.Haptics;
+          if (style === 'success' && H.notification) { H.notification({ type: 'SUCCESS' }); return; }
+          if (H.impact) { H.impact({ style: style === 'medium' ? 'MEDIUM' : 'LIGHT' }); return; }
+        }
+        if (navigator && typeof navigator.vibrate === 'function') {
+          navigator.vibrate(style === 'success' ? [20, 40, 20] : style === 'medium' ? 18 : 10);
+        }
+      } catch (_) {}
+    }
+
+    function updateDefaultRestSeconds(val) {
+      state.defaultRestSeconds = Math.max(15, Number(val) || 90);
+      saveState();
+      triggerHaptic('light');
+    }
+
+    function toggleHapticsSetting() {
+      state.hapticsEnabled = state.hapticsEnabled === false ? true : false;
+      saveState();
+      triggerHaptic('light');
+      renderMenuSubpageContent('GENERAL');
+    }
+
+    function openDeleteAccountModal() {
+      const errEl = document.getElementById('deleteAccountError');
+      if (errEl) { errEl.textContent = ''; errEl.classList.add('hidden'); }
+      openModalSheet('deleteAccountConfirmBackdrop');
+    }
+
+    function closeDeleteAccountModal() {
+      const el = document.getElementById('deleteAccountConfirmBackdrop');
+      if (el) el.classList.remove('is-open');
+      releaseBodyScrollLockIfClear();
+    }
+
+    async function confirmPermanentAccountDeletion() {
+      const btn = document.getElementById('confirmDeleteAccountBtn');
+      const errEl = document.getElementById('deleteAccountError');
+      if (btn) { btn.disabled = true; btn.textContent = 'Deleting…'; }
+      try {
+        const res = await fetch('/api/auth/account', { method: 'DELETE' });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || 'Could not delete account.');
+        }
+        try { localStorage.clear(); } catch (_) {}
+        window.location.reload();
+      } catch (err) {
+        if (errEl) {
+          errEl.textContent = err && err.message ? err.message : 'Could not delete account.';
+          errEl.classList.remove('hidden');
+        }
+        if (btn) { btn.disabled = false; btn.textContent = 'Delete My Account'; }
+      }
+    }
+
+    function openLegalSheet(kind) {
+      const titleEl = document.getElementById('legalSheetTitle');
+      const bodyEl = document.getElementById('legalSheetBody');
+      if (!titleEl || !bodyEl) return;
+      if (kind === 'privacy') {
+        titleEl.textContent = 'Privacy Policy';
+        bodyEl.innerHTML = `
+          <p class="type-caption" style="color: var(--label-secondary);">Effective Date: November 2026</p>
+          <p>Gains is a personal workout tracker designed with privacy first. We collect only the minimum information required to store and sync your training logs across your devices.</p>
+          <h4 class="type-headline text-white pt-2">Data We Collect</h4>
+          <p>Your email address, optional display name, authentication credentials (salted password hash or Passkey public key), and the workout logs, presets, and equipment preferences you enter.</p>
+          <h4 class="type-headline text-white pt-2">How We Use Your Data</h4>
+          <p>Used solely for workout tracking, analytics, and private cloud sync. We never sell your data or serve third-party ads.</p>
+          <h4 class="type-headline text-white pt-2">Your Control</h4>
+          <p>Export a JSON backup anytime in Settings &rarr; Data &amp; Backup, or permanently delete your account and all cloud data in Settings &rarr; Profile &rarr; Delete Account Permanently.</p>
+        `;
+      } else {
+        titleEl.textContent = 'Terms of Service';
+        bodyEl.innerHTML = `
+          <p class="type-caption" style="color: var(--label-secondary);">Effective Date: November 2026</p>
+          <p>By using Gains, you agree to these Terms of Service.</p>
+          <h4 class="type-headline text-white pt-2">Fitness Disclaimer</h4>
+          <p>Gains is a workout logging tool and does not provide medical advice, diagnosis, or treatment. Consult a qualified professional before starting or modifying an exercise program.</p>
+          <h4 class="type-headline text-white pt-2">Subscriptions &amp; Account</h4>
+          <p>You retain full ownership of your workout logs. Any App Store purchases or subscriptions are managed through your Apple Account settings, and you may permanently delete your account anytime in Settings &rarr; Profile.</p>
+        `;
+      }
+      openModalSheet('legalSheetBackdrop');
+    }
+
+    function closeLegalSheet() {
+      const el = document.getElementById('legalSheetBackdrop');
+      if (el) el.classList.remove('is-open');
+      releaseBodyScrollLockIfClear();
+    }
+
+    // --- Built-in Rest Timer ---
+    let restTimerTotalSec = 90;
+    let restTimerRemainingSec = 90;
+    let restTimerRunning = false;
+    let restTimerInterval = null;
+    let restTimerEndTs = 0;
+
+    function formatTimerMMSS(sec) {
+      const s = Math.max(0, Math.ceil(sec));
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return `${m}:${String(r).padStart(2, '0')}`;
+    }
+
+    function playRestTimerChime() {
+      triggerHaptic('success');
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        const ctx = new Ctx();
+        [880, 1174.66].forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.001, ctx.currentTime + i * 0.14);
+          gain.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + i * 0.14 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.14 + 0.28);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + i * 0.14);
+          osc.stop(ctx.currentTime + i * 0.14 + 0.30);
+        });
+      } catch (_) {}
+    }
+
+    function renderRestTimerUI() {
+      const text = formatTimerMMSS(restTimerRemainingSec);
+      const floatPill = document.getElementById('restTimerFloatPill');
+      const floatText = document.getElementById('restTimerFloatText');
+      const floatDot = document.getElementById('restTimerFloatDot');
+      const floatPause = document.getElementById('restTimerFloatPauseBtn');
+      const modalDisp = document.getElementById('restTimerModalDisplay');
+      const modalStatus = document.getElementById('restTimerModalStatus');
+      const modalBtn = document.getElementById('restTimerModalPrimaryBtn');
+      const ring = document.getElementById('restTimerRing');
+
+      if (modalDisp) modalDisp.textContent = text;
+      if (modalStatus) modalStatus.textContent = restTimerRunning ? 'Resting' : (restTimerRemainingSec === 0 ? 'Done' : 'Paused');
+      if (modalBtn) {
+        modalBtn.textContent = restTimerRunning ? 'Pause' : (restTimerRemainingSec > 0 && restTimerRemainingSec < restTimerTotalSec ? 'Resume' : 'Start');
+        modalBtn.style.background = restTimerRunning ? '#FF9F0A' : '#30D158';
+      }
+      if (ring) {
+        const circ = 427.26;
+        const frac = restTimerTotalSec > 0 ? Math.max(0, Math.min(1, restTimerRemainingSec / restTimerTotalSec)) : 0;
+        ring.style.strokeDashoffset = String((circ * (1 - frac)).toFixed(2));
+      }
+      if (floatText) floatText.textContent = text;
+      if (floatDot) floatDot.style.background = restTimerRunning ? '#30D158' : '#FF9F0A';
+      if (floatPause) {
+        floatPause.innerHTML = restTimerRunning
+          ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>'
+          : '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>';
+      }
+      if (floatPill) {
+        const showFloat = restTimerRunning || (restTimerRemainingSec > 0 && restTimerRemainingSec < restTimerTotalSec);
+        floatPill.classList.toggle('hidden', !showFloat);
+      }
+    }
+
+    function openRestTimerModal() {
+      if (!restTimerRunning && restTimerRemainingSec === restTimerTotalSec) {
+        const def = Number(state.defaultRestSeconds) || 90;
+        restTimerTotalSec = def;
+        restTimerRemainingSec = def;
+      }
+      renderRestTimerUI();
+      openModalSheet('restTimerBackdrop');
+    }
+
+    function closeRestTimerModal() {
+      const el = document.getElementById('restTimerBackdrop');
+      if (el) el.classList.remove('is-open');
+      releaseBodyScrollLockIfClear();
+    }
+
+    function startRestTimer(seconds) {
+      const sec = Math.max(5, Number(seconds) || Number(state.defaultRestSeconds) || 90);
+      restTimerTotalSec = sec;
+      restTimerRemainingSec = sec;
+      restTimerRunning = true;
+      restTimerEndTs = Date.now() + sec * 1000;
+      if (restTimerInterval) clearInterval(restTimerInterval);
+      restTimerInterval = setInterval(() => {
+        if (!restTimerRunning) return;
+        const left = (restTimerEndTs - Date.now()) / 1000;
+        if (left <= 0) {
+          restTimerRemainingSec = 0;
+          restTimerRunning = false;
+          clearInterval(restTimerInterval);
+          restTimerInterval = null;
+          renderRestTimerUI();
+          playRestTimerChime();
+          return;
+        }
+        restTimerRemainingSec = left;
+        renderRestTimerUI();
+      }, 200);
+      triggerHaptic('light');
+      renderRestTimerUI();
+    }
+
+    function toggleRestTimerPause() {
+      if (restTimerRunning) {
+        restTimerRunning = false;
+        restTimerRemainingSec = Math.max(0, (restTimerEndTs - Date.now()) / 1000);
+      } else if (restTimerRemainingSec > 0) {
+        restTimerRunning = true;
+        restTimerEndTs = Date.now() + restTimerRemainingSec * 1000;
+        if (!restTimerInterval) startRestTimer(restTimerRemainingSec);
+      } else {
+        startRestTimer(restTimerTotalSec || 90);
+        return;
+      }
+      triggerHaptic('light');
+      renderRestTimerUI();
+    }
+
+    function toggleRestTimerPrimary() {
+      if (restTimerRunning || (restTimerRemainingSec > 0 && restTimerRemainingSec < restTimerTotalSec)) {
+        toggleRestTimerPause();
+      } else {
+        startRestTimer(restTimerTotalSec || Number(state.defaultRestSeconds) || 90);
+      }
+    }
+
+    function adjustRestTimer(deltaSec) {
+      const next = Math.max(5, Math.min(600, Math.round(restTimerRemainingSec + deltaSec)));
+      restTimerRemainingSec = next;
+      if (next > restTimerTotalSec) restTimerTotalSec = next;
+      if (restTimerRunning) restTimerEndTs = Date.now() + next * 1000;
+      triggerHaptic('light');
+      renderRestTimerUI();
+    }
+
+    function stopRestTimer() {
+      restTimerRunning = false;
+      if (restTimerInterval) { clearInterval(restTimerInterval); restTimerInterval = null; }
+      const def = Number(state.defaultRestSeconds) || 90;
+      restTimerTotalSec = def;
+      restTimerRemainingSec = def;
+      renderRestTimerUI();
+    }
+
+    // --- Per-Exercise Progress & PR History Modal ---
+    function openExerciseHistoryModal(exName) {
+      const titleEl = document.getElementById('exerciseHistoryTitle');
+      const subEl = document.getElementById('exerciseHistorySub');
+      const bodyEl = document.getElementById('exerciseHistoryBody');
+      if (!titleEl || !bodyEl) return;
+
+      const targetKey = String(exName || '').trim().toLowerCase();
+      const entries = [];
+      const byDate = state.sessionExercisesByDate || {};
+      Object.keys(byDate).sort().forEach(dateStr => {
+        const list = Array.isArray(byDate[dateStr]) ? byDate[dateStr] : [];
+        list.forEach(ex => {
+          if (String(ex.name || '').trim().toLowerCase() !== targetKey) return;
+          const log = getLogForDate(ex, dateStr);
+          const hasAny = Boolean(log.weight || log.reps || log.sets || log.duration || log.distance || (log.notes || '').trim());
+          if (!hasAny) return;
+          const weightNum = parseFloat(String(log.weight || '').replace(/[^0-9.]/g, '')) || 0;
+          const repsNum = parseInt(String(log.reps || '').replace(/[^0-9]/g, ''), 10) || 0;
+          const est1rm = weightNum > 0 && repsNum > 0 ? Math.round(weightNum * (1 + repsNum / 30)) : weightNum;
+          entries.push({ dateStr, ex, log, weightNum, repsNum, est1rm, mod: getModality(ex) });
+        });
+      });
+
+      titleEl.textContent = exName;
+      if (subEl) subEl.textContent = `${entries.length} logged session${entries.length === 1 ? '' : 's'}`;
+
+      if (!entries.length) {
+        bodyEl.innerHTML = `<div class="fitness-card p-6 text-center"><p class="type-subhead" style="color: var(--label-secondary);">No history logged for this exercise yet.</p></div>`;
+        openModalSheet('exerciseHistoryBackdrop');
+        return;
+      }
+
+      const best1rmEntry = entries.reduce((best, cur) => (cur.est1rm > best.est1rm ? cur : best), entries[0]);
+      const bestWeightEntry = entries.reduce((best, cur) => (cur.weightNum > best.weightNum ? cur : best), entries[0]);
+      const chartPts = entries.filter(e => e.est1rm > 0);
+      let chartHtml = '';
+      if (chartPts.length >= 2) {
+        const W = 320, H = 110, pad = 14;
+        const vals = chartPts.map(p => p.est1rm);
+        const minV = Math.min(...vals), maxV = Math.max(...vals);
+        const span = Math.max(1, maxV - minV);
+        const coords = chartPts.map((p, i) => {
+          const x = pad + (i / (chartPts.length - 1)) * (W - pad * 2);
+          const y = H - pad - ((p.est1rm - minV) / span) * (H - pad * 2);
+          return `${x.toFixed(1)},${y.toFixed(1)}`;
+        });
+        chartHtml = `
+          <div class="fitness-card p-4 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="type-caption uppercase tracking-wider font-bold" style="color: var(--label-secondary);">Est. 1RM Progression</span>
+              <span class="type-caption font-bold" style="color: #0A84FF;">${minV} → ${maxV} lb</span>
+            </div>
+            <svg viewBox="0 0 ${W} ${H}" class="w-full h-[110px] overflow-visible">
+              <polyline fill="none" stroke="#0A84FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${coords.join(' ')}" />
+              ${coords.map(c => {
+                const [cx, cy] = c.split(',');
+                return `<circle cx="${cx}" cy="${cy}" r="3.8" fill="#FFFFFF" stroke="#0A84FF" stroke-width="2"/>`;
+              }).join('')}
+            </svg>
+          </div>
+        `;
+      }
+
+      const reversed = entries.slice().reverse();
+      bodyEl.innerHTML = `
+        <div class="grid grid-cols-3 gap-2">
+          <div class="fitness-card p-3 text-center">
+            <div class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--label-secondary);">Best Load</div>
+            <div class="text-[18px] font-extrabold text-white mt-0.5">${bestWeightEntry.weightNum ? `${bestWeightEntry.weightNum} lb` : '—'}</div>
+          </div>
+          <div class="fitness-card p-3 text-center">
+            <div class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--label-secondary);">Est. 1RM</div>
+            <div class="text-[18px] font-extrabold mt-0.5" style="color: #30D158;">${best1rmEntry.est1rm ? `${best1rmEntry.est1rm} lb` : '—'}</div>
+          </div>
+          <div class="fitness-card p-3 text-center">
+            <div class="text-[10px] font-bold uppercase tracking-wider" style="color: var(--label-secondary);">Sessions</div>
+            <div class="text-[18px] font-extrabold text-white mt-0.5">${entries.length}</div>
+          </div>
+        </div>
+        ${chartHtml}
+        <div class="space-y-2">
+          <div class="type-caption uppercase tracking-wider font-bold px-1" style="color: var(--label-secondary);">Session Log</div>
+          <div class="settings-group">
+            ${reversed.map(item => {
+              const summary = formatLiftSummary(item.log, item.mod) || 'Logged';
+              const perSetNote = Array.isArray(item.log.setRows) && item.log.setRows.length
+                ? item.log.setRows.map((r, i) => `S${i+1}: ${r.weight || '—'} × ${r.reps || '—'}`).join(' · ')
+                : '';
+              return `
+                <div class="px-4 py-3 space-y-1 border-b border-white/5 last:border-b-0">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="type-subhead font-bold text-white">${esc(formatFullDate(item.dateStr))}</span>
+                    <span class="type-caption font-bold" style="color: #0A84FF;">${esc(summary)}</span>
+                  </div>
+                  ${perSetNote ? `<div class="type-caption" style="color: var(--label-secondary);">${esc(perSetNote)}</div>` : ''}
+                  ${(item.log.notes || '').trim() ? `<p class="type-caption" style="color: rgba(235,235,245,0.72);">${esc(item.log.notes.trim())}</p>` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+      openModalSheet('exerciseHistoryBackdrop');
+    }
+
+    function closeExerciseHistoryModal() {
+      const el = document.getElementById('exerciseHistoryBackdrop');
+      if (el) el.classList.remove('is-open');
+      releaseBodyScrollLockIfClear();
+    }
+
+    // --- Optional Per-Set Logging Helpers ---
+    function syncLogSummaryFromSetRows(log) {
+      if (!Array.isArray(log.setRows) || !log.setRows.length) return;
+      log.sets = String(log.setRows.length);
+      let topRow = log.setRows[0];
+      let topW = -1;
+      log.setRows.forEach(r => {
+        const w = parseFloat(String(r.weight || '').replace(/[^0-9.]/g, '')) || 0;
+        if (w > topW) { topW = w; topRow = r; }
+      });
+      if (topRow) {
+        if (topRow.weight) log.weight = topRow.weight;
+        if (topRow.reps) log.reps = topRow.reps;
+      }
+    }
+
+    function togglePerSetMode(exId) {
+      const dateStr = state.activeDate || getTodayDateStr();
+      const ex = getExercisesForDate(dateStr).find(e => e.id === exId);
+      if (!ex) return;
+      const log = getLogForDate(ex, dateStr);
+      if (Array.isArray(log.setRows) && log.setRows.length) {
+        syncLogSummaryFromSetRows(log);
+        delete log.setRows;
+      } else {
+        const count = Math.max(1, Math.min(8, parseInt(log.sets, 10) || 3));
+        log.setRows = Array.from({ length: count }, () => ({
+          weight: log.weight || '',
+          reps: log.reps || ''
+        }));
+      }
+      log.updatedAt = Date.now();
+      saveState();
+      renderWorkoutCards();
+      triggerHaptic('light');
+    }
+
+    function updatePerSetRow(exId, rowIdx, field, val) {
+      const dateStr = state.activeDate || getTodayDateStr();
+      const ex = getExercisesForDate(dateStr).find(e => e.id === exId);
+      if (!ex) return;
+      const log = getLogForDate(ex, dateStr);
+      if (!Array.isArray(log.setRows) || !log.setRows[rowIdx]) return;
+      log.setRows[rowIdx][field] = val;
+      syncLogSummaryFromSetRows(log);
+      log.updatedAt = Date.now();
+      clearSessionTombstone(dateStr);
+      clearExerciseLogTombstone(dateStr, ex.name);
+      saveState();
+      autoSyncActiveDateIfHasData();
+      updateCompleteButtonState();
+    }
+
+    function addPerSetRow(exId) {
+      const dateStr = state.activeDate || getTodayDateStr();
+      const ex = getExercisesForDate(dateStr).find(e => e.id === exId);
+      if (!ex) return;
+      const log = getLogForDate(ex, dateStr);
+      log.setRows = Array.isArray(log.setRows) ? log.setRows : [];
+      const prev = log.setRows[log.setRows.length - 1] || { weight: log.weight || '', reps: log.reps || '' };
+      log.setRows.push({ weight: prev.weight || '', reps: prev.reps || '' });
+      syncLogSummaryFromSetRows(log);
+      log.updatedAt = Date.now();
+      saveState();
+      renderWorkoutCards();
+      triggerHaptic('light');
+    }
+
+    function removePerSetRow(exId, rowIdx) {
+      const dateStr = state.activeDate || getTodayDateStr();
+      const ex = getExercisesForDate(dateStr).find(e => e.id === exId);
+      if (!ex) return;
+      const log = getLogForDate(ex, dateStr);
+      if (!Array.isArray(log.setRows) || log.setRows.length <= 1) return;
+      log.setRows.splice(rowIdx, 1);
+      syncLogSummaryFromSetRows(log);
+      log.updatedAt = Date.now();
+      saveState();
+      renderWorkoutCards();
     }
 
     async function signOutNativeAuth() {
@@ -4587,7 +5199,14 @@
         ensureDeletedItemsStruct(state);
         state.deletedItems.exercisesByDate[normalizeExKey(dateStr, removedEx.name)] = Date.now();
       }
-      state.sessionExercisesByDate[dateStr] = dayExercises.filter(e => e.id !== pendingRemoveExerciseId);
+      const remaining = dayExercises.filter(e => e.id !== pendingRemoveExerciseId);
+      state.sessionExercisesByDate[dateStr] = remaining;
+      if (remaining.length === 0 && state.sessions && state.sessions[dateStr]) {
+        delete state.sessions[dateStr];
+        ensureDeletedItemsStruct(state);
+        state.deletedItems.sessions[dateStr] = Date.now();
+        isEditingCompletedWorkout = false;
+      }
       saveState();
       autoSyncActiveDateIfHasData();
       closeRemoveExerciseConfirm();
@@ -6881,6 +7500,9 @@
                 <button type="button" onclick="signOutNativeAuth()" class="solid-pill w-full py-3 px-4 gap-2 type-subhead font-semibold" style="background-color: rgba(255, 69, 58, 0.14); color: #FF453A;">
                   <span>Sign Out</span>
                 </button>
+                <button type="button" onclick="openDeleteAccountModal()" class="w-full py-2.5 px-4 text-center text-[13px] font-semibold transition-opacity active:opacity-70" style="color: rgba(255, 69, 58, 0.78);">
+                  Delete Account Permanently
+                </button>
               ` : `
                 ${buildSignedOutAuthHtml('PROFILE', profileAuthStep, 'profileSubpageAuthNotice')}
               `}
@@ -6889,11 +7511,39 @@
           </div>
         `;
       } else if (section === 'GENERAL') {
+        const defaultRest = Number(state.defaultRestSeconds) || 90;
+        const hapticsOn = state.hapticsEnabled !== false;
         body.innerHTML = `
           <div class="settings-group">
             <div class="settings-row !cursor-default">
+              <span class="type-headline text-white">Default Rest Timer</span>
+              <select onchange="updateDefaultRestSeconds(this.value)" aria-label="Default Rest Timer" class="bg-transparent text-right type-subhead font-semibold outline-none" style="color: #0A84FF;">
+                ${[45, 60, 90, 120, 180].map(sec => `<option value="${sec}" ${defaultRest === sec ? 'selected' : ''}>${sec >= 60 ? `${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}` : `${sec}s`}</option>`).join('')}
+              </select>
+            </div>
+            <div class="settings-row !cursor-default">
+              <span class="type-headline text-white">Haptic Feedback</span>
+              <button type="button" role="switch" aria-checked="${hapticsOn}" onclick="toggleHapticsSetting()" class="ios-glass-toggle ${hapticsOn ? 'is-on' : ''}">
+                <span class="ios-glass-toggle-thumb"></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <button type="button" onclick="openLegalSheet('privacy')" class="settings-row">
+              <span class="type-headline text-white">Privacy Policy</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button type="button" onclick="openLegalSheet('terms')" class="settings-row">
+              <span class="type-headline text-white">Terms of Service</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-row !cursor-default">
               <span class="type-headline text-white">Application</span>
-              <span class="type-subhead" style="color: var(--label-secondary);">Gains</span>
+              <span class="type-subhead" style="color: var(--label-secondary);">Gains v1.0.0</span>
             </div>
             <div class="settings-row !cursor-default">
               <span class="type-headline text-white">Sessions Logged</span>
@@ -7761,13 +8411,53 @@
           const weightSelectHtml = `<option value="" ${!selectedWeight ? 'selected' : ''}>Load</option>${customWeightOpt}` +
             (selectedWeight ? weightOpts.replace(`value="${esc(selectedWeight)}"`, `value="${esc(selectedWeight)}" selected`) : weightOpts);
 
-          metricsHtml = `
-            <div class="grid grid-cols-3 gap-2">
-              <select onchange="updateLogField('${esc(ex.id)}', 'sets', this.value)" aria-label="Sets" class="fitness-field !py-2 !px-2.5 font-semibold">${setsOptionsHtml}</select>
-              <select onchange="updateLogField('${esc(ex.id)}', 'weight', this.value)" aria-label="Load" class="fitness-field !py-2 !px-2.5 font-semibold">${weightSelectHtml}</select>
-              <select onchange="updateLogField('${esc(ex.id)}', 'reps', this.value)" aria-label="Reps" class="fitness-field !py-2 !px-2.5 font-semibold">${repsOptionsHtml}</select>
-            </div>
-          `;
+          const usePerSet = Array.isArray(log.setRows) && log.setRows.length > 0;
+          if (usePerSet) {
+            metricsHtml = `
+              <div class="space-y-2">
+                <div class="flex items-center justify-between px-0.5">
+                  <span class="text-[11px] font-bold uppercase tracking-wider" style="color: var(--label-secondary);">Per-Set Logging (${log.setRows.length})</span>
+                  <button type="button" onclick="togglePerSetMode('${esc(ex.id)}')" class="text-[11px] font-bold" style="color: #0A84FF;">Switch to Simple</button>
+                </div>
+                <div class="space-y-1.5">
+                  ${log.setRows.map((row, rIdx) => {
+                    const rW = row.weight || '';
+                    const rR = row.reps || '';
+                    const rCustomW = rW && !WEIGHT_OPTIONS.includes(rW) ? `<option value="${esc(rW)}" selected>${esc(rW)}</option>` : '';
+                    const rWeightHtml = `<option value="" ${!rW ? 'selected' : ''}>Load</option>${rCustomW}` +
+                      (rW ? weightOpts.replace(`value="${esc(rW)}"`, `value="${esc(rW)}" selected`) : weightOpts);
+                    const rRepsHtml = getRepsOptionsHtml(rR);
+                    return `
+                      <div class="flex items-center gap-1.5">
+                        <span class="w-6 text-center text-[11px] font-bold tabular-nums shrink-0" style="color: var(--label-secondary);">${rIdx + 1}</span>
+                        <select onchange="updatePerSetRow('${esc(ex.id)}', ${rIdx}, 'weight', this.value)" aria-label="Set ${rIdx + 1} Load" class="fitness-field flex-1 !py-1.5 !px-2.5 text-[14px] font-semibold">${rWeightHtml}</select>
+                        <select onchange="updatePerSetRow('${esc(ex.id)}', ${rIdx}, 'reps', this.value)" aria-label="Set ${rIdx + 1} Reps" class="fitness-field flex-1 !py-1.5 !px-2.5 text-[14px] font-semibold">${rRepsHtml}</select>
+                        ${log.setRows.length > 1 ? `
+                          <button type="button" onclick="removePerSetRow('${esc(ex.id)}', ${rIdx})" aria-label="Remove Set ${rIdx + 1}" class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background: rgba(255,255,255,0.06); color: rgba(235,235,245,0.65);">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          </button>
+                        ` : ''}
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+                <button type="button" onclick="addPerSetRow('${esc(ex.id)}')" class="w-full py-2 rounded-xl text-[12.5px] font-bold text-center" style="background: rgba(255,255,255,0.06); color: #0A84FF;">+ Add Set</button>
+              </div>
+            `;
+          } else {
+            metricsHtml = `
+              <div class="space-y-1.5">
+                <div class="grid grid-cols-3 gap-2">
+                  <select onchange="updateLogField('${esc(ex.id)}', 'sets', this.value)" aria-label="Sets" class="fitness-field !py-2 !px-2.5 font-semibold">${setsOptionsHtml}</select>
+                  <select onchange="updateLogField('${esc(ex.id)}', 'weight', this.value)" aria-label="Load" class="fitness-field !py-2 !px-2.5 font-semibold">${weightSelectHtml}</select>
+                  <select onchange="updateLogField('${esc(ex.id)}', 'reps', this.value)" aria-label="Reps" class="fitness-field !py-2 !px-2.5 font-semibold">${repsOptionsHtml}</select>
+                </div>
+                <div class="flex justify-end px-0.5">
+                  <button type="button" onclick="togglePerSetMode('${esc(ex.id)}')" class="text-[11px] font-semibold" style="color: var(--label-secondary);">Varying sets? <span style="color: #0A84FF;">Log per set</span></button>
+                </div>
+              </div>
+            `;
+          }
         }
 
         return `
@@ -7775,8 +8465,11 @@
             <!-- Block 1: Full-Width Title + Compact Icon Controls -->
             <div class="space-y-2">
               <div class="flex items-start justify-between gap-2.5">
-                <h3 class="text-[17px] leading-[22px] font-bold text-white tracking-tight min-w-0 pt-0.5">${esc(ex.name)}</h3>
+                <button type="button" onclick="openExerciseHistoryModal('${esc(ex.name)}')" class="text-left text-[17px] leading-[22px] font-bold text-white tracking-tight min-w-0 pt-0.5 active:opacity-70">${esc(ex.name)}</button>
                 <div class="flex items-center gap-1.5 shrink-0">
+                  <button type="button" onclick="openExerciseHistoryModal('${esc(ex.name)}')" aria-label="History for ${esc(ex.name)}" title="Exercise History & PRs" class="glass glass--clear glass--circle-36 glass-interactive shrink-0">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.85)" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  </button>
                   ${lastNoteBubbleHtml}
                   <button type="button" onclick="openRemoveExerciseConfirm('${esc(ex.id)}')" aria-label="Remove ${esc(ex.name)}" class="glass glass--clear glass--circle-36 glass-interactive shrink-0">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -7849,7 +8542,7 @@
       const sess = state.sessions[dateStr];
       const exercises = getExercisesForDate(dateStr);
       const hasExercises = exercises.length > 0;
-      const isCompleted = Boolean(sess && sess.completed);
+      const isCompleted = Boolean(hasExercises && sess && sess.completed);
       const isEditingThis = interactive && isCompleted && isEditingCompletedWorkout;
       const canEditExercises = interactive && (!isCompleted || isEditingThis);
       const showDateBtn = isEditingThis;
@@ -8019,6 +8712,9 @@
     }
 
     function renderAll() {
+      if (pruneOrphanedSessions(state)) {
+        saveState();
+      }
       const views = {
         SUMMARY: document.getElementById('summaryView'),
         LOG: document.getElementById('logView'),
