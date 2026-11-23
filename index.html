@@ -719,14 +719,29 @@
       top: 0;
       left: 0;
       right: 0;
-      z-index: 35;
-      padding-top: calc(env(safe-area-inset-top, 12px) + 14px);
+      z-index: 48 !important;
+      padding-top: calc(env(safe-area-inset-top, 12px) + 12px);
       padding-bottom: 10px;
-      background: transparent;
-      border-bottom: none;
+      background: transparent !important;
+      border-bottom: none !important;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.22s ease, background-color 0.2s ease, border-color 0.2s ease;
+      transition: opacity 0.2s ease;
+      isolation: isolate;
+    }
+
+    .sticky-compact-header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: calc(100% + 22px);
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.96) 0%, rgba(0, 0, 0, 0.84) 56%, rgba(0, 0, 0, 0) 100%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 0;
+      transition: opacity 0.22s ease;
     }
 
     .sticky-compact-header.is-pinned {
@@ -734,16 +749,20 @@
       pointer-events: auto;
     }
 
-    .sticky-compact-header.is-pinned {
-      background: #000000;
-      border-bottom: none;
+    .sticky-compact-header.is-pinned.has-scrolled-bar::before {
+      opacity: 1;
     }
 
-    .sticky-compact-header.is-pinned.has-scrolled-bar {
-      background: #000000;
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
-      border-bottom: none;
+    .sticky-compact-header .sticky-compact-title {
+      display: inline-block;
+      opacity: 0;
+      transform: translate3d(0, 4px, 0);
+      transition: opacity 0.2s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .sticky-compact-header .sticky-compact-title.is-visible {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
     }
 
     /* Smooth Calendar Fit for Empty Log State (never alters main.app-stage scroll clearance) */
@@ -761,7 +780,7 @@
       padding: 10px 16px;
     }
 
-    /* Dim & Lock Top Chrome + Tab Bar While Editing a Completed Workout */
+    /* Dim & Lock Top Chrome + Tab Bar While Editing a Completed Workout, letting cards scroll above the header */
     body.is-editing-completed .log-fixed-header,
     body.is-editing-completed #logCalendarDrawer,
     body.is-editing-completed #floatingTabBar {
@@ -771,15 +790,38 @@
       transition: opacity 0.24s ease, filter 0.24s ease;
     }
 
-    .sticky-compact-header {
-      z-index: 35 !important;
+    body.is-editing-completed .log-fixed-header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      background: transparent;
+    }
+
+    body.is-editing-completed .log-fixed-header::after {
+      display: none;
+    }
+
+    body.is-editing-completed #logScrollBody {
+      position: relative;
+      z-index: 24;
+    }
+
+    body.is-editing-completed #logScrollBodyInner {
+      padding-top: calc(env(safe-area-inset-top, 12px) + 196px);
+    }
+
+    .sticky-compact-header > div {
+      position: relative;
+      z-index: 5;
     }
 
     .sticky-compact-header #stickyHeaderLeft,
     .sticky-compact-header #stickyHeaderCenter,
     .sticky-compact-header #stickyHeaderRight {
       position: relative;
-      z-index: 2;
+      z-index: 5;
     }
 
     /* Log View: Immovable Header + Dedicated Body Scroll Container (Scrollbar Only in Body) */
@@ -1673,27 +1715,37 @@
         <div id="welcomeBlobWrap4" class="welcome-blob-wrap"><div class="welcome-blob welcome-blob--4"></div></div>
       </div>
 
-      <!-- Upper-Right Profile & Auth Bubble -->
-      <div class="fixed top-0 left-0 right-0 z-30 pointer-events-none" style="padding-top: calc(env(safe-area-inset-top, 12px) + 10px);">
-        <div class="max-w-lg mx-auto px-4 flex justify-end">
-          <button
-            type="button"
-            id="homeProfileBtn"
-            onclick="openAccountModal()"
-            aria-label="Account and Sign In"
-            class="pointer-events-auto glass glass--clear glass--circle-44 glass-interactive relative"
-          >
-            <span id="homeProfileInitial" class="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[14px] font-extrabold text-white" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">G</span>
-            <span id="homeProfileAuthDot" class="hidden absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full" style="background-color: #30D158; box-shadow: 0 0 0 2px #000000;"></span>
-          </button>
-        </div>
-      </div>
-
-      <div id="summaryHeroHeader" class="welcome-ambient-hero">
-        <h1 id="welcomeHeroTitle" class="collapsible-hero-title text-white text-left relative z-10 flex flex-wrap items-center justify-start gap-x-2.5 max-w-full">
+      <div id="summaryHeroHeader" class="collapsible-hero flex items-center justify-between gap-3 relative z-10">
+        <h1 id="welcomeHeroTitle" class="collapsible-hero-title text-white text-left flex flex-wrap items-center justify-start gap-x-2.5 min-w-0">
           <span id="welcomeGreetingPrefix">Welcome,</span>
           <span id="welcomeUserNameSpan" class="hidden" style="color: #0A84FF;"></span>
         </h1>
+        <button
+          type="button"
+          id="homeProfileBtn"
+          onclick="openAccountModal()"
+          aria-label="Account and Sign In"
+          class="glass glass--clear glass--circle-44 glass-interactive relative shrink-0"
+        >
+          <span id="homeProfileInitial" class="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[14px] font-extrabold text-white" style="background: linear-gradient(135deg, #0A84FF 0%, #64D2FF 100%);">G</span>
+          <span id="homeProfileAuthDot" class="hidden absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full" style="background-color: #30D158; box-shadow: 0 0 0 2px #000000;"></span>
+        </button>
+      </div>
+
+      <!-- Clean Signed-Out Prompt (auto-hidden once signed in) -->
+      <div id="homeSignInBanner" class="hidden fitness-card p-4 flex items-center justify-between gap-3 relative z-10" style="background: linear-gradient(135deg, rgba(10, 132, 255, 0.14) 0%, rgba(28, 28, 30, 0.96) 100%); border: 0.5px solid rgba(10, 132, 255, 0.34);">
+        <div class="flex items-center gap-3 min-w-0">
+          <span class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style="background: rgba(10, 132, 255, 0.20); color: #0A84FF;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+          </span>
+          <div class="min-w-0">
+            <div class="type-subhead font-bold text-white truncate">Back up &amp; sync your workouts</div>
+            <div class="type-caption truncate" style="color: var(--label-secondary);">Sign in with Passkey or Email</div>
+          </div>
+        </div>
+        <button type="button" onclick="openAccountModal()" class="solid-pill px-4 py-2 text-[13px] font-bold shrink-0" style="background-color: #0A84FF; color: #FFFFFF;">
+          Sign In
+        </button>
       </div>
 
       <!-- Today's Session Card -->
@@ -3671,6 +3723,11 @@
     function updateAuthUI() {
       const dot = document.getElementById('homeProfileAuthDot');
       if (dot) dot.classList.toggle('hidden', !authSession.authenticated);
+
+      const signInBanner = document.getElementById('homeSignInBanner');
+      if (signInBanner) {
+        signInBanner.classList.toggle('hidden', Boolean(authSession.authenticated) || !isCloudSyncSupported());
+      }
 
       const menuSub = document.getElementById('menuRowProfileSub');
       if (menuSub) {
@@ -8043,10 +8100,35 @@
       const rightSlot = document.getElementById('stickyHeaderRight');
       if (!stickyBar || !leftSlot || !centerSlot || !rightSlot) return;
 
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+      const isScrolled = scrollY > 4;
+      const headerBottom = stickyBar.getBoundingClientRect().bottom || 74;
+
+      const setCompactCenterTitle = (text, visible) => {
+        let titleSpan = centerSlot.firstElementChild;
+        if (!titleSpan) {
+          centerSlot.innerHTML = `<span class="sticky-compact-title type-headline text-white font-bold"></span>`;
+          titleSpan = centerSlot.firstElementChild;
+        }
+        if (titleSpan.textContent !== text) titleSpan.textContent = text;
+        titleSpan.classList.toggle('is-visible', Boolean(visible));
+      };
+
+      // 1. Settings Subpages: Back button always at very front; title appears the exact moment the hero <h1> passes under the header
       if (state.activeTab === 'MENU' && activeMenuSubpage) {
         const meta = MENU_SUBPAGE_META[activeMenuSubpage];
         let compactTitle = meta ? meta.title : '';
-        if (activeMenuSubpage === 'LIBRARY') {
+        let isDetailWithoutHero = false;
+
+        if (activeMenuSubpage === 'PRESETS' && presetsSubViewMode === 'EDIT' && editingPresetId) {
+          const p = (state.savedPresets || []).find(item => item.id === editingPresetId);
+          compactTitle = (p && p.name) ? p.name : 'Edit Preset';
+          isDetailWithoutHero = true;
+        } else if (activeMenuSubpage === 'EQUIPMENT' && equipSubViewMode !== 'LIST') {
+          compactTitle = equipSubViewMode === 'FIELD_TEXT' ? 'Machine Name' : (editingEquipName || 'Equipment');
+          isDetailWithoutHero = true;
+        } else if (activeMenuSubpage === 'LIBRARY' && librarySubViewMode !== 'LIST') {
+          isDetailWithoutHero = true;
           if (librarySubViewMode === 'FIELD_TEXT') {
             compactTitle = editingLibraryFieldKey === 'name' ? 'Name' : editingLibraryFieldKey === 'equipment' ? 'Equipment' : 'Setup';
           } else if (librarySubViewMode === 'FIELD_PICKER') {
@@ -8056,13 +8138,13 @@
             if (itm) compactTitle = itm.name;
           }
         }
-        const isInlineFieldPage = activeMenuSubpage === 'LIBRARY' && (librarySubViewMode === 'FIELD_TEXT' || librarySubViewMode === 'FIELD_PICKER' || librarySubViewMode === 'EDIT');
+
         const heroCard = document.getElementById('subpageHeroCard');
-        const headerBottom = stickyBar.getBoundingClientRect().bottom || 76;
-        const isScrolled = (window.scrollY || window.pageYOffset || 0) > 6;
-        const scrolledPastHero = isInlineFieldPage || (heroCard ? heroCard.getBoundingClientRect().bottom < headerBottom + 12 : isScrolled);
+        const heroHeading = heroCard ? heroCard.querySelector('h1') : null;
+        const titlePassedTop = isDetailWithoutHero || (heroHeading ? heroHeading.getBoundingClientRect().bottom <= headerBottom - 2 : isScrolled);
+
         stickyBar.classList.add('is-pinned');
-        stickyBar.classList.toggle('has-scrolled-bar', isInlineFieldPage || isScrolled);
+        stickyBar.classList.toggle('has-scrolled-bar', isScrolled);
         if (!leftSlot.firstElementChild) {
           leftSlot.innerHTML = `
             <button type="button" onclick="closeMenuSubpage()" aria-label="Back to Menu" class="glass glass--clear glass--circle-44 glass-interactive">
@@ -8070,76 +8152,46 @@
             </button>
           `;
         }
-        let titleSpan = centerSlot.firstElementChild;
-        if (!titleSpan) {
-          centerSlot.innerHTML = `<span class="type-headline text-white font-bold transition-opacity duration-200"></span>`;
-          titleSpan = centerSlot.firstElementChild;
-        }
-        if (titleSpan.textContent !== compactTitle) titleSpan.textContent = compactTitle;
-        titleSpan.style.opacity = scrolledPastHero ? '1' : '0';
+        setCompactCenterTitle(compactTitle, titlePassedTop);
         if (rightSlot.innerHTML) rightSlot.innerHTML = ``;
         return;
       }
 
+      // 2. Top-Level Scrollable Pages (Home, Activity, Settings Root): same iOS 26 scroll mechanic
+      if (state.activeTab === 'SUMMARY' || state.activeTab === 'ACTIVITY' || (state.activeTab === 'MENU' && !activeMenuSubpage)) {
+        const headingEl = state.activeTab === 'SUMMARY'
+          ? document.getElementById('welcomeHeroTitle')
+          : state.activeTab === 'ACTIVITY'
+            ? document.querySelector('#activityHeroHeader h1')
+            : document.querySelector('#menuHeroHeader h1');
+
+        const compactTitle = state.activeTab === 'SUMMARY'
+          ? ((state.userName || '').trim() ? `Welcome, ${(state.userName || '').trim()}` : 'Home')
+          : state.activeTab === 'ACTIVITY'
+            ? 'Activity'
+            : 'Settings';
+
+        const titlePassedTop = headingEl ? headingEl.getBoundingClientRect().bottom <= headerBottom - 2 : isScrolled;
+
+        if (leftSlot.innerHTML) leftSlot.innerHTML = ``;
+        if (rightSlot.innerHTML) rightSlot.innerHTML = ``;
+
+        if (isScrolled || titlePassedTop) {
+          stickyBar.classList.add('is-pinned');
+          stickyBar.classList.toggle('has-scrolled-bar', isScrolled);
+          setCompactCenterTitle(compactTitle, titlePassedTop);
+        } else {
+          stickyBar.classList.remove('is-pinned', 'has-scrolled-bar');
+          if (centerSlot.innerHTML) centerSlot.innerHTML = ``;
+        }
+        return;
+      }
+
+      // 3. Log View (manages its own immovable fixed header)
       stickyBar.classList.remove('is-pinned', 'has-scrolled-bar');
       if (leftSlot.innerHTML) leftSlot.innerHTML = ``;
       if (centerSlot.innerHTML) centerSlot.innerHTML = ``;
       if (rightSlot.innerHTML) rightSlot.innerHTML = ``;
-
-      if (state.activeTab === 'SUMMARY') {
-        const rawY = window.scrollY || window.pageYOffset || 0;
-        const prevY = typeof window.__lastSummaryScrollY === 'number' ? window.__lastSummaryScrollY : rawY;
-        const isScrollingUp = rawY < prevY;
-        window.__lastSummaryScrollY = rawY;
-        const titleEl = document.getElementById('welcomeHeroTitle');
-        const blobWraps = [
-          { el: document.getElementById('welcomeBlobWrap1'), dx: -0.26, dy: -0.18 },
-          { el: document.getElementById('welcomeBlobWrap2'), dx: 0.28,  dy: -0.14 },
-          { el: document.getElementById('welcomeBlobWrap3'), dx: -0.18, dy: 0.24 },
-          { el: document.getElementById('welcomeBlobWrap4'), dx: 0.22,  dy: 0.20 }
-        ];
-
-        if (titleEl) {
-          if (rawY < 0) {
-            const pullDown = Math.abs(rawY);
-            titleEl.style.transition = 'none';
-            titleEl.style.opacity = '1';
-            titleEl.style.transform = `translate3d(0, ${-pullDown * 0.45}px, 0) scale(${1 + Math.min(0.06, pullDown * 0.00045)})`;
-            welcomeOverscrollActive = true;
-            const clampedPull = Math.min(130, pullDown);
-            const disperseScale = 1 + clampedPull * 0.00085;
-            blobWraps.forEach(({ el, dx, dy }) => {
-              if (!el) return;
-              el.style.transition = 'none';
-              el.style.transform = `translate3d(${(clampedPull * dx).toFixed(1)}px, ${(clampedPull * dy).toFixed(1)}px, 0) scale(${disperseScale.toFixed(3)})`;
-            });
-          } else if (isScrollingUp && rawY > 0 && rawY < 220) {
-            const lag = Math.min(16, (prevY - rawY) * 0.35 + 4);
-            titleEl.style.transition = 'transform 0.16s cubic-bezier(0.22, 1, 0.36, 1)';
-            titleEl.style.transform = `translate3d(0, ${lag.toFixed(1)}px, 0)`;
-          } else {
-            titleEl.style.transition = 'transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)';
-            titleEl.style.transform = 'translate3d(0, 0, 0)';
-            if (welcomeOverscrollActive && rawY === 0) {
-              welcomeOverscrollActive = false;
-              triggerWelcomeBlobReleaseDisperse();
-            }
-          }
-        }
-
-        if (welcomeScrollSettleTimer) clearTimeout(welcomeScrollSettleTimer);
-        welcomeScrollSettleTimer = setTimeout(() => {
-          if (state.activeTab !== 'SUMMARY') return;
-          if (titleEl && (window.scrollY || window.pageYOffset || 0) >= 0) {
-            titleEl.style.transition = 'transform 0.32s cubic-bezier(0.22, 1, 0.36, 1)';
-            titleEl.style.transform = 'translate3d(0, 0, 0)';
-          }
-          if ((window.scrollY || window.pageYOffset || 0) >= 0 && welcomeOverscrollActive) {
-            welcomeOverscrollActive = false;
-            triggerWelcomeBlobReleaseDisperse();
-          }
-        }, 90);
-      }
     }
 
     function toggleGymEquipment(eq) {
