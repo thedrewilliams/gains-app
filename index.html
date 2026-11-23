@@ -563,8 +563,8 @@
     }
 
     .apple-sheet-close-btn {
-      width: 38px;
-      height: 38px;
+      width: 44px;
+      height: 44px;
       border-radius: 9999px;
       background: #252528;
       border: 0.5px solid rgba(255, 255, 255, 0.12);
@@ -732,6 +732,51 @@
       -webkit-backdrop-filter: blur(22px) saturate(180%);
       backdrop-filter: blur(22px) saturate(180%);
       border-bottom-color: rgba(255, 255, 255, 0.14);
+    }
+
+    /* Log Empty Scroll Lock & Smooth Calendar Fit */
+    html.is-log-empty-locked,
+    body.is-log-empty-locked {
+      overflow: hidden !important;
+      overscroll-behavior-y: none;
+    }
+
+    body.is-log-empty-locked main.app-stage {
+      padding-bottom: 0 !important;
+    }
+
+    .log-empty-state {
+      min-height: 46dvh;
+      padding: 24px 16px;
+      transition:
+        min-height 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+        padding 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    body.is-log-cal-open .log-empty-state {
+      min-height: 152px;
+      padding: 12px 16px;
+    }
+
+    /* Dim & Lock Top Chrome + Tab Bar While Editing a Completed Workout */
+    body.is-editing-completed .log-fixed-header,
+    body.is-editing-completed #logCalendarDrawer,
+    body.is-editing-completed #floatingTabBar {
+      opacity: 0.28;
+      filter: saturate(0.2);
+      pointer-events: none !important;
+      transition: opacity 0.24s ease, filter 0.24s ease;
+    }
+
+    .sticky-compact-header {
+      z-index: 35 !important;
+    }
+
+    .sticky-compact-header #stickyHeaderLeft,
+    .sticky-compact-header #stickyHeaderCenter,
+    .sticky-compact-header #stickyHeaderRight {
+      position: relative;
+      z-index: 2;
     }
 
     /* Seamless Sticky Log Date Header */
@@ -1270,7 +1315,7 @@
     .welcome-ambient-hero {
       position: relative;
       height: auto;
-      padding: clamp(148px, 30dvh, 250px) 0 10px;
+      padding: calc(env(safe-area-inset-top, 12px) + 56px) 0 10px;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
@@ -2018,23 +2063,24 @@
           <div id="addSheetExerciseListContainer"></div>
         </div>
 
-        <!-- Sticky Bottom Action Row: [Load Preset | Add to Session] -->
+        <!-- Sticky Bottom Action Row: [Pick Preset | Add to Session] -->
         <div class="pt-3 border-t flex-shrink-0" style="border-color: rgba(255, 255, 255, 0.08);">
           <div id="sessionAddActionRow" class="grid grid-cols-2 gap-2.5">
-            <select
-              id="loadPresetSelect"
-              onchange="loadPresetIntoActiveDate(this.value); this.value='';"
-              aria-label="Load Preset"
-              class="solid-pill w-full py-3.5 px-3 type-subhead font-bold text-center"
-              style="background-color: #232326; color: #FFFFFF; border: 0.5px solid rgba(255,255,255,0.16); text-align-last: center;"
+            <button
+              type="button"
+              id="pickPresetTriggerBtn"
+              onclick="openPickPresetModal()"
+              disabled
+              class="solid-pill w-full h-[50px] px-3 type-headline text-center transition-opacity"
+              style="background-color: #30D158; color: #FFFFFF; opacity: 0.35; pointer-events: none;"
             >
-              <option value="">Load Preset ▾</option>
-            </select>
+              Pick Preset
+            </button>
             <button
               type="button"
               id="sessionAddSubmitBtn"
               onclick="submitSelectedExercisesToSession()"
-              class="solid-pill w-full py-3.5 px-3 type-headline text-center transition-opacity"
+              class="solid-pill w-full h-[50px] px-3 type-headline text-center transition-opacity"
               style="background-color: #0275e7; color: #FFFFFF; opacity: 0.35; pointer-events: none;"
             >
               Add to Session
@@ -2042,9 +2088,24 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <!-- LIBRARY MODE: Cardless Direct-on-Sheet Form with Equipment Picker -->
-      <form id="libraryCreateFormSection" onsubmit="submitNewExercise(event)" class="hidden overflow-y-auto no-scrollbar space-y-4 pt-1 pr-0.5">
+  <!-- =========================================================================
+       STACKED BOTTOM SHEET 2: NEW LIBRARY EXERCISE (OPENS OVER ADD EXERCISES)
+       ========================================================================= -->
+  <div id="newLibExBackdrop" class="sheet-backdrop" style="z-index: 62;" onclick="if(event.target===this) closeNewLibraryExerciseSheet()">
+    <div id="newLibExLiquidSheet" class="liquid-sheet liquid-sheet--compact" role="dialog" aria-modal="true" aria-labelledby="newLibExTitle">
+      <div class="apple-sheet-header !pb-3">
+        <div class="min-w-0 pl-0.5">
+          <h3 id="newLibExTitle" class="type-title-2 text-white font-bold truncate">New Library Exercise</h3>
+          <p class="type-caption truncate" style="color: var(--label-secondary);">Save new movement to Exercise Library</p>
+        </div>
+        <button type="button" onclick="closeNewLibraryExerciseSheet()" class="apple-sheet-close-btn" aria-label="Close">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form id="libraryCreateFormSection" onsubmit="submitNewExercise(event)" class="overflow-y-auto no-scrollbar space-y-4 pt-1 pr-0.5">
         <div class="space-y-3.5">
           <div>
             <label for="newExNameInput" class="block type-caption font-semibold mb-1.5" style="color: var(--label-secondary);">Exercise Name</label>
@@ -2090,6 +2151,24 @@
           Add to Library
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       iOS APPLE ACCOUNT-STYLE PICK PRESET POPUP (STACKS OVER ADD EXERCISES)
+       ========================================================================= -->
+  <div id="pickPresetBackdrop" class="ios-alert-backdrop" style="z-index: 78;" onclick="if(event.target===this) closePickPresetModal()">
+    <div class="ios-alert-dialog text-left" role="dialog" aria-modal="true" aria-labelledby="pickPresetTitle">
+      <div class="apple-sheet-header !pb-3">
+        <div class="min-w-0 pl-0.5">
+          <h3 id="pickPresetTitle" class="type-title-2 text-white font-bold truncate">Pick Preset</h3>
+          <p class="type-caption truncate" style="color: var(--label-secondary);">Tap a saved routine to load it</p>
+        </div>
+        <button type="button" onclick="closePickPresetModal()" class="apple-sheet-close-btn" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="pickPresetList" class="space-y-2 max-h-[52dvh] overflow-y-auto no-scrollbar"></div>
     </div>
   </div>
 
@@ -2394,22 +2473,35 @@
 
     function getSessionGradientColors(items) {
       const regionHits = new Map();
-      const bump = (hex) => regionHits.set(hex, (regionHits.get(hex) || 0) + 1);
+      const bump = (hex, weight = 1) => regionHits.set(hex, (regionHits.get(hex) || 0) + weight);
 
       (items || []).forEach(item => {
         const mod = getModality(item);
-        if (mod === 'Cardio') bump(REGION_COLOR_MAP.Cardio);
-        normalizeMuscles(item).forEach(m => {
-          if (m === 'Pec') bump(REGION_COLOR_MAP.Chest);
-          else if (m === 'Lats' || m === 'Traps') bump(REGION_COLOR_MAP.Back);
-          else if (m === 'Shoulders') bump(REGION_COLOR_MAP.Shoulders);
-          else if (m === 'Bicep' || m === 'Tricep' || m === 'Forearm') bump(REGION_COLOR_MAP.Arms);
-          else if (m === 'Quad' || m === 'Hamstring' || m === 'Glute' || m === 'Calf') bump(REGION_COLOR_MAP.Legs);
-          else if (m === 'Core') bump(REGION_COLOR_MAP.Core);
+        const nameLower = String(item?.name || '').toLowerCase();
+        if (mod === 'Cardio') bump(REGION_COLOR_MAP.Cardio, 2);
+
+        let matched = false;
+        normalizeMuscles(item).forEach(raw => {
+          const m = String(raw || '').trim().toLowerCase();
+          if (m.includes('pec') || m.includes('chest')) { bump(REGION_COLOR_MAP.Chest); matched = true; }
+          else if (m.includes('lat') || m.includes('trap') || m.includes('back')) { bump(REGION_COLOR_MAP.Back); matched = true; }
+          else if (m.includes('shoulder') || m.includes('delt')) { bump(REGION_COLOR_MAP.Shoulders); matched = true; }
+          else if (m.includes('bicep') || m.includes('tricep') || m.includes('forearm') || m.includes('arm')) { bump(REGION_COLOR_MAP.Arms); matched = true; }
+          else if (m.includes('quad') || m.includes('ham') || m.includes('glute') || m.includes('calf') || m.includes('calves') || m.includes('leg')) { bump(REGION_COLOR_MAP.Legs); matched = true; }
+          else if (m.includes('core') || m.includes('ab')) { bump(REGION_COLOR_MAP.Core); matched = true; }
         });
+
+        // Fallback inference from exercise name for any legacy imported entries
+        if (!matched) {
+          if (/leg|squat|rdl|calf|lunge|glute|hamstring|quad/.test(nameLower)) bump(REGION_COLOR_MAP.Legs);
+          else if (/chest|bench|pec|fly/.test(nameLower)) bump(REGION_COLOR_MAP.Chest);
+          else if (/lat|row|pull-up|pulldown|back/.test(nameLower)) bump(REGION_COLOR_MAP.Back);
+          else if (/shoulder|lateral|ohp|face pull/.test(nameLower)) bump(REGION_COLOR_MAP.Shoulders);
+          else if (/bicep|tricep|curl|pushdown|hammer/.test(nameLower)) bump(REGION_COLOR_MAP.Arms);
+          else if (/core|plank|bird-dog|twist|pallof/.test(nameLower)) bump(REGION_COLOR_MAP.Core);
+        }
       });
 
-      // Keep top 4 dominant regions ordered along the color wheel for rich, smooth gradients
       const topHexes = Array.from(regionHits.entries())
         .sort((a, b) => b[1] - a[1])
         .slice(0, 4)
@@ -3049,7 +3141,9 @@
         edgeDx = 0;
         edgeTracking = true;
         const subEl = document.getElementById('menuSubpageContainer');
+        const hdrEl = document.getElementById('stickyCompactHeader');
         if (subEl) subEl.style.transition = 'none';
+        if (hdrEl) hdrEl.style.transition = 'none';
       }, { passive: true });
 
       document.addEventListener('touchmove', (e) => {
@@ -3059,43 +3153,47 @@
         if (Math.abs(dy) > Math.abs(dx) && dx < 14) {
           edgeTracking = false;
           const subEl = document.getElementById('menuSubpageContainer');
-          if (subEl) {
-            subEl.style.transition = '';
-            subEl.style.transform = '';
-          }
+          const hdrEl = document.getElementById('stickyCompactHeader');
+          if (subEl) { subEl.style.transition = ''; subEl.style.transform = ''; }
+          if (hdrEl) { hdrEl.style.transition = ''; hdrEl.style.transform = ''; }
           return;
         }
         edgeDx = Math.max(0, dx);
         const subEl = document.getElementById('menuSubpageContainer');
+        const hdrEl = document.getElementById('stickyCompactHeader');
         if (subEl) subEl.style.transform = `translate3d(${edgeDx}px, 0, 0)`;
+        if (hdrEl) hdrEl.style.transform = `translate3d(${edgeDx}px, 0, 0)`;
       }, { passive: true });
 
       const finishEdgeBack = () => {
         if (!edgeTracking) return;
         edgeTracking = false;
         const subEl = document.getElementById('menuSubpageContainer');
+        const hdrEl = document.getElementById('stickyCompactHeader');
         const threshold = Math.min(95, window.innerWidth * 0.25);
         if (edgeDx >= threshold) {
-          if (subEl) {
-            subEl.style.transition = 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease';
-            subEl.style.transform = `translate3d(${window.innerWidth}px, 0, 0)`;
-            subEl.style.opacity = '0';
-          }
+          [subEl, hdrEl].forEach(el => {
+            if (!el) return;
+            el.style.transition = 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease';
+            el.style.transform = `translate3d(${window.innerWidth}px, 0, 0)`;
+            el.style.opacity = '0';
+          });
           setTimeout(() => {
-            if (subEl) {
-              subEl.style.transition = '';
-              subEl.style.transform = '';
-              subEl.style.opacity = '';
-            }
+            [subEl, hdrEl].forEach(el => {
+              if (!el) return;
+              el.style.transition = '';
+              el.style.transform = '';
+              el.style.opacity = '';
+            });
             closeMenuSubpage();
           }, 210);
-        } else if (subEl) {
-          subEl.style.transition = 'transform 0.24s cubic-bezier(0.22, 1, 0.36, 1)';
-          subEl.style.transform = 'translate3d(0, 0, 0)';
-          setTimeout(() => {
-            subEl.style.transition = '';
-            subEl.style.transform = '';
-          }, 245);
+        } else {
+          [subEl, hdrEl].forEach(el => {
+            if (!el) return;
+            el.style.transition = 'transform 0.24s cubic-bezier(0.22, 1, 0.36, 1)';
+            el.style.transform = 'translate3d(0, 0, 0)';
+            setTimeout(() => { el.style.transition = ''; el.style.transform = ''; }, 245);
+          });
         }
       };
 
@@ -4906,6 +5004,7 @@
       state.calendarYear = y;
       saveState();
       renderCalendarView();
+      updateLogEmptyScrollLock();
     }
 
     function buildCalendarMonthInnerHtml(year, month, interactive = true) {
@@ -5013,6 +5112,8 @@
       if (stripWrap) {
         stripWrap.classList.toggle('is-collapsed', isLogCalendarOpen);
       }
+      document.body.classList.toggle('is-log-cal-open', isLogCalendarOpen);
+      updateLogEmptyScrollLock();
       if (toggleBtn) {
         toggleBtn.setAttribute('aria-expanded', isLogCalendarOpen ? 'true' : 'false');
         toggleBtn.style.color = isLogCalendarOpen ? '#0A84FF' : '#FFFFFF';
@@ -5022,6 +5123,23 @@
       }
       if (prevBtn) prevBtn.setAttribute('aria-label', isLogCalendarOpen ? 'Previous Month' : 'Previous Day');
       if (nextBtn) nextBtn.setAttribute('aria-label', isLogCalendarOpen ? 'Next Month' : 'Next Day');
+    }
+
+    function getCalendarMonthRowCount(year, month) {
+      const firstDow = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      return Math.ceil((firstDow + daysInMonth) / 7);
+    }
+
+    function updateLogEmptyScrollLock() {
+      const isLog = state.activeTab === 'LOG';
+      const dateStr = state.activeDate || getTodayDateStr();
+      const hasEx = getExercisesForDate(dateStr).length > 0;
+      const is6RowMonth = isLogCalendarOpen && getCalendarMonthRowCount(state.calendarYear, state.calendarMonth) >= 6;
+      const shouldLock = isLog && !hasEx && !is6RowMonth && !document.body.classList.contains('has-sheet-open');
+      document.documentElement.classList.toggle('is-log-empty-locked', shouldLock);
+      document.body.classList.toggle('is-log-empty-locked', shouldLock);
+      document.body.classList.toggle('is-editing-completed', isLog && isEditingCompletedWorkout);
     }
 
     let logStripAnchorDate = null;
@@ -7037,18 +7155,16 @@
       const exercises = getExercisesForDate(dateStr);
       if (!exercises.length) {
         return `
-          <div class="min-h-[48dvh] flex flex-col items-center justify-center px-4 text-center space-y-4">
+          <div class="log-empty-state flex flex-col items-center justify-center text-center space-y-4">
             <div class="space-y-1.5">
               <div class="text-[28px] leading-[33px] font-extrabold tracking-tight text-white">No Exercises Yet</div>
               <p class="type-subhead max-w-[280px] mx-auto" style="color: var(--label-secondary);">Pick by machine, muscle, or load a saved preset to get started.</p>
             </div>
-            ${interactive ? `
-              <div class="pt-1">
-                <button type="button" onclick="openAddExerciseSheet('SESSION')" class="solid-pill h-[50px] px-7 type-headline font-bold" style="background-color: #0275e7; color: #FFFFFF;">
-                  + Pick Exercises
-                </button>
-              </div>
-            ` : ''}
+            <div class="pt-1">
+              <button type="button" ${interactive ? `onclick="openAddExerciseSheet('SESSION')"` : 'tabindex="-1"'} class="solid-pill h-[50px] px-7 type-headline font-bold" style="background-color: #0275e7; color: #FFFFFF;">
+                + Pick Exercises
+              </button>
+            </div>
           </div>
         `;
       }
@@ -7142,7 +7258,7 @@
         const matchesPrev = prevLog && (mod === 'Cardio'
           ? ((log.duration || '') === (prevLog.duration || '') && (log.distance || '') === (prevLog.distance || '') && (log.level || '') === (prevLog.level || ''))
           : ((log.sets || '') === (prevLog.sets || '') && (log.weight || '') === (prevLog.weight || '') && (log.reps || '') === (prevLog.reps || '')));
-        const showLastBtn = Boolean(prevSummary && !log.lastApplied && !matchesPrev);
+        const showLastBtn = Boolean(prevSummary && !log.lastApplied && !matchesPrev) && !isEditingCompletedWorkout;
 
         let metricsHtml = '';
         if (mod === 'Cardio') {
@@ -7323,6 +7439,7 @@
 
       resizeAllNotesTextareas();
       initGoldNoteShimmerObserver();
+      updateLogEmptyScrollLock();
     }
 
     let goldNoteShimmerObserver = null;
@@ -7627,97 +7744,114 @@
     }
 
     function openAddExerciseSheet(mode = 'SESSION') {
-      addExerciseSheetMode = mode === 'LIBRARY' ? 'LIBRARY' : 'SESSION';
-      const isLibraryMode = addExerciseSheetMode === 'LIBRARY';
+      const isLibraryMode = mode === 'LIBRARY';
 
+      if (isLibraryMode) {
+        newExSelectedMuscles = new Set(['Pec']);
+        const nameInput = document.getElementById('newExNameInput');
+        if (nameInput) { nameInput.value = ''; nameInput.required = true; }
+        const modInput = document.getElementById('newExModalityInput');
+        const dirInput = document.getElementById('newExDirectionInput');
+        const equipInput = document.getElementById('newExEquipmentInput');
+        const setInput = document.getElementById('newExSettingInput');
+        if (modInput) modInput.value = 'Strength';
+        if (dirInput) dirInput.value = 'Push';
+        if (setInput) setInput.value = '';
+        if (equipInput) {
+          const equipBase = Array.isArray(state.gymEquipment) ? state.gymEquipment : EQUIPMENT_OPTIONS;
+          const allEquip = Array.from(new Set([...equipBase, ...(state.exerciseLibrary || []).map(e => e.equipment).filter(Boolean)]));
+          equipInput.innerHTML = `<option value="">Bodyweight / None</option>` + allEquip.map(eq => `<option value="${esc(eq)}">${esc(eq)}</option>`).join('');
+          equipInput.value = '';
+        }
+        renderNewExMuscleChips();
+        openModalSheet('newLibExBackdrop');
+        return;
+      }
+
+      addExerciseSheetMode = 'SESSION';
       activeAddDirectionFilter = 'All';
       activeAddEquipFilter = 'All';
       activeAddMuscleFilter = 'All';
       addSheetSearchQuery = '';
       addSheetSortMode = 'name-asc';
       selectedAddExerciseIds.clear();
-      newExSelectedMuscles = new Set(['Pec']);
 
-      const sheetEl = document.getElementById('addExLiquidSheet');
-      const sessionSection = document.getElementById('sessionAddPickerSection');
-      const librarySection = document.getElementById('libraryCreateFormSection');
-      const eyebrowEl = document.getElementById('addExSheetEyebrow');
-      const titleEl = document.getElementById('addExSheetTitle');
-      const badgeEl = document.getElementById('addExHeaderBadge');
+      const searchEl = document.getElementById('addSheetSearchInput');
+      if (searchEl) searchEl.value = '';
+      renderAddSheetDirectionPills();
 
-      if (sheetEl) sheetEl.classList.toggle('liquid-sheet--compact', isLibraryMode);
-      if (sessionSection) sessionSection.classList.toggle('hidden', isLibraryMode);
-      if (librarySection) librarySection.classList.toggle('hidden', !isLibraryMode);
-      if (badgeEl) badgeEl.style.color = '#0275e7';
-
-      if (eyebrowEl) {
-        eyebrowEl.textContent = isLibraryMode ? 'Save new movement to Exercise Library' : '';
-        eyebrowEl.classList.toggle('hidden', !isLibraryMode);
-      }
-      if (titleEl) titleEl.textContent = isLibraryMode ? 'New Library Exercise' : 'Add Exercises';
-
-      const nameInput = document.getElementById('newExNameInput');
-      if (nameInput) { nameInput.value = ''; nameInput.required = isLibraryMode; }
-      const modInput = document.getElementById('newExModalityInput');
-      const dirInput = document.getElementById('newExDirectionInput');
-      const equipInput = document.getElementById('newExEquipmentInput');
-      const setInput = document.getElementById('newExSettingInput');
-      if (modInput) modInput.value = 'Strength';
-      if (dirInput) dirInput.value = 'Push';
-      if (equipInput) equipInput.value = '';
-      if (setInput) setInput.value = '';
-
-      if (equipInput) {
-        const equipBase = Array.isArray(state.gymEquipment) ? state.gymEquipment : EQUIPMENT_OPTIONS;
-        const allEquip = Array.from(new Set([...equipBase, ...(state.exerciseLibrary || []).map(e => e.equipment).filter(Boolean)]));
-        equipInput.innerHTML = `<option value="">Bodyweight / None</option>` + allEquip.map(eq => `<option value="${esc(eq)}">${esc(eq)}</option>`).join('');
-        equipInput.value = '';
-      }
-      renderNewExMuscleChips();
-
-      if (!isLibraryMode) {
-        const searchInput = document.getElementById('addSheetSearchInput');
-        if (searchInput) searchInput.value = '';
-
-        renderAddSheetDirectionPills();
-
-        const equipSelect = document.getElementById('addSheetEquipSelect');
-        if (equipSelect) {
-          const disabledEquip = state.disabledEquipment || {};
-          const equipBase = Array.isArray(state.gymEquipment) ? state.gymEquipment : EQUIPMENT_OPTIONS;
-          const equips = Array.from(new Set([...equipBase, ...(state.exerciseLibrary || []).map(e => e.equipment).filter(Boolean)]))
-            .filter(eq => !disabledEquip[eq])
-            .sort();
-          equipSelect.innerHTML = `<option value="All">All Gear</option>` + equips.map(eq => `<option value="${esc(eq)}">${esc(eq)}</option>`).join('');
-        }
-
-        const muscleSelect = document.getElementById('addSheetMuscleSelect');
-        if (muscleSelect) {
-          muscleSelect.innerHTML = `<option value="All">All Muscles</option>` + MUSCLE_GROUPS.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
-        }
-
-        const sortSelect = document.getElementById('addSheetSortSelect');
-        if (sortSelect) sortSelect.value = 'name-asc';
-
-        const presetSelect = document.getElementById('loadPresetSelect');
-        if (presetSelect) {
-          const presets = state.savedPresets || [];
-          presetSelect.disabled = presets.length === 0;
-          presetSelect.style.opacity = presets.length ? '1' : '0.45';
-          presetSelect.innerHTML = presets.length
-            ? `<option value="">Load Preset ▾</option>` + presets.map(p => `<option value="${esc(p.id)}">${esc(p.name)} (${(p.exercises || []).length})</option>`).join('')
-            : `<option value="">No Presets Yet</option>`;
-        }
-
-        renderAddSheetMultiSelectList();
+      const equipSelect = document.getElementById('addSheetEquipSelect');
+      if (equipSelect) {
+        const disabledEquip = state.disabledEquipment || {};
+        const equipList = (state.gymEquipment || EQUIPMENT_OPTIONS).filter(eq => !disabledEquip[eq]);
+        equipSelect.innerHTML = `<option value="All">All Gear</option>` + equipList.map(eq => `<option value="${esc(eq)}">${esc(eq)}</option>`).join('');
       }
 
+      const muscleSelect = document.getElementById('addSheetMuscleSelect');
+      if (muscleSelect) {
+        muscleSelect.innerHTML = `<option value="All">All Muscles</option>` + MUSCLE_GROUPS.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+      }
+
+      const sortSelect = document.getElementById('addSheetSortSelect');
+      if (sortSelect) sortSelect.value = 'name-asc';
+
+      const pickBtn = document.getElementById('pickPresetTriggerBtn');
+      if (pickBtn) {
+        const hasPresets = (state.savedPresets || []).length > 0;
+        pickBtn.disabled = !hasPresets;
+        pickBtn.style.opacity = hasPresets ? '1' : '0.35';
+        pickBtn.style.pointerEvents = hasPresets ? 'auto' : 'none';
+      }
+
+      renderAddSheetMultiSelectList();
       openModalSheet('addExSheetBackdrop');
     }
 
+    function closeNewLibraryExerciseSheet() {
+      const el = document.getElementById('newLibExBackdrop');
+      if (el) el.classList.remove('is-open');
+      releaseBodyScrollLockIfClear();
+    }
+
     function closeAddExerciseSheet() {
-      closeAllSheets();
+      const el = document.getElementById('addExSheetBackdrop');
+      if (el) el.classList.remove('is-open');
+      closeNewLibraryExerciseSheet();
+      closePickPresetModal();
       selectedAddExerciseIds.clear();
+      releaseBodyScrollLockIfClear();
+    }
+
+    function openPickPresetModal() {
+      const presets = state.savedPresets || [];
+      if (!presets.length) return;
+      const listEl = document.getElementById('pickPresetList');
+      if (listEl) {
+        listEl.innerHTML = presets.map(pr => {
+          const pm = computeSessionMetrics(pr.exercises || []);
+          return `
+            <button type="button" onclick="selectPresetFromPicker('${esc(pr.id)}')" class="w-full flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl text-left transition-transform active:scale-[0.98]" style="background: #232326; border: 0.5px solid rgba(255,255,255,0.08);">
+              <div class="min-w-0">
+                <div class="type-headline text-white font-semibold truncate">${esc(pr.name)}</div>
+                <div class="type-caption truncate" style="color: var(--label-secondary);">${(pr.exercises || []).length} exercises · ${esc(pm.muscles.slice(0, 3).join(', '))}</div>
+              </div>
+              <span class="type-subhead font-bold shrink-0" style="color: #30D158;">Load ›</span>
+            </button>
+          `;
+        }).join('');
+      }
+      openModalSheet('pickPresetBackdrop');
+    }
+
+    function closePickPresetModal() {
+      const el = document.getElementById('pickPresetBackdrop');
+      if (el) el.classList.remove('is-open');
+      releaseBodyScrollLockIfClear();
+    }
+
+    function selectPresetFromPicker(presetId) {
+      closePickPresetModal();
+      loadPresetIntoActiveDate(presetId);
     }
 
     function submitNewExercise(e) {
