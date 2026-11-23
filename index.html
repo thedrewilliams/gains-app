@@ -714,34 +714,32 @@
       will-change: transform, opacity;
     }
 
+    /* Stops iOS 26/27 WebKit standalone PWA from painting a system progressive blur/gradient over the top controls */
+    .ios-statusbar-plate {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background-color: #000000;
+      z-index: 49;
+      pointer-events: none;
+    }
+
     .sticky-compact-header {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       z-index: 48 !important;
-      padding-top: calc(env(safe-area-inset-top, 12px) + 12px);
+      padding-top: calc(env(safe-area-inset-top, 12px) + 18px);
       padding-bottom: 10px;
-      background: transparent !important;
-      border-bottom: none !important;
+      background: transparent;
+      border-bottom: 0.5px solid transparent;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.2s ease, background-color 0.22s ease, border-color 0.22s ease;
       isolation: isolate;
-    }
-
-    .sticky-compact-header::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: calc(100% + 22px);
-      background: linear-gradient(180deg, rgba(0, 0, 0, 0.96) 0%, rgba(0, 0, 0, 0.84) 56%, rgba(0, 0, 0, 0) 100%);
-      opacity: 0;
-      pointer-events: none;
-      z-index: 0;
-      transition: opacity 0.22s ease;
     }
 
     .sticky-compact-header.is-pinned {
@@ -749,8 +747,11 @@
       pointer-events: auto;
     }
 
-    .sticky-compact-header.is-pinned.has-scrolled-bar::before {
-      opacity: 1;
+    .sticky-compact-header.is-pinned.has-scrolled-bar {
+      background: rgba(10, 10, 12, 0.88);
+      -webkit-backdrop-filter: blur(22px) saturate(180%);
+      backdrop-filter: blur(22px) saturate(180%);
+      border-bottom-color: rgba(255, 255, 255, 0.14);
     }
 
     .sticky-compact-header .sticky-compact-title {
@@ -1692,6 +1693,9 @@
     </defs>
   </svg>
 
+  <!-- Solid 4px top-edge anchor that disables iOS 26/27 PWA status-bar blur/gradient across all pages -->
+  <div class="ios-statusbar-plate" aria-hidden="true"></div>
+
   <!-- Pinned Compact Header (appears only after large title scrolls past) -->
   <header id="stickyCompactHeader" class="sticky-compact-header">
     <div class="max-w-lg mx-auto px-4 min-h-[44px] flex items-center justify-between gap-3">
@@ -2140,7 +2144,7 @@
 
       <!-- Push-In Subpage Container -->
       <div id="menuSubpageContainer" class="hidden space-y-4">
-        <div id="menuSubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 68px);"></div>
+        <div id="menuSubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 74px);"></div>
         <div id="menuSubpageBody" class="space-y-4"></div>
       </div>
     </section>
@@ -8144,7 +8148,7 @@
         const titlePassedTop = isDetailWithoutHero || (heroHeading ? heroHeading.getBoundingClientRect().bottom <= headerBottom - 2 : isScrolled);
 
         stickyBar.classList.add('is-pinned');
-        stickyBar.classList.toggle('has-scrolled-bar', isScrolled);
+        stickyBar.classList.toggle('has-scrolled-bar', titlePassedTop);
         if (!leftSlot.firstElementChild) {
           leftSlot.innerHTML = `
             <button type="button" onclick="closeMenuSubpage()" aria-label="Back to Menu" class="glass glass--clear glass--circle-44 glass-interactive">
@@ -8176,10 +8180,9 @@
         if (leftSlot.innerHTML) leftSlot.innerHTML = ``;
         if (rightSlot.innerHTML) rightSlot.innerHTML = ``;
 
-        if (isScrolled || titlePassedTop) {
-          stickyBar.classList.add('is-pinned');
-          stickyBar.classList.toggle('has-scrolled-bar', isScrolled);
-          setCompactCenterTitle(compactTitle, titlePassedTop);
+        if (titlePassedTop) {
+          stickyBar.classList.add('is-pinned', 'has-scrolled-bar');
+          setCompactCenterTitle(compactTitle, true);
         } else {
           stickyBar.classList.remove('is-pinned', 'has-scrolled-bar');
           if (centerSlot.innerHTML) centerSlot.innerHTML = ``;
