@@ -259,11 +259,7 @@
       transition: transform 0.22s cubic-bezier(0.42, 0, 0.58, 1), opacity 0.18s ease;
     }
 
-    body.is-keyboard-open .floating-tab-bar {
-      opacity: 0;
-      pointer-events: none;
-      transform: translate3d(0, 140px, 0) !important;
-    }
+    /* Bottom tab bar stays visible 100% of the time unless covered/blurred by a popup or slide-up sheet */
 
     .gold-note-bubble {
       position: relative;
@@ -321,9 +317,7 @@
       transform: scale(1.015);
     }
 
-    .chromium-refraction .floating-tab-bar {
-      backdrop-filter: saturate(240%) brightness(1.14) url(#tabbar-refraction);
-    }
+    /* Clean translucent Liquid Glass without refraction distortion */
 
     .floating-tab-bar::before {
       display: none;
@@ -431,10 +425,7 @@
       opacity: 1;
     }
 
-    .chromium-refraction .tab-active-pill.is-tap-bloom,
-    .chromium-refraction .tab-active-pill.is-dragging {
-      backdrop-filter: saturate(260%) brightness(1.22) url(#bubble-refraction);
-    }
+    /* Refraction removed on hold/drag for clean iOS 26 Liquid Glass pill */
 
     .tab-active-pill.is-dragging {
       transition: none !important;
@@ -734,16 +725,7 @@
       border-bottom-color: rgba(255, 255, 255, 0.14);
     }
 
-    /* Log Empty Scroll Lock & Smooth Calendar Fit */
-    html.is-log-empty-locked,
-    body.is-log-empty-locked {
-      overflow: hidden !important;
-      overscroll-behavior-y: none;
-    }
-
-    body.is-log-empty-locked main.app-stage {
-      padding-bottom: 0 !important;
-    }
+    /* Smooth Calendar Fit for Empty Log State (never locks document scroll) */
 
     .log-empty-state {
       min-height: 46dvh;
@@ -1520,10 +1502,7 @@
         inset 0 -1px 1.5px rgba(180, 225, 255, 0.42);
     }
 
-    .chromium-refraction .ios-glass-toggle-thumb.is-glass-bloom,
-    .chromium-refraction .ios-glass-toggle-thumb.is-dragging {
-      backdrop-filter: saturate(220%) brightness(1.18) url(#bubble-refraction);
-    }
+    /* Clean glass toggle thumb without refraction distortion */
 
     .ios-glass-toggle-thumb.is-dragging {
       transition: background 0.18s ease, box-shadow 0.18s ease !important;
@@ -1749,10 +1728,7 @@
         </div>
       </div>
 
-      <!-- Live Session Overview Bar (borderless, directly on page background) -->
-      <div id="sessionFocusBar" class="hidden px-1 pt-0.5 pb-1">
-        <div id="sessionFocusSummary" class="space-y-2"></div>
-      </div>
+      <!-- Session overview bar removed -->
 
       <!-- 3-Panel Side-by-Side Swipeable Day Carousel -->
       <div class="carousel-viewport">
@@ -1887,20 +1863,29 @@
           </button>
         </div>
 
-        <!-- Group 1: Training & Equipment -->
-        <div class="settings-group">
-          <button type="button" onclick="openMenuSubpage('GOAL')" class="settings-row">
-            <div class="flex items-center gap-3">
-              <span class="settings-icon-badge">
+        <!-- Inline Weekly Target Card -->
+        <div class="fitness-card p-4 space-y-3.5">
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="settings-icon-badge shrink-0">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9.5" stroke="#FF375F" stroke-width="2.4"/><circle cx="12" cy="12" r="5.5" stroke="#FFFFFF" stroke-width="2.2"/><circle cx="12" cy="12" r="2.5" fill="#30D158"/></svg>
               </span>
-              <span class="type-headline text-white">Weekly Target</span>
+              <div class="min-w-0">
+                <div class="type-headline text-white font-bold">Weekly Target</div>
+                <div id="menuInlineGoalSub" class="type-caption truncate" style="color: var(--label-secondary);">3 workouts per week</div>
+              </div>
             </div>
-            <div class="flex items-center gap-1.5">
-              <span id="menuRowGoalVal" class="type-subhead" style="color: var(--label-secondary);">3 / wk</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <div class="flex items-center gap-2.5 shrink-0">
+              <button type="button" onclick="adjustWeeklyGoal(-1)" aria-label="Decrease Weekly Target" class="glass glass--clear glass--circle-36 glass-interactive text-lg font-bold text-white">−</button>
+              <span id="menuInlineGoalVal" class="fitness-metric text-[24px] min-w-[26px] text-center" style="color: #30D158;">3</span>
+              <button type="button" onclick="adjustWeeklyGoal(1)" aria-label="Increase Weekly Target" class="glass glass--clear glass--circle-36 glass-interactive text-lg font-bold text-white">+</button>
             </div>
-          </button>
+          </div>
+          <div id="menuInlineGoalDots" class="grid grid-cols-7 gap-1.5 pt-0.5" aria-hidden="true"></div>
+        </div>
+
+        <!-- Group 1: Training & Equipment -->
+        <div class="settings-group">
 
           <button type="button" onclick="openMenuSubpage('LIBRARY')" class="settings-row">
             <div class="flex items-center gap-3">
@@ -2248,7 +2233,7 @@
         <input type="text" id="savePresetNameInput" placeholder="e.g., Quick Push + Core" class="fitness-field font-semibold" />
       </div>
       <div class="space-y-2.5">
-        <button type="button" onclick="confirmSaveDayAsPreset()" class="solid-pill w-full h-[50px] type-headline" style="background-color: #0275e7; color: #FFFFFF;">
+        <button type="button" onclick="confirmSaveDayAsPreset()" class="solid-pill w-full h-[50px] type-headline" style="background-color: #30D158; color: #FFFFFF;">
           Save Preset
         </button>
         <button type="button" onclick="closeSavePresetModal()" class="ios-alert-pill-btn h-[50px] text-white">
@@ -4305,6 +4290,8 @@
       let isDragging = false;
       let previewIdx = 0;
       let tapContractTimer = null;
+      let baseRect = null;
+      let wasOvershooting = false;
 
       const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
 
@@ -4315,10 +4302,13 @@
 
         if (tapContractTimer) { clearTimeout(tapContractTimer); tapContractTimer = null; }
 
-        const rect = container.getBoundingClientRect();
-        const innerWidth = rect.width - 8;
+        container.style.transition = '';
+        container.style.transform = '';
+        container.style.transformOrigin = 'center center';
+        baseRect = container.getBoundingClientRect();
+        const innerWidth = baseRect.width - 8;
         const segWidth = innerWidth / count;
-        const relX = e.clientX - (rect.left + 4);
+        const relX = e.clientX - (baseRect.left + 4);
         const touchedIdx = segWidth > 0
           ? clamp(Math.floor(relX / segWidth), 0, count - 1)
           : clamp(getSelectedIndex(), 0, count - 1);
@@ -4328,6 +4318,7 @@
         startIdx = touchedIdx;
         previewIdx = touchedIdx;
         isDragging = false;
+        wasOvershooting = false;
 
         if (containerId === 'floatingTabBar') {
           container.classList.add('is-active-touch');
@@ -4345,7 +4336,7 @@
         const count = getCount();
         if (count <= 1) return;
 
-        const rect = container.getBoundingClientRect();
+        const rect = baseRect || container.getBoundingClientRect();
         const innerWidth = rect.width - 8;
         const segWidth = innerWidth / count;
         if (segWidth <= 0) return;
@@ -4360,7 +4351,33 @@
         if (isDragging) {
           const rawSlot = startIdx + dx / segWidth;
           const clampedSlot = clamp(rawSlot, 0, count - 1);
-          pill.style.transform = `translateX(${clampedSlot * 100}%) scale(1.22, 1.30)`;
+
+          if (containerId === 'floatingTabBar' && (rawSlot < 0 || rawSlot > count - 1)) {
+            wasOvershooting = true;
+            const overshootPx = rawSlot < 0 ? rawSlot * segWidth : (rawSlot - (count - 1)) * segWidth;
+            const absOver = Math.abs(overshootPx);
+            const sign = Math.sign(overshootPx);
+            // iOS 26 rubber-band damping
+            const dampedPx = sign * Math.min(28, (absOver * 0.30) / (1 + absOver * 0.0075));
+            const stretchX = 1.015 + (Math.abs(dampedPx) / rect.width) * 1.45;
+            const stretchY = Math.max(0.955, 1.015 - (Math.abs(dampedPx) / rect.width) * 0.34);
+            const shiftX = dampedPx * 0.42;
+
+            container.style.transition = 'none';
+            container.style.transformOrigin = sign < 0 ? 'right center' : 'left center';
+            container.style.transform = `translate3d(${shiftX.toFixed(2)}px, 0, 0) scale(${stretchX.toFixed(4)}, ${stretchY.toFixed(4)})`;
+
+            const pillNudgePct = (dampedPx / segWidth) * 18;
+            pill.style.transform = `translateX(${(clampedSlot * 100 + pillNudgePct).toFixed(2)}%) scale(1.24, 1.28)`;
+          } else {
+            if (containerId === 'floatingTabBar' && wasOvershooting) {
+              wasOvershooting = false;
+              container.style.transition = 'transform 0.14s ease-out';
+              container.style.transformOrigin = 'center center';
+              container.style.transform = 'scale(1.015)';
+            }
+            pill.style.transform = `translateX(${clampedSlot * 100}%) scale(1.22, 1.30)`;
+          }
 
           const nearest = clamp(Math.round(clampedSlot), 0, count - 1);
           if (nearest !== previewIdx) {
@@ -4374,14 +4391,35 @@
         if (e.pointerId !== pointerId) return;
         const targetIdx = previewIdx;
         const wasDragging = isDragging;
+        const didOvershoot = wasOvershooting;
         pointerId = null;
         isDragging = false;
+        wasOvershooting = false;
+        baseRect = null;
 
         try {
           if (container.hasPointerCapture(e.pointerId)) container.releasePointerCapture(e.pointerId);
         } catch (_) {}
 
         container.classList.remove('is-active-touch');
+        if (containerId === 'floatingTabBar') {
+          if (didOvershoot) {
+            container.style.transition = 'transform 0.44s cubic-bezier(0.22, 1.28, 0.36, 1)';
+            container.style.transform = 'translate3d(0, 0, 0) scale(1, 1)';
+            setTimeout(() => {
+              if (!pointerId) {
+                container.style.transition = '';
+                container.style.transform = '';
+                container.style.transformOrigin = 'center center';
+              }
+            }, 460);
+          } else {
+            container.style.transition = '';
+            container.style.transform = '';
+            container.style.transformOrigin = 'center center';
+          }
+        }
+
         pill.classList.remove('is-dragging');
         if (wasDragging) {
           pill.classList.remove('is-tap-bloom');
@@ -5133,12 +5171,8 @@
 
     function updateLogEmptyScrollLock() {
       const isLog = state.activeTab === 'LOG';
-      const dateStr = state.activeDate || getTodayDateStr();
-      const hasEx = getExercisesForDate(dateStr).length > 0;
-      const is6RowMonth = isLogCalendarOpen && getCalendarMonthRowCount(state.calendarYear, state.calendarMonth) >= 6;
-      const shouldLock = isLog && !hasEx && !is6RowMonth && !document.body.classList.contains('has-sheet-open');
-      document.documentElement.classList.toggle('is-log-empty-locked', shouldLock);
-      document.body.classList.toggle('is-log-empty-locked', shouldLock);
+      document.documentElement.classList.remove('is-log-empty-locked');
+      document.body.classList.remove('is-log-empty-locked');
       document.body.classList.toggle('is-editing-completed', isLog && isEditingCompletedWorkout);
     }
 
@@ -5696,12 +5730,22 @@
       if (profNameEl) profNameEl.textContent = cleanName;
       if (profInitEl) profInitEl.textContent = cleanName.charAt(0).toUpperCase();
 
-      const goalValEl = document.getElementById('menuRowGoalVal');
+      const goalTarget = state.weeklyTarget || 3;
+      const inlineGoalVal = document.getElementById('menuInlineGoalVal');
+      const inlineGoalSub = document.getElementById('menuInlineGoalSub');
+      const inlineGoalDots = document.getElementById('menuInlineGoalDots');
       const typesValEl = document.getElementById('menuRowTypesVal');
       const libValEl = document.getElementById('menuRowLibraryVal');
       const equipValEl = document.getElementById('menuRowEquipVal');
       const widgetsValEl = document.getElementById('menuRowWidgetsVal');
-      if (goalValEl) goalValEl.textContent = `${state.weeklyTarget || 3} / wk`;
+      if (inlineGoalVal) inlineGoalVal.textContent = String(goalTarget);
+      if (inlineGoalSub) inlineGoalSub.textContent = `${goalTarget} workout${goalTarget === 1 ? '' : 's'} per week`;
+      if (inlineGoalDots) {
+        inlineGoalDots.innerHTML = Array.from({ length: 7 }, (_, i) => {
+          const active = i < goalTarget;
+          return `<span class="h-1.5 rounded-full transition-all duration-200" style="background: ${active ? '#30D158' : 'rgba(255,255,255,0.12)'};"></span>`;
+        }).join('');
+      }
       if (typesValEl) typesValEl.textContent = `${(state.savedPresets || []).length} Presets`;
       if (libValEl) libValEl.textContent = `${(state.exerciseLibrary || []).length}`;
       if (equipValEl) {
@@ -5897,55 +5941,149 @@
             renderMenuSubpageContent('PRESETS');
             return;
           }
+          hero.innerHTML = `<div id="subpageHeroCard" class="hidden"></div>`;
+          const libOptions = (state.exerciseLibrary || []).slice().sort((a, b) => a.name.localeCompare(b.name));
           body.innerHTML = `
-            <div class="fitness-card p-4 space-y-3.5">
-              <div class="flex items-center justify-between gap-2">
-                <span class="type-caption uppercase tracking-wider font-bold" style="color: #8B5CF6;">Preset Details</span>
-                <button type="button" onclick="deleteSavedPreset('${esc(preset.id)}')" class="glass glass--clear glass--pill glass-interactive px-3 py-1 type-caption" style="color: #FF5A5F;">Delete</button>
+            <div class="space-y-5 pt-1">
+              <div class="settings-group">
+                <div class="px-4 py-3 flex items-center gap-3">
+                  <span class="type-headline text-white shrink-0">Name</span>
+                  <input type="text" value="${esc(preset.name)}" oninput="updatePresetName('${esc(preset.id)}', this.value)" placeholder="Preset name" class="flex-1 min-w-0 bg-transparent border-none outline-none text-right type-subhead font-semibold text-white" />
+                </div>
               </div>
-              <div>
-                <label class="block type-caption mb-1" style="color: var(--label-secondary);">Preset Name</label>
-                <input type="text" value="${esc(preset.name)}" oninput="updatePresetName('${esc(preset.id)}', this.value)" class="fitness-field font-semibold" />
-              </div>
+
               <div class="space-y-2">
-                <div class="type-caption uppercase tracking-wider" style="color: var(--label-secondary);">Exercises (${(preset.exercises || []).length})</div>
-                ${(preset.exercises || []).map((ex, idx) => `
-                  <div class="flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl" style="background: #2C2C2E;">
-                    <div class="min-w-0">
-                      <div class="type-subhead text-white font-semibold truncate">${esc(ex.name)}</div>
-                      <div class="type-caption truncate" style="color: var(--label-secondary);">${esc(ex.direction)} · ${esc(normalizeMuscles(ex).join(', '))}</div>
-                    </div>
-                    <button type="button" onclick="removeExerciseFromPreset('${esc(preset.id)}', ${idx})" class="glass glass--clear glass--circle-36 glass-interactive shrink-0" aria-label="Remove">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
+                <div class="flex items-center justify-between px-1">
+                  <span class="type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Exercises (${(preset.exercises || []).length})</span>
+                </div>
+                ${(preset.exercises || []).length ? `
+                  <div class="settings-group">
+                    ${(preset.exercises || []).map((ex, idx) => {
+                      const dir = getDirection(ex);
+                      const mod = getModality(ex);
+                      const varColor = getDirectionColor(dir, mod);
+                      const muscles = normalizeMuscles(ex);
+                      return `
+                        <div class="settings-row !py-3">
+                          <div class="min-w-0 pr-2">
+                            <div class="type-subhead font-semibold text-white truncate">${esc(ex.name)}</div>
+                            <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: rgba(${varColor.rgb}, 0.22); color: ${varColor.hex};">${esc(dir)}</span>
+                              ${muscles.map(m => `<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: rgba(255,255,255,0.09); color: rgba(235,235,245,0.82);">${esc(m)}</span>`).join('')}
+                            </div>
+                          </div>
+                          <button type="button" onclick="removeExerciseFromPreset('${esc(preset.id)}', ${idx})" class="glass glass--clear glass--circle-36 glass-interactive shrink-0" aria-label="Remove Exercise">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          </button>
+                        </div>
+                      `;
+                    }).join('')}
                   </div>
-                `).join('')}
+                ` : `
+                  <div class="settings-group px-4 py-5 text-center">
+                    <p class="type-caption" style="color: var(--label-secondary);">No exercises in this preset yet. Add one below.</p>
+                  </div>
+                `}
+
+                <div class="flex items-center gap-2 pt-1">
+                  <select id="presetAddExSelect" aria-label="Add exercise to preset" class="fitness-field flex-1 min-w-0 !py-2.5 !px-3.5 !rounded-full text-[14px] font-semibold">
+                    <option value="">Add exercise from library…</option>
+                    ${libOptions.map(ex => `<option value="${esc(ex.id)}">${esc(ex.name)}</option>`).join('')}
+                  </select>
+                  <button
+                    type="button"
+                    onclick="addExerciseToPresetFromSelect('${esc(preset.id)}')"
+                    aria-label="Add Exercise to Preset"
+                    class="solid-pill w-[44px] h-[44px] min-h-[44px] !p-0 shrink-0"
+                    style="background-color: #30D158; color: #FFFFFF;"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                      <line x1="12" y1="5" x2="12" y2="19"/>
+                      <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
-              <button type="button" onclick="loadPresetIntoActiveDate('${esc(preset.id)}'); switchTab('LOG');" class="solid-pill w-full py-3.5 type-headline" style="background-color: #0275e7; color: #FFFFFF;">
+
+              <button type="button" onclick="loadPresetIntoActiveDate('${esc(preset.id)}'); switchTab('LOG');" class="solid-pill w-full h-[50px] type-headline" style="background-color: #30D158; color: #FFFFFF;">
                 Load Into Active Date
               </button>
+
+              <div class="settings-group">
+                <button type="button" onclick="deleteSavedPreset('${esc(preset.id)}')" class="settings-row justify-center">
+                  <span class="type-headline font-semibold" style="color: #FF453A;">Delete Preset</span>
+                </button>
+              </div>
             </div>
           `;
           return;
         }
 
-        body.innerHTML = presets.length ? `
-          <div class="settings-group">
-            ${presets.map(p => `
-              <button type="button" onclick="openPresetDetail('${esc(p.id)}')" class="settings-row">
-                <div class="min-w-0 pr-2">
-                  <div class="type-headline text-white truncate">${esc(p.name)}</div>
-                  <div class="type-caption truncate" style="color: var(--label-secondary);">${(p.exercises || []).length} exercises</div>
-                </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        const pq = (typeof presetsSearchQuery === 'string' ? presetsSearchQuery : '').trim().toLowerCase();
+        const filteredPresets = presets.filter(p => {
+          if (!pq) return true;
+          if ((p.name || '').toLowerCase().includes(pq)) return true;
+          return (p.exercises || []).some(ex =>
+            (ex.name || '').toLowerCase().includes(pq) ||
+            normalizeMuscles(ex).some(m => m.toLowerCase().includes(pq))
+          );
+        });
+
+        body.innerHTML = `
+          <div class="space-y-2.5">
+            <div class="flex items-center gap-2.5">
+              <div class="ios-search-pill flex-1">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.88)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7.5"/>
+                  <line x1="16.65" y1="16.65" x2="21" y2="21"/>
+                </svg>
+                <input
+                  type="text"
+                  enterkeyhint="done"
+                  value="${esc(typeof presetsSearchQuery === 'string' ? presetsSearchQuery : '')}"
+                  oninput="updatePresetsSearch(this.value)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}"
+                  placeholder="Search saved presets..."
+                  aria-label="Search saved presets"
+                />
+              </div>
+              <button
+                type="button"
+                onclick="createBlankSavedPreset()"
+                aria-label="Add New Preset"
+                class="solid-pill w-[44px] h-[44px] min-h-[44px] !p-0 shrink-0"
+                style="background-color: #30D158; color: #FFFFFF;"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19"/>
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
               </button>
-            `).join('')}
+            </div>
           </div>
-        ` : `
-          <div class="fitness-card p-6 text-center space-y-1.5">
-            <div class="type-headline text-white">No Saved Presets Yet</div>
-            <p class="type-footnote" style="color: var(--label-secondary);">Build a workout on the Log tab and tap “Save Preset” to reuse it anytime.</p>
-          </div>
+
+          ${filteredPresets.length ? `
+            <div class="settings-group">
+              ${filteredPresets.map(p => {
+                const exList = p.exercises || [];
+                const muscles = [...new Set(exList.flatMap(ex => normalizeMuscles(ex)))].slice(0, 3);
+                return `
+                  <button type="button" onclick="openPresetDetail('${esc(p.id)}')" class="settings-row !py-3">
+                    <div class="min-w-0 pr-2">
+                      <div class="type-subhead font-semibold text-white truncate">${esc(p.name)}</div>
+                      <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: rgba(48, 209, 88, 0.20); color: #30D158;">${exList.length} exercise${exList.length === 1 ? '' : 's'}</span>
+                        ${muscles.map(m => `<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: rgba(255,255,255,0.09); color: rgba(235,235,245,0.82);">${esc(m)}</span>`).join('')}
+                      </div>
+                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          ` : `
+            <p class="type-caption py-6 text-center" style="color: var(--label-tertiary);">${presets.length ? 'No presets match your search.' : 'No saved presets yet. Tap + above or save a workout from the Log tab.'}</p>
+          `}
         `;
       } else if (section === 'LIBRARY') {
         const library = state.exerciseLibrary || [];
@@ -6462,6 +6600,52 @@
         `;
         updateCloudSyncIndicators();
       }
+    }
+
+    let presetsSearchQuery = '';
+
+    function updatePresetsSearch(val) {
+      presetsSearchQuery = val || '';
+      renderMenuSubpageContent('PRESETS');
+      const inp = document.querySelector('#menuSubpageBody .ios-search-pill input');
+      if (inp) {
+        inp.focus();
+        try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch (_) {}
+      }
+    }
+
+    function createBlankSavedPreset() {
+      const nextNum = (state.savedPresets || []).length + 1;
+      const newPreset = {
+        id: 'preset_' + Date.now(),
+        name: `Workout Preset ${nextNum}`,
+        exercises: []
+      };
+      state.savedPresets = [newPreset, ...(state.savedPresets || [])];
+      saveState();
+      editingPresetId = newPreset.id;
+      presetsSubViewMode = 'EDIT';
+      renderMenuView();
+      updateCollapsibleHeaderOnScroll();
+    }
+
+    function addExerciseToPresetFromSelect(presetId) {
+      const sel = document.getElementById('presetAddExSelect');
+      if (!sel || !sel.value) return;
+      const libItem = (state.exerciseLibrary || []).find(e => e.id === sel.value);
+      const preset = (state.savedPresets || []).find(p => p.id === presetId);
+      if (!libItem || !preset) return;
+      preset.exercises = preset.exercises || [];
+      preset.exercises.push({
+        name: libItem.name,
+        modality: getModality(libItem),
+        direction: getDirection(libItem),
+        muscles: normalizeMuscles(libItem),
+        equipment: libItem.equipment || '',
+        setup: libItem.setup || ''
+      });
+      saveState();
+      renderMenuSubpageContent('PRESETS');
     }
 
     function openPresetDetail(presetId) {
@@ -7084,71 +7268,7 @@
     }
 
     function renderSessionFocusBar() {
-      const dateStr = state.activeDate || getTodayDateStr();
-      const dayEx = getExercisesForDate(dateStr);
-      const focusBar = document.getElementById('sessionFocusBar');
-      const summaryEl = document.getElementById('sessionFocusSummary');
-      const saveBtn = document.getElementById('saveDayAsPresetBtn');
-      if (!summaryEl || !focusBar) return;
-
-      if (!dayEx.length) {
-        focusBar.classList.add('hidden');
-        if (saveBtn) saveBtn.classList.add('hidden');
-        return;
-      }
-
-      focusBar.classList.remove('hidden');
-      if (saveBtn) saveBtn.classList.remove('hidden');
-      const m = computeSessionMetrics(dayEx);
-      const totalSets = dayEx.reduce((acc, ex) => {
-        const l = getLogForDate(ex, dateStr);
-        return acc + (getModality(ex) !== 'Cardio' && l.sets ? (Number(l.sets) || 0) : 0);
-      }, 0);
-      const counts = { push: 0, pull: 0, mix: 0, cardio: 0 };
-      dayEx.forEach(ex => {
-        const mod = getModality(ex);
-        const dir = getDirection(ex);
-        if (mod === 'Cardio' || dir === 'Cardio') counts.cardio += 1;
-        else if (dir === 'Pull') counts.pull += 1;
-        else if (dir === 'Push / Pull') counts.mix += 1;
-        else counts.push += 1;
-      });
-      const segs = [
-        { count: counts.push, hex: SUMMER_PALETTE.push.hex },
-        { count: counts.pull, hex: SUMMER_PALETTE.pull.hex },
-        { count: counts.mix, hex: SUMMER_PALETTE.mix.hex },
-        { count: counts.cardio, hex: SUMMER_PALETTE.cardio.hex }
-      ].filter(s => s.count > 0);
-      const totalEx = dayEx.length;
-      let barBg = 'rgba(255,255,255,0.12)';
-      if (segs.length === 1) {
-        barBg = segs[0].hex;
-      } else if (segs.length > 1) {
-        const stops = [];
-        let cursor = 0;
-        segs.forEach((seg, idx) => {
-          const share = (seg.count / totalEx) * 100;
-          const nextCursor = idx === segs.length - 1 ? 100 : cursor + share;
-          const prevShare = idx > 0 ? (segs[idx - 1].count / totalEx) * 100 : share;
-          const startFeather = idx === 0 ? 0 : Math.min(5, prevShare * 0.35, share * 0.35);
-          const endFeather = idx === segs.length - 1 ? 0 : Math.min(5, share * 0.35, ((segs[idx + 1].count / totalEx) * 100) * 0.35);
-          const s0 = idx === 0 ? 0 : (cursor + startFeather).toFixed(1);
-          const s1 = idx === segs.length - 1 ? 100 : (nextCursor - endFeather).toFixed(1);
-          stops.push(`${seg.hex} ${s0}%`, `${seg.hex} ${s1}%`);
-          cursor = nextCursor;
-        });
-        barBg = `linear-gradient(90deg, ${stops.join(', ')})`;
-      }
-      const musclesText = m.muscles.slice(0, 4).map(esc).join(', ');
-      const statsText = `${totalEx} exercise${totalEx === 1 ? '' : 's'}${totalSets ? ` · ${totalSets} sets` : ''}${m.cardioCount ? ` · ${m.cardioCount} cardio` : ''}`;
-
-      summaryEl.innerHTML = `
-        <div class="flex items-baseline justify-between gap-3">
-          <span class="text-[13px] font-bold text-white shrink-0">${statsText}</span>
-          ${musclesText ? `<span class="text-[12px] font-medium truncate text-right" style="color: var(--label-secondary);">${musclesText}</span>` : ''}
-        </div>
-        <div class="w-full h-2 rounded-full overflow-hidden" style="background: ${barBg};"></div>
-      `;
+      // Removed per user request
     }
 
     function buildExerciseCardsHtml(dateStr, interactive = true, showDateBtn = false) {
@@ -7385,7 +7505,7 @@
       } else if (!isEditingThis) {
         bottomActionHtml = `
           <div class="grid grid-cols-2 gap-3">
-            <button type="button" ${interactive ? 'onclick="openSavePresetModal()"' : 'tabindex="-1"'} class="glass glass--clear glass--pill glass-interactive w-full h-[50px] px-4 text-[15px] font-bold text-white text-center">
+            <button type="button" ${interactive ? 'onclick="openSavePresetModal()"' : 'tabindex="-1"'} class="solid-pill w-full h-[50px] px-4 type-headline text-center" style="background-color: #30D158; color: #FFFFFF;">
               Save Preset
             </button>
             <button type="button" ${interactive ? 'onclick="startEditingCompletedWorkout()"' : 'tabindex="-1"'} class="solid-pill w-full h-[50px] px-4 type-headline text-center" style="background-color: #0275e7; color: #FFFFFF;">
@@ -7409,10 +7529,7 @@
           ${buildExerciseCardsHtml(dateStr, canEditExercises, showDateBtn)}
         </div>
         ${(hasExercises && (!isCompleted || isEditingThis)) ? `
-          <div class="flex items-center justify-center gap-3 pt-1">
-            <button type="button" ${interactive ? 'onclick="openSavePresetModal()"' : 'tabindex="-1"'} aria-label="Save as Preset" title="Save as Preset" class="glass glass--clear glass--circle-44 glass-interactive">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2.2" fill="#0A84FF"/><rect x="13" y="3" width="8" height="8" rx="2.2" fill="#FFD60A"/><rect x="3" y="13" width="8" height="8" rx="2.2" fill="#30D158"/><rect x="13" y="13" width="8" height="8" rx="2.2" fill="#FF375F"/></svg>
-            </button>
+          <div class="flex items-center justify-center pt-1">
             <button type="button" ${interactive ? 'onclick="openAddExerciseSheet(\'SESSION\')"' : 'tabindex="-1"'} aria-label="Add Exercise" class="glass glass--clear glass--circle-48 glass-interactive">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
             </button>
