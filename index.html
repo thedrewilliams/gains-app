@@ -430,8 +430,8 @@
     .tab-active-pill.is-tap-bloom,
     .tab-active-pill.is-dragging {
       z-index: 3;
-      background: rgba(255, 255, 255, 0.13);
-      box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.16);
+      background: #0d0d0e;
+      box-shadow: none;
     }
 
     .tab-active-pill.is-tap-bloom::before,
@@ -827,32 +827,10 @@
     body.is-editing-completed .log-fixed-header,
     body.is-editing-completed #logCalendarDrawer,
     body.is-editing-completed #floatingTabBar {
-      opacity: 0.08;
+      opacity: 0.10;
       filter: saturate(0) blur(2px);
       pointer-events: none !important;
       transition: opacity 0.32s ease, filter 0.32s ease;
-    }
-
-    body.is-editing-completed .log-fixed-header {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 10;
-      background: transparent;
-    }
-
-    body.is-editing-completed .log-fixed-header::after {
-      display: none;
-    }
-
-    body.is-editing-completed #logScrollBody {
-      position: relative;
-      z-index: 24;
-    }
-
-    body.is-editing-completed #logScrollBodyInner {
-      padding-top: calc(env(safe-area-inset-top, 12px) + 196px);
     }
 
     .sticky-compact-header > div {
@@ -877,67 +855,27 @@
       z-index: 5;
     }
 
-    /* Log View: Immovable Header + Dedicated Body Scroll Container (Scrollbar Only in Body) */
-    #logView:not(.hidden) {
-      position: fixed;
-      inset: 0;
-      z-index: 12;
-      display: flex;
-      flex-direction: column;
-      background: #000000;
-      overflow: hidden;
-    }
-
+    /* Log View: Natural Non-Sticky Header & Document Flow */
     .log-fixed-header {
       position: relative;
-      flex-shrink: 0;
-      z-index: 28;
+      z-index: 10;
       padding-top: calc(env(safe-area-inset-top, 12px) + 46px);
-      padding-bottom: 10px;
+      padding-bottom: 12px;
       background: #000000;
-      pointer-events: auto;
-    }
-
-    .log-fixed-header::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: calc(100% - 4px);
-      height: 30px;
-      background: linear-gradient(180deg, #000000 0%, #000000 18%, rgba(0, 0, 0, 0) 100%);
-      pointer-events: none;
-      z-index: 29;
     }
 
     .log-fixed-header-inner {
       width: 100%;
-      max-width: 32rem;
-      margin-left: auto;
-      margin-right: auto;
-      padding-left: 16px;
-      padding-right: 16px;
     }
 
     #logScrollBody {
-      flex: 1 1 0%;
-      min-height: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior-y: contain;
+      position: relative;
+      z-index: 12;
     }
 
     #logScrollBodyInner {
       width: 100%;
-      max-width: 32rem;
-      margin-left: auto;
-      margin-right: auto;
-      padding: 16px 16px 132px;
-    }
-
-    body.is-log-empty #logScrollBodyInner {
-      padding-bottom: 16px;
+      padding-top: 6px;
     }
 
     /* 1:1 Finger-Tracking Horizontal 3-Panel Carousel Stages */
@@ -2080,7 +2018,7 @@
         </div>
 
         <!-- Inline Weekly Target Card -->
-        <div class="fitness-card p-4 space-y-3.5">
+        <div class="fitness-card p-4 space-y-3.5 overflow-hidden">
           <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-3 min-w-0">
               <span class="settings-icon-badge shrink-0">
@@ -2278,10 +2216,11 @@
               id="pickPresetTriggerBtn"
               onclick="openPickPresetModal()"
               disabled
-              class="solid-pill w-full h-[50px] px-3 type-headline text-center transition-opacity"
-              style="background-color: #30D158; color: #FFFFFF; opacity: 0.35; pointer-events: none;"
+              class="glass glass--clear glass--pill glass-interactive w-full h-[50px] px-3 gap-2 type-headline text-white text-center transition-opacity"
+              style="opacity: 0.35; pointer-events: none;"
             >
-              Pick Preset
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="shrink-0" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2.2" fill="#0A84FF"/><rect x="13" y="3" width="8" height="8" rx="2.2" fill="#FFD60A"/><rect x="3" y="13" width="8" height="8" rx="2.2" fill="#30D158"/><rect x="13" y="13" width="8" height="8" rx="2.2" fill="#FF375F"/></svg>
+              <span>Pick Preset</span>
             </button>
             <button
               type="button"
@@ -2684,6 +2623,58 @@
         </button>
       </div>
       <div id="legalSheetBody" class="flex-1 overflow-y-auto no-scrollbar space-y-3 pb-6 text-[14px] leading-relaxed" style="color: rgba(235,235,245,0.78);"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       FIRST-TIME USER ONBOARDING MODAL
+       ========================================================================= -->
+  <div id="onboardingBackdrop" class="sheet-backdrop" style="z-index: 86;" onclick="if(event.target===this) return;">
+    <div class="liquid-sheet" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
+      <div class="apple-sheet-header !pb-3">
+        <div class="min-w-0">
+          <h3 id="onboardingTitle" class="type-title-2 text-white font-bold">Welcome to Gains</h3>
+          <p class="type-caption" style="color: var(--label-secondary);">Quick setup — editable anytime in Profile</p>
+        </div>
+      </div>
+      <div class="flex-1 overflow-y-auto no-scrollbar space-y-4 pb-4">
+        <div class="space-y-1.5">
+          <label for="obNameInput" class="block type-caption uppercase tracking-wider font-semibold px-0.5" style="color: var(--label-secondary);">Your Name</label>
+          <input type="text" id="obNameInput" placeholder="First name or nickname" class="fitness-field font-semibold" />
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="type-caption uppercase tracking-wider font-semibold px-0.5" style="color: var(--label-secondary);">Primary Goal</div>
+          <div id="obGoalChips" class="grid grid-cols-2 gap-2"></div>
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="type-caption uppercase tracking-wider font-semibold px-0.5" style="color: var(--label-secondary);">Experience Level</div>
+          <div id="obLevelChips" class="grid grid-cols-3 gap-2"></div>
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between px-0.5">
+            <span class="type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Weekly Workout Target</span>
+            <span id="obTargetLabel" class="type-caption font-bold" style="color: #30D158;">3 / week</span>
+          </div>
+          <div id="obTargetChips" class="grid grid-cols-7 gap-1.5"></div>
+        </div>
+
+        <div class="space-y-1.5">
+          <div class="type-caption uppercase tracking-wider font-semibold px-0.5" style="color: var(--label-secondary);">Weight Unit</div>
+          <div id="obUnitChips" class="grid grid-cols-2 gap-2"></div>
+        </div>
+      </div>
+
+      <div class="pt-3 space-y-2.5 flex-shrink-0">
+        <button type="button" onclick="completeOnboardingSetup()" class="solid-pill w-full h-[50px] type-headline" style="background-color: #0A84FF; color: #FFFFFF;">
+          Get Started
+        </button>
+        <button type="button" onclick="skipOnboardingToSignIn()" class="w-full py-2 text-center text-[13px] font-semibold" style="color: #0A84FF;">
+          Already have an account? Sign In
+        </button>
+      </div>
     </div>
   </div>
 
@@ -4693,6 +4684,98 @@
       renderWorkoutCards();
     }
 
+    // --- First-Time Onboarding & Profile Preferences ---
+    let obDraft = { goal: 'Build Muscle', level: 'Intermediate', weeklyTarget: 3, unit: 'lb' };
+
+    function updateProfileField(key, val) {
+      if (!state.userProfile || typeof state.userProfile !== 'object') state.userProfile = {};
+      state.userProfile[key] = val;
+      saveState();
+      if (activeMenuSubpage === 'PROFILE') renderMenuSubpageContent('PROFILE');
+    }
+
+    function renderOnboardingChips() {
+      const goals = ['Build Muscle', 'Get Stronger', 'Stay Consistent', 'General Fitness'];
+      const levels = ['Beginner', 'Intermediate', 'Advanced'];
+      const units = ['lb', 'kg'];
+
+      const goalEl = document.getElementById('obGoalChips');
+      if (goalEl) {
+        goalEl.innerHTML = goals.map(g => {
+          const on = obDraft.goal === g;
+          return `<button type="button" onclick="obDraft.goal='${g}'; renderOnboardingChips();" class="py-2.5 px-3 rounded-2xl text-[13.5px] font-bold text-center transition-colors" style="${on ? 'background: #0A84FF; color: #FFFFFF;' : 'background: #2C2C2E; color: rgba(235,235,245,0.82);'}">${g}</button>`;
+        }).join('');
+      }
+      const lvlEl = document.getElementById('obLevelChips');
+      if (lvlEl) {
+        lvlEl.innerHTML = levels.map(l => {
+          const on = obDraft.level === l;
+          return `<button type="button" onclick="obDraft.level='${l}'; renderOnboardingChips();" class="py-2.5 px-2 rounded-2xl text-[13px] font-bold text-center transition-colors" style="${on ? 'background: #0A84FF; color: #FFFFFF;' : 'background: #2C2C2E; color: rgba(235,235,245,0.82);'}">${l}</button>`;
+        }).join('');
+      }
+      const tgtEl = document.getElementById('obTargetChips');
+      const tgtLbl = document.getElementById('obTargetLabel');
+      if (tgtLbl) tgtLbl.textContent = `${obDraft.weeklyTarget} / week`;
+      if (tgtEl) {
+        tgtEl.innerHTML = [1,2,3,4,5,6,7].map(n => {
+          const on = obDraft.weeklyTarget === n;
+          return `<button type="button" onclick="obDraft.weeklyTarget=${n}; renderOnboardingChips();" class="h-10 rounded-xl text-[14px] font-extrabold transition-colors" style="${on ? 'background: #30D158; color: #FFFFFF;' : 'background: #2C2C2E; color: rgba(235,235,245,0.78);'}">${n}</button>`;
+        }).join('');
+      }
+      const unitEl = document.getElementById('obUnitChips');
+      if (unitEl) {
+        unitEl.innerHTML = units.map(u => {
+          const on = obDraft.unit === u;
+          return `<button type="button" onclick="obDraft.unit='${u}'; renderOnboardingChips();" class="py-2.5 rounded-2xl text-[14px] font-bold text-center transition-colors" style="${on ? 'background: #0A84FF; color: #FFFFFF;' : 'background: #2C2C2E; color: rgba(235,235,245,0.82);'}">${u.toUpperCase()}</button>`;
+        }).join('');
+      }
+    }
+
+    function maybeShowInitialOnboarding() {
+      if (state.onboardingCompleted) return;
+      if (authSession && authSession.authenticated) return;
+      if ((state.userName || '').trim() || Object.keys(state.sessions || {}).length > 0) {
+        state.onboardingCompleted = true;
+        return;
+      }
+      obDraft = {
+        goal: (state.userProfile && state.userProfile.goal) || 'Build Muscle',
+        level: (state.userProfile && state.userProfile.level) || 'Intermediate',
+        weeklyTarget: state.weeklyTarget || 3,
+        unit: (state.userProfile && state.userProfile.unit) || 'lb'
+      };
+      const nameInp = document.getElementById('obNameInput');
+      if (nameInp) nameInp.value = state.userName || '';
+      renderOnboardingChips();
+      openModalSheet('onboardingBackdrop');
+    }
+
+    function completeOnboardingSetup() {
+      const nameInp = document.getElementById('obNameInput');
+      const cleanName = nameInp ? nameInp.value.trim() : '';
+      if (cleanName) state.userName = cleanName;
+      state.weeklyTarget = obDraft.weeklyTarget || 3;
+      state.userProfile = {
+        goal: obDraft.goal || 'Build Muscle',
+        level: obDraft.level || 'Intermediate',
+        unit: obDraft.unit || 'lb'
+      };
+      state.onboardingCompleted = true;
+      saveState();
+      const el = document.getElementById('onboardingBackdrop');
+      if (el) el.classList.remove('is-open');
+      releaseBodyScrollLockIfClear();
+      renderAll();
+    }
+
+    function skipOnboardingToSignIn() {
+      state.onboardingCompleted = true;
+      const el = document.getElementById('onboardingBackdrop');
+      if (el) el.classList.remove('is-open');
+      releaseBodyScrollLockIfClear();
+      openAccountModal();
+    }
+
     async function signOutNativeAuth() {
       if (!isCloudSyncSupported()) return;
       try {
@@ -5155,16 +5238,18 @@
     }
 
     function smoothScrollLogBodyToTop(durationMs = 460) {
-      const scroller = document.getElementById('logScrollBody');
-      if (!scroller) return;
-      const startTop = scroller.scrollTop;
-      if (startTop <= 2) return;
+      const cardsEl = document.getElementById('exerciseCardsList');
+      const startY = window.scrollY || window.pageYOffset || 0;
+      const targetY = cardsEl
+        ? Math.max(0, cardsEl.getBoundingClientRect().top + startY - 72)
+        : 0;
+      if (Math.abs(startY - targetY) <= 4) return;
       const startTime = performance.now();
       const step = (now) => {
         const t = Math.min(1, (now - startTime) / durationMs);
         // Fast start, smooth quick deceleration at the end (easeOutQuart)
         const eased = 1 - Math.pow(1 - t, 4);
-        scroller.scrollTop = startTop * (1 - eased);
+        window.scrollTo(0, startY + (targetY - startY) * eased);
         if (t < 1) requestAnimationFrame(step);
       };
       requestAnimationFrame(step);
@@ -5687,7 +5772,7 @@
                   <span class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style="background: rgba(10, 132, 255, 0.16); color: #0A84FF;">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                   </span>
-                  <span class="type-subhead text-white font-semibold truncate">Edit Display Name</span>
+                  <span class="type-subhead text-white font-semibold truncate">Edit Profile</span>
                 </div>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.4)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
@@ -6791,7 +6876,9 @@
         (activeMenuSubpage === 'LIBRARY' && librarySubViewMode !== 'LIST');
 
       if (!isNested) {
-        return rootEl ? `<div class="space-y-5">${rootEl.innerHTML}</div>` : '';
+        if (!rootEl) return '';
+        const sanitizedRoot = rootEl.innerHTML.replace(/\sid="[^"]*"/g, '');
+        return `<div class="space-y-5">${sanitizedRoot}</div>`;
       }
 
       // Render parent subpage into a detached snapshot without mutating live DOM
@@ -6853,11 +6940,13 @@
         </div>
       ` : '';
 
+      const safeHero = parentHeroHtml.replace(/\sid="[^"]*"/g, '');
+      const safeBody = parentBodyHtml.replace(/\sid="[^"]*"/g, '');
       return `
         ${parentBarHtml}
         <div class="space-y-4">
-          <div style="padding-top: calc(env(safe-area-inset-top, 12px) + 84px);">${parentHeroHtml}</div>
-          <div class="space-y-4">${parentBodyHtml}</div>
+          <div style="padding-top: calc(env(safe-area-inset-top, 12px) + 84px);">${safeHero}</div>
+          <div class="space-y-4">${safeBody}</div>
         </div>
       `;
     }
@@ -7753,11 +7842,39 @@
           </div>
         `;
       } else if (section === 'PROFILE') {
+        const prof = state.userProfile || {};
+        const goalOpts = ['Build Muscle', 'Get Stronger', 'Stay Consistent', 'General Fitness'];
+        const levelOpts = ['Beginner', 'Intermediate', 'Advanced'];
+        const unitOpts = ['lb', 'kg'];
         body.innerHTML = `
-          <div class="fitness-card p-4 space-y-2">
-            <label for="menuUserNameInput" class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Your Name</label>
-            <input type="text" id="menuUserNameInput" value="${esc(state.userName || '')}" oninput="updateUserName(this.value)" placeholder="Enter your name..." class="fitness-field font-semibold" />
-            <p class="type-caption" style="color: var(--label-tertiary);">Displayed on your Home welcome screen and profile avatar.</p>
+          <div class="fitness-card p-4 space-y-3.5">
+            <div class="space-y-1.5">
+              <label for="menuUserNameInput" class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Your Name</label>
+              <input type="text" id="menuUserNameInput" value="${esc(state.userName || '')}" oninput="updateUserName(this.value)" placeholder="Enter your name..." class="fitness-field font-semibold" />
+            </div>
+            <div class="grid grid-cols-2 gap-2.5">
+              <div class="space-y-1">
+                <label class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Primary Goal</label>
+                <select onchange="updateProfileField('goal', this.value)" class="fitness-field !py-2 !px-3 text-[14px] font-semibold">
+                  ${goalOpts.map(g => `<option value="${esc(g)}" ${(prof.goal || 'Build Muscle') === g ? 'selected' : ''}>${esc(g)}</option>`).join('')}
+                </select>
+              </div>
+              <div class="space-y-1">
+                <label class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Experience</label>
+                <select onchange="updateProfileField('level', this.value)" class="fitness-field !py-2 !px-3 text-[14px] font-semibold">
+                  ${levelOpts.map(l => `<option value="${esc(l)}" ${(prof.level || 'Intermediate') === l ? 'selected' : ''}>${esc(l)}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+            <div class="space-y-1">
+              <label class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Preferred Weight Unit</label>
+              <div class="grid grid-cols-2 gap-2">
+                ${unitOpts.map(u => {
+                  const active = (prof.unit || 'lb') === u;
+                  return `<button type="button" onclick="updateProfileField('unit', '${u}')" class="py-2 rounded-xl text-[14px] font-bold transition-colors" style="${active ? 'background: #0A84FF; color: #FFFFFF;' : 'background: #2C2C2E; color: rgba(235,235,245,0.75);'}">${u.toUpperCase()}</button>`;
+                }).join('')}
+              </div>
+            </div>
           </div>
 
           <div class="fitness-card p-4 space-y-3">
@@ -8275,7 +8392,7 @@
         stickyBar.classList.toggle('has-scrolled-bar', titlePassedTop);
         if (!leftSlot.firstElementChild) {
           leftSlot.innerHTML = `
-            <button type="button" onclick="closeMenuSubpage()" aria-label="Back to Menu" class="ios-back-btn">
+            <button type="button" onclick="closeMenuSubpage()" aria-label="Back to Menu" class="glass glass--clear glass--circle-44 glass-interactive">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
           `;
@@ -8822,8 +8939,9 @@
       } else if (!isEditingThis) {
         bottomActionHtml = `
           <div class="grid grid-cols-2 gap-3">
-            <button type="button" ${interactive ? 'onclick="openSavePresetModal()"' : 'tabindex="-1"'} class="solid-pill w-full h-[50px] px-4 type-headline text-center" style="background-color: #30D158; color: #FFFFFF;">
-              Save Preset
+            <button type="button" ${interactive ? 'onclick="openSavePresetModal()"' : 'tabindex="-1"'} class="glass glass--clear glass--pill glass-interactive w-full h-[50px] px-4 gap-2 type-headline text-white text-center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="shrink-0" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2.2" fill="#0A84FF"/><rect x="13" y="3" width="8" height="8" rx="2.2" fill="#FFD60A"/><rect x="3" y="13" width="8" height="8" rx="2.2" fill="#30D158"/><rect x="13" y="13" width="8" height="8" rx="2.2" fill="#FF375F"/></svg>
+              <span>Save Preset</span>
             </button>
             <button type="button" ${interactive ? 'onclick="startEditingCompletedWorkout()"' : 'tabindex="-1"'} class="solid-pill w-full h-[50px] px-4 type-headline text-center" style="background-color: #0275e7; color: #FFFFFF;">
               Edit Workout
@@ -9502,7 +9620,9 @@
       state.activeTab = 'SUMMARY';
       activeMenuSubpage = null;
       renderAll();
-      syncWithCloudOnBoot();
+      syncWithCloudOnBoot().finally(() => {
+        setTimeout(maybeShowInitialOnboarding, 180);
+      });
     });
   </script>
 </body>
