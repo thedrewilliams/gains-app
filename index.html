@@ -1336,65 +1336,114 @@
       appearance: none;
     }
 
-    /* Post-Onboarding Home Welcome Swoop Intro */
+    /* Non-Scrollable Welcome Intro Overlay & Unblur Transition */
+    html.is-welcome-intro,
+    body.is-welcome-intro {
+      overflow: hidden !important;
+      overscroll-behavior: none !important;
+      touch-action: none !important;
+    }
+
     body.is-welcome-intro #summaryView > :not(#summaryHeroHeader),
     body.is-welcome-intro #homeProfileBtn,
     body.is-welcome-intro #floatingTabBar {
       filter: blur(16px);
-      opacity: 0.34;
+      opacity: 0.32;
       pointer-events: none;
-      transition: filter 0.72s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.72s ease;
+      transition: filter 0.78s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.78s ease;
+    }
+
+    body.is-welcome-intro #welcomeHeroTitle {
+      opacity: 0;
     }
 
     #summaryView > :not(#summaryHeroHeader),
     #homeProfileBtn {
-      transition: filter 0.76s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.76s ease;
+      transition: filter 0.78s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.78s ease;
     }
 
-    /* Animated dark-blue -> light-blue perimeter stroke sweep for Home Sign-In card */
+    #welcomeIntroOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 62;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 28px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.28s ease-out;
+    }
+
+    #welcomeIntroOverlay.is-visible {
+      opacity: 1;
+    }
+
+    #welcomeIntroText {
+      font-size: clamp(34px, 9.5vw, 44px);
+      line-height: 1.12;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      text-align: center;
+      max-width: 100%;
+      word-break: break-word;
+      will-change: transform, opacity;
+    }
+
+    /* 60fps Pixel-Exact Conic Border Stroke Sweep directly on the card's exact border & radius */
+    @property --signin-angle {
+      syntax: '<angle>';
+      inherits: false;
+      initial-value: 0deg;
+    }
+
     .signin-stroke-card {
       position: relative;
-      overflow: hidden;
     }
 
-    .signin-stroke-svg {
+    .signin-stroke-card::before {
+      content: "";
       position: absolute;
       inset: 0;
-      width: 100%;
-      height: 100%;
+      border-radius: inherit;
+      padding: 1.5px;
+      background: conic-gradient(
+        from var(--signin-angle),
+        transparent 0deg,
+        transparent 210deg,
+        #003EB3 255deg,
+        #0A84FF 305deg,
+        #64D2FF 345deg,
+        transparent 360deg
+      );
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
       pointer-events: none;
       z-index: 4;
-      opacity: 0;
     }
 
-    .signin-stroke-card.is-sweeping .signin-stroke-svg {
-      animation: signInBorderVisibility 1.65s ease-out forwards;
+    .signin-stroke-card.is-sweeping::before {
+      animation: signInBorderSweep 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
-    .signin-stroke-rect {
-      fill: none;
-      stroke: url(#signInStrokeGrad);
-      stroke-width: 2.2;
-      stroke-linecap: round;
-      stroke-dasharray: 280 900;
-      stroke-dashoffset: 280;
-    }
-
-    .signin-stroke-card.is-sweeping .signin-stroke-rect {
-      animation: signInStrokeTrace 1.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-    }
-
-    @keyframes signInStrokeTrace {
-      0% { stroke-dashoffset: 280; stroke-dasharray: 180 1000; }
-      45% { stroke-dashoffset: -420; stroke-dasharray: 1050 200; }
-      100% { stroke-dashoffset: -1150; stroke-dasharray: 1150 100; }
-    }
-
-    @keyframes signInBorderVisibility {
-      0% { opacity: 0; }
-      10% { opacity: 1; }
-      72% { opacity: 0.95; }
-      100% { opacity: 0; }
+    @keyframes signInBorderSweep {
+      0% {
+        --signin-angle: 0deg;
+        opacity: 0;
+      }
+      12% {
+        opacity: 1;
+      }
+      72% {
+        --signin-angle: 360deg;
+        opacity: 0.95;
+      }
+      100% {
+        --signin-angle: 420deg;
+        opacity: 0;
+      }
     }
 
     .fitness-field:focus {
@@ -1873,6 +1922,11 @@
   <!-- Solid 4px top-edge anchor that disables iOS 26/27 PWA status-bar blur/gradient across all pages -->
   <div class="ios-statusbar-plate" aria-hidden="true"></div>
 
+  <!-- Centered Non-Scrollable Welcome Intro Overlay -->
+  <div id="welcomeIntroOverlay" class="hidden" aria-hidden="true">
+    <div id="welcomeIntroText"></div>
+  </div>
+
   <!-- Pinned Compact Header (appears only after large title scrolls past) -->
   <header id="stickyCompactHeader" class="sticky-compact-header">
     <div class="relative max-w-lg mx-auto px-4 min-h-[44px] flex items-center justify-between">
@@ -1949,18 +2003,8 @@
         </div>
       </div>
 
-      <!-- Consolidated Signed-Out Card (below Weekly Target & Push/Pull, normal border + animated blue stroke sweep) -->
+      <!-- Consolidated Signed-Out Card (below Weekly Target & Push/Pull, normal border + 60fps blue stroke sweep) -->
       <div id="homeSignInBanner" class="hidden fitness-card signin-stroke-card p-4 space-y-2 relative z-10">
-        <svg class="signin-stroke-svg" viewBox="0 0 360 112" preserveAspectRatio="none" aria-hidden="true">
-          <defs>
-            <linearGradient id="signInStrokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#003EB3"/>
-              <stop offset="50%" stop-color="#0A84FF"/>
-              <stop offset="100%" stop-color="#64D2FF"/>
-            </linearGradient>
-          </defs>
-          <rect class="signin-stroke-rect" x="1.5" y="1.5" width="357" height="109" rx="23" ry="23"/>
-        </svg>
         <div class="flex items-center justify-between gap-3 relative z-10">
           <div class="min-w-0">
             <div class="type-headline font-bold text-white">Sign In to Sync</div>
@@ -3380,6 +3424,8 @@
     let editingPresetId = null;
     let presetsSubViewMode = 'LIST';
     let librarySubViewMode = 'LIST';
+    let profileSubViewMode = 'MAIN';
+    let editingProfileFieldKey = null;
     let editingLibraryItemId = null;
     let editingLibraryFieldKey = null;
     let removeLibraryItemArmed = false;
@@ -5136,6 +5182,14 @@
       saveState();
     }
 
+    function openProfileFieldEditor(fieldKey, mode) {
+      editingProfileFieldKey = fieldKey;
+      profileSubViewMode = mode;
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      renderMenuSubpageContent('PROFILE');
+      updateCollapsibleHeaderOnScroll();
+    }
+
     function updateProfileField(key, val) {
       if (!state.userProfile || typeof state.userProfile !== 'object') state.userProfile = {};
       state.userProfile[key] = val;
@@ -5423,43 +5477,55 @@
 
     function playWelcomeSwoopIntro() {
       state.activeTab = 'SUMMARY';
+      window.scrollTo({ top: 0, behavior: 'instant' });
       renderAll();
+
+      const overlay = document.getElementById('welcomeIntroOverlay');
+      const introText = document.getElementById('welcomeIntroText');
       const titleEl = document.getElementById('welcomeHeroTitle');
-      if (!titleEl) return;
+      if (!overlay || !introText || !titleEl) return;
 
+      const cleanName = ((state.userProfile && state.userProfile.firstName) || state.userName || (authSession && authSession.name) || '').trim();
+      introText.innerHTML = cleanName
+        ? `<span class="text-white">Welcome,</span> <span style="color: #0A84FF;">${esc(cleanName)}</span>`
+        : `<span class="text-white">Welcome</span>`;
+
+      document.documentElement.classList.add('is-welcome-intro');
       document.body.classList.add('is-welcome-intro');
-      // Measure true natural width of the Welcome text so horizontal centering is exact
-      titleEl.style.transition = 'none';
-      titleEl.style.transform = 'none';
-      titleEl.style.width = 'max-content';
-      titleEl.style.maxWidth = 'calc(100vw - 32px)';
-      void titleEl.offsetWidth;
 
-      const rect = titleEl.getBoundingClientRect();
-      const targetCenterY = window.innerHeight * 0.5;
-      const targetCenterX = window.innerWidth * 0.5;
-      const curCenterY = rect.top + rect.height / 2;
-      const curCenterX = rect.left + rect.width / 2;
-      const dy = targetCenterY - curCenterY;
-      const dx = targetCenterX - curCenterX;
+      introText.style.transition = 'none';
+      introText.style.transform = 'translate3d(0, 8px, 0) scale(0.96)';
+      introText.style.opacity = '1';
+      overlay.classList.remove('hidden');
+      overlay.classList.remove('is-visible');
+      void overlay.offsetWidth;
 
-      titleEl.style.transformOrigin = 'center center';
-      titleEl.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(1.16)`;
-      void titleEl.offsetWidth;
+      // Quick fade-in dead-center on screen
+      overlay.classList.add('is-visible');
+      introText.style.transition = 'transform 0.34s cubic-bezier(0.22, 1, 0.36, 1)';
+      introText.style.transform = 'translate3d(0, 0, 0) scale(1)';
 
       setTimeout(() => {
-        titleEl.style.transition = 'transform 0.82s cubic-bezier(0.22, 1, 0.36, 1)';
-        titleEl.style.transform = 'translate3d(0, 0, 0) scale(1)';
+        const fromRect = introText.getBoundingClientRect();
+        const toRect = titleEl.getBoundingClientRect();
+        const dx = (toRect.left + Math.min(toRect.width, fromRect.width) / 2) - (fromRect.left + fromRect.width / 2);
+        const dy = (toRect.top + toRect.height / 2) - (fromRect.top + fromRect.height / 2);
+        const targetScale = fromRect.height > 0 ? Math.min(1, Math.max(0.75, toRect.height / fromRect.height)) : 0.9;
+
+        introText.style.transition = 'transform 0.78s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease 0.56s';
+        introText.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(${targetScale.toFixed(3)})`;
+        document.documentElement.classList.remove('is-welcome-intro');
         document.body.classList.remove('is-welcome-intro');
+
         setTimeout(() => {
-          titleEl.style.transition = '';
-          titleEl.style.transform = '';
-          titleEl.style.transformOrigin = '';
-          titleEl.style.width = '';
-          titleEl.style.maxWidth = '';
+          overlay.classList.remove('is-visible');
+          overlay.classList.add('hidden');
+          introText.style.transition = '';
+          introText.style.transform = '';
+          introText.style.opacity = '';
           triggerSignInCardSweep();
-        }, 840);
-      }, 1900);
+        }, 820);
+      }, 1750);
     }
 
     function skipOnboardingFlow() {
@@ -6527,10 +6593,17 @@
       const profileInit = document.getElementById('homeProfileInitial');
       if (profileInit) profileInit.textContent = getProfileAvatarLetter();
       if (prefixEl && nameEl) {
+        const titleEl = document.getElementById('welcomeHeroTitle');
         if (cleanName) {
           prefixEl.textContent = 'Welcome,';
           nameEl.textContent = cleanName;
           nameEl.classList.remove('hidden');
+          // Check if Welcome, Name wraps onto 2 lines in the header; if too long, show just "Welcome"
+          if (titleEl && titleEl.getBoundingClientRect().height > 54) {
+            prefixEl.textContent = 'Welcome';
+            nameEl.textContent = '';
+            nameEl.classList.add('hidden');
+          }
         } else {
           prefixEl.textContent = 'Welcome';
           nameEl.textContent = '';
@@ -7558,6 +7631,7 @@
       if (section === 'PRESETS') presetsSubViewMode = 'LIST';
       else if (section === 'LIBRARY') librarySubViewMode = 'LIST';
       else if (section === 'EQUIPMENT') { equipSubViewMode = 'LIST'; editingEquipName = null; removeEquipArmed = false; }
+      else if (section === 'PROFILE') { profileSubViewMode = 'MAIN'; editingProfileFieldKey = null; }
       const subEl = document.getElementById('menuSubpageContainer');
       window.scrollTo({ top: 0, behavior: 'instant' });
       renderMenuView();
@@ -7580,7 +7654,8 @@
       const isNested =
         (activeMenuSubpage === 'PRESETS' && presetsSubViewMode !== 'LIST') ||
         (activeMenuSubpage === 'EQUIPMENT' && equipSubViewMode !== 'LIST') ||
-        (activeMenuSubpage === 'LIBRARY' && librarySubViewMode !== 'LIST');
+        (activeMenuSubpage === 'LIBRARY' && librarySubViewMode !== 'LIST') ||
+        (activeMenuSubpage === 'PROFILE' && profileSubViewMode !== 'MAIN');
 
       if (!isNested) {
         if (!rootEl) return '';
@@ -7593,6 +7668,8 @@
       const savedEquipMode = equipSubViewMode;
       const savedLibMode = librarySubViewMode;
       const savedLibField = editingLibraryFieldKey;
+      const savedProfMode = profileSubViewMode;
+      const savedProfField = editingProfileFieldKey;
 
       const heroEl = document.getElementById('menuSubpageHero');
       const bodyEl = document.getElementById('menuSubpageBody');
@@ -7609,6 +7686,9 @@
         } else {
           librarySubViewMode = 'LIST';
         }
+      } else if (activeMenuSubpage === 'PROFILE') {
+        profileSubViewMode = 'MAIN';
+        editingProfileFieldKey = null;
       }
 
       window.__isBuildingMenuParentPreview = true;
@@ -7622,6 +7702,8 @@
       equipSubViewMode = savedEquipMode;
       librarySubViewMode = savedLibMode;
       editingLibraryFieldKey = savedLibField;
+      profileSubViewMode = savedProfMode;
+      editingProfileFieldKey = savedProfField;
       if (heroEl) heroEl.innerHTML = curHeroHtml;
       if (bodyEl) bodyEl.innerHTML = curBodyHtml;
 
@@ -7717,7 +7799,8 @@
       return (
         (activeMenuSubpage === 'PRESETS' && presetsSubViewMode !== 'LIST') ||
         (activeMenuSubpage === 'EQUIPMENT' && equipSubViewMode !== 'LIST') ||
-        (activeMenuSubpage === 'LIBRARY' && librarySubViewMode !== 'LIST')
+        (activeMenuSubpage === 'LIBRARY' && librarySubViewMode !== 'LIST') ||
+        (activeMenuSubpage === 'PROFILE' && profileSubViewMode !== 'MAIN')
       );
     }
 
@@ -7774,6 +7857,14 @@
     }
 
     function commitCloseMenuSubpageImmediate() {
+      if (activeMenuSubpage === 'PROFILE' && profileSubViewMode !== 'MAIN') {
+        profileSubViewMode = 'MAIN';
+        editingProfileFieldKey = null;
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        renderMenuSubpageContent('PROFILE');
+        updateCollapsibleHeaderOnScroll();
+        return;
+      }
       if (activeMenuSubpage === 'PRESETS' && presetsSubViewMode !== 'LIST') {
         presetsSubViewMode = 'LIST';
         editingPresetId = null;
@@ -8590,32 +8681,114 @@
         `;
       } else if (section === 'PROFILE') {
         const prof = state.userProfile || {};
+        const firstVal = (prof.firstName || state.userName || '').trim();
+        const lastVal = (prof.lastName || '').trim();
+        const dobVal = (prof.dob || '').trim();
+        const genderLabel = prof.gender === 'M' ? 'Male' : prof.gender === 'F' ? 'Female' : 'Not Set';
+
+        if (profileSubViewMode === 'FIELD_TEXT' && (editingProfileFieldKey === 'firstName' || editingProfileFieldKey === 'lastName')) {
+          const curVal = editingProfileFieldKey === 'firstName' ? firstVal : lastVal;
+          const ph = editingProfileFieldKey === 'firstName' ? 'Enter first name' : 'Enter last name';
+          hero.innerHTML = `<div id="subpageHeroCard" class="hidden"></div>`;
+          body.innerHTML = `
+            <form onsubmit="event.preventDefault(); closeMenuSubpage();" class="space-y-3 pt-1">
+              <div class="settings-group flex items-center px-4 py-1.5" style="border-radius: 26px;">
+                <input
+                  type="text"
+                  id="iosProfileFieldInput"
+                  enterkeyhint="done"
+                  value="${esc(curVal)}"
+                  placeholder="${esc(ph)}"
+                  oninput="updateProfileNamePart('${editingProfileFieldKey}', this.value)"
+                  class="flex-1 bg-transparent border-none outline-none text-white py-2.5 pr-2 font-medium"
+                />
+              </div>
+              <p class="type-caption px-3" style="color: var(--label-secondary);">Changes save automatically as you type or tap done.</p>
+            </form>
+          `;
+          setTimeout(() => {
+            const inp = document.getElementById('iosProfileFieldInput');
+            if (inp) { inp.focus(); try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch (_) {} }
+          }, 40);
+          return;
+        }
+
+        if (profileSubViewMode === 'FIELD_DATE') {
+          hero.innerHTML = `<div id="subpageHeroCard" class="hidden"></div>`;
+          body.innerHTML = `
+            <div class="space-y-3 pt-1">
+              <div class="settings-group px-4 py-2" style="border-radius: 26px;">
+                <input
+                  type="date"
+                  id="iosProfileDobInput"
+                  value="${esc(dobVal || '2000-01-01')}"
+                  onchange="updateProfileField('dob', this.value)"
+                  class="w-full bg-transparent border-none outline-none text-white py-2 font-semibold"
+                />
+              </div>
+              <p class="type-caption px-3" style="color: var(--label-secondary);">Select your date of birth — saved automatically.</p>
+            </div>
+          `;
+          return;
+        }
+
+        if (profileSubViewMode === 'FIELD_GENDER') {
+          hero.innerHTML = `<div id="subpageHeroCard" class="hidden"></div>`;
+          body.innerHTML = `
+            <div class="settings-group mt-1">
+              ${[
+                { id: 'M', label: 'Male', color: '#0A84FF' },
+                { id: 'F', label: 'Female', color: '#FF64B4' }
+              ].map(opt => {
+                const isSel = prof.gender === opt.id;
+                return `
+                  <button type="button" onclick="updateProfileField('gender', '${opt.id}'); closeMenuSubpage();" class="settings-row">
+                    <span class="type-headline text-white">${opt.label}</span>
+                    ${isSel ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${opt.color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>` : `<span></span>`}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          `;
+          return;
+        }
+
+        let dobDisplay = 'Not Set';
+        if (dobVal && /^\d{4}-\d{2}-\d{2}$/.test(dobVal)) {
+          const [dy, dm, dd] = dobVal.split('-').map(Number);
+          dobDisplay = new Date(dy, dm - 1, dd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
         body.innerHTML = `
-          <div class="fitness-card p-4 space-y-3.5">
-            <div class="grid grid-cols-2 gap-2.5">
-              <div class="space-y-1">
-                <label for="menuFirstNameInput" class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">First Name</label>
-                <input type="text" id="menuFirstNameInput" value="${esc(prof.firstName || state.userName || '')}" oninput="updateProfileNamePart('firstName', this.value)" placeholder="First name" class="fitness-field !py-2.5 font-semibold" />
+          <div class="settings-group">
+            <button type="button" onclick="openProfileFieldEditor('firstName', 'FIELD_TEXT')" class="settings-row">
+              <span class="type-headline text-white shrink-0">First Name</span>
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="type-subhead truncate" style="color: var(--label-secondary);">${esc(firstVal || 'Not Set')}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
-              <div class="space-y-1">
-                <label for="menuLastNameInput" class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Last Name</label>
-                <input type="text" id="menuLastNameInput" value="${esc(prof.lastName || '')}" oninput="updateProfileNamePart('lastName', this.value)" placeholder="Last name" class="fitness-field !py-2.5 font-semibold" />
+            </button>
+            <button type="button" onclick="openProfileFieldEditor('lastName', 'FIELD_TEXT')" class="settings-row">
+              <span class="type-headline text-white shrink-0">Last Name</span>
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="type-subhead truncate" style="color: var(--label-secondary);">${esc(lastVal || 'Not Set')}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
-            </div>
-            <div class="space-y-1">
-              <label for="menuDobInput" class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Date of Birth</label>
-              <input type="date" id="menuDobInput" value="${esc(prof.dob || '2000-01-01')}" onchange="updateProfileField('dob', this.value)" class="fitness-field !py-2.5 !px-3.5 text-[15px] font-semibold" />
-            </div>
-            <div class="space-y-1.5">
-              <label class="block type-caption uppercase tracking-wider font-semibold" style="color: var(--label-secondary);">Gender</label>
-              <div class="grid grid-cols-2 gap-2.5">
-                ${['M', 'F'].map(g => {
-                  const active = prof.gender === g;
-                  const bg = active ? (g === 'M' ? '#0A84FF' : '#FF64B4') : '#2C2C2E';
-                  return `<button type="button" onclick="updateProfileField('gender', '${g}')" class="py-2.5 rounded-xl text-[14px] font-bold transition-colors" style="background: ${bg}; color: ${active ? '#FFFFFF' : 'rgba(235,235,245,0.75)'};">${g === 'M' ? 'Male' : 'Female'}</button>`;
-                }).join('')}
+            </button>
+            <button type="button" onclick="openProfileFieldEditor('dob', 'FIELD_DATE')" class="settings-row">
+              <span class="type-headline text-white shrink-0">Date of Birth</span>
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="type-subhead truncate" style="color: var(--label-secondary);">${esc(dobDisplay)}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
-            </div>
+            </button>
+            <button type="button" onclick="openProfileFieldEditor('gender', 'FIELD_GENDER')" class="settings-row">
+              <span class="type-headline text-white shrink-0">Gender</span>
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="type-subhead truncate" style="color: var(--label-secondary);">${esc(genderLabel)}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </button>
           </div>
 
           <div class="fitness-card p-4 space-y-3">
@@ -9148,6 +9321,15 @@
         } else if (activeMenuSubpage === 'EQUIPMENT' && equipSubViewMode !== 'LIST') {
           compactTitle = equipSubViewMode === 'FIELD_TEXT' ? 'Machine Name' : (editingEquipName || 'Equipment');
           isDetailWithoutHero = true;
+        } else if (activeMenuSubpage === 'PROFILE' && profileSubViewMode !== 'MAIN') {
+          isDetailWithoutHero = true;
+          compactTitle = editingProfileFieldKey === 'firstName'
+            ? 'First Name'
+            : editingProfileFieldKey === 'lastName'
+              ? 'Last Name'
+              : editingProfileFieldKey === 'dob'
+                ? 'Date of Birth'
+                : 'Gender';
         } else if (activeMenuSubpage === 'LIBRARY' && librarySubViewMode !== 'LIST') {
           isDetailWithoutHero = true;
           if (librarySubViewMode === 'FIELD_TEXT') {
