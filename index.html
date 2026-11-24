@@ -1121,7 +1121,8 @@
       will-change: opacity;
     }
 
-    #menuSubpageContainer.is-ios-swiping {
+    #menuSubpageContainer.is-ios-swiping,
+    #activitySubpageContainer.is-ios-swiping {
       position: relative;
       z-index: 28;
       background: #000000;
@@ -1131,6 +1132,52 @@
       padding-left: 16px;
       padding-right: 16px;
       box-shadow: none;
+    }
+
+    #activitySwipeUnderlay {
+      position: fixed;
+      inset: 0;
+      z-index: 24;
+      background: #000000;
+      overflow: hidden;
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    #activitySwipeUnderlay.is-visible {
+      visibility: visible;
+    }
+
+    #activitySwipeUnderlayInner {
+      will-change: transform;
+      min-height: 100dvh;
+    }
+
+    #activitySwipeUnderlayScrim {
+      position: absolute;
+      inset: 0;
+      background: #000000;
+      pointer-events: none;
+      will-change: opacity;
+    }
+
+    /* Profile Field Editor Top-Right Checkmark Commit Button */
+    .profile-commit-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(235, 235, 245, 0.36);
+      transition: background-color 0.22s ease, border-color 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, transform 0.16s ease;
+    }
+
+    .profile-commit-btn.is-dirty {
+      background: #0A84FF !important;
+      border: 1px solid rgba(100, 210, 255, 0.45) !important;
+      box-shadow: 0 4px 16px rgba(10, 132, 255, 0.38) !important;
+      color: #FFFFFF !important;
     }
 
     .menu-subpage-hero-card {
@@ -1353,8 +1400,9 @@
       transition: filter 0.78s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.78s ease;
     }
 
-    body.is-welcome-intro #welcomeHeroTitle {
-      opacity: 0;
+    body.is-welcome-intro #welcomeHeroTitle,
+    body.is-welcome-swooping #welcomeHeroTitle {
+      opacity: 0 !important;
     }
 
     #summaryView > :not(#summaryHeroHeader),
@@ -1425,7 +1473,7 @@
     }
 
     .signin-stroke-card.is-sweeping::before {
-      animation: signInBorderSweep 1.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation: signInBorderSweep 2.8s cubic-bezier(0.42, 0.0, 0.58, 1.0) forwards;
     }
 
     @keyframes signInBorderSweep {
@@ -1433,15 +1481,15 @@
         --signin-angle: 0deg;
         opacity: 0;
       }
-      12% {
-        opacity: 1;
+      14% {
+        opacity: 0.98;
       }
-      72% {
+      76% {
         --signin-angle: 360deg;
-        opacity: 0.95;
+        opacity: 0.92;
       }
       100% {
-        --signin-angle: 420deg;
+        --signin-angle: 410deg;
         opacity: 0;
       }
     }
@@ -2056,7 +2104,7 @@
       </div>
 
       <!-- Widget 4: PR / 1RM Spotlight (Links to Activity) -->
-      <div id="homeWidgetPrs" onclick="switchTab('ACTIVITY')" class="fitness-card fitness-card-interactive p-5 space-y-2.5">
+      <div id="homeWidgetPrs" onclick="openHomeTopLiftInActivity()" class="fitness-card fitness-card-interactive p-5 space-y-2.5">
         <div class="flex items-center justify-between gap-2">
           <span class="type-headline text-white">Top Lift Spotlight</span>
           <span class="type-caption font-semibold" style="color: #0A84FF;">Activity ›</span>
@@ -2147,84 +2195,121 @@
     <!-- =====================================================================
          VIEW 3: ACTIVITY (HISTORICAL DATA VISUALIZATION & PROGRESSION)
          ===================================================================== -->
-    <section id="activityView" class="hidden space-y-4">
-      <div id="activityHeroHeader" class="collapsible-hero space-y-3">
-        <div class="flex items-end justify-between gap-2">
-          <h1 class="collapsible-hero-title text-white">Activity</h1>
-          <span id="activityRangeSummaryLabel" class="type-caption font-semibold pb-1.5" style="color: var(--label-secondary);">Last 30 Days</span>
-        </div>
-        <div id="activityRangePills" class="flex items-center justify-between gap-0.5 p-1 rounded-full overflow-x-auto no-scrollbar" style="background: #1C1C1E; border: 0.5px solid rgba(255,255,255,0.08);">
-          <button type="button" onclick="setActivityRange('1W')" data-range="1W" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">1W</button>
-          <button type="button" onclick="setActivityRange('1M')" data-range="1M" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">1M</button>
-          <button type="button" onclick="setActivityRange('3M')" data-range="3M" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">3M</button>
-          <button type="button" onclick="setActivityRange('6M')" data-range="6M" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">6M</button>
-          <button type="button" onclick="setActivityRange('1Y')" data-range="1Y" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">1Y</button>
-          <button type="button" onclick="setActivityRange('ALL')" data-range="ALL" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">All</button>
-          <button type="button" onclick="setActivityRange('CUSTOM')" data-range="CUSTOM" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">Custom</button>
-        </div>
-        <div id="activityCustomRangeRow" class="hidden grid grid-cols-2 gap-2 pt-0.5">
-          <div class="rounded-2xl px-3 py-2" style="background: #1C1C1E; border: 0.5px solid rgba(255,255,255,0.08);">
-            <label for="activityCustomStart" class="block text-[10px] font-bold uppercase tracking-wider mb-0.5" style="color: var(--label-secondary);">From</label>
-            <input type="date" id="activityCustomStart" onchange="updateActivityCustomRange()" class="w-full bg-transparent text-white text-[14px] font-semibold outline-none" />
+    <section id="activityView" class="hidden">
+      <div id="activityRootContainer" class="space-y-4">
+        <div id="activityHeroHeader" class="collapsible-hero space-y-3">
+          <div class="flex items-end justify-between gap-2">
+            <h1 class="collapsible-hero-title text-white">Activity</h1>
+            <span id="activityRangeSummaryLabel" class="type-caption font-semibold pb-1.5" style="color: var(--label-secondary);">Last 30 Days</span>
           </div>
-          <div class="rounded-2xl px-3 py-2" style="background: #1C1C1E; border: 0.5px solid rgba(255,255,255,0.08);">
-            <label for="activityCustomEnd" class="block text-[10px] font-bold uppercase tracking-wider mb-0.5" style="color: var(--label-secondary);">To</label>
-            <input type="date" id="activityCustomEnd" onchange="updateActivityCustomRange()" class="w-full bg-transparent text-white text-[14px] font-semibold outline-none" />
+          <div id="activityRangePills" class="flex items-center justify-between gap-0.5 p-1 rounded-full overflow-x-auto no-scrollbar" style="background: #1C1C1E; border: 0.5px solid rgba(255,255,255,0.08);">
+            <button type="button" onclick="setActivityRange('1W')" data-range="1W" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">1W</button>
+            <button type="button" onclick="setActivityRange('1M')" data-range="1M" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">1M</button>
+            <button type="button" onclick="setActivityRange('3M')" data-range="3M" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">3M</button>
+            <button type="button" onclick="setActivityRange('6M')" data-range="6M" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">6M</button>
+            <button type="button" onclick="setActivityRange('1Y')" data-range="1Y" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">1Y</button>
+            <button type="button" onclick="setActivityRange('ALL')" data-range="ALL" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">All</button>
+            <button type="button" onclick="setActivityRange('CUSTOM')" data-range="CUSTOM" class="flex-1 px-2.5 py-1.5 rounded-full text-[12px] font-bold transition-colors whitespace-nowrap">Custom</button>
+          </div>
+          <div id="activityCustomRangeRow" class="hidden grid grid-cols-2 gap-2 pt-0.5">
+            <div class="rounded-2xl px-3 py-2" style="background: #1C1C1E; border: 0.5px solid rgba(255,255,255,0.08);">
+              <label for="activityCustomStart" class="block text-[10px] font-bold uppercase tracking-wider mb-0.5" style="color: var(--label-secondary);">From</label>
+              <input type="date" id="activityCustomStart" onchange="updateActivityCustomRange()" class="w-full bg-transparent text-white text-[14px] font-semibold outline-none" />
+            </div>
+            <div class="rounded-2xl px-3 py-2" style="background: #1C1C1E; border: 0.5px solid rgba(255,255,255,0.08);">
+              <label for="activityCustomEnd" class="block text-[10px] font-bold uppercase tracking-wider mb-0.5" style="color: var(--label-secondary);">To</label>
+              <input type="date" id="activityCustomEnd" onchange="updateActivityCustomRange()" class="w-full bg-transparent text-white text-[14px] font-semibold outline-none" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero KPI Grid (General Overview) -->
+        <div id="activityKpiGrid" class="grid grid-cols-2 gap-3"></div>
+
+        <!-- Weekly Sets & Consistency Trend (General Overview) -->
+        <div class="fitness-card p-5 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h2 class="type-headline text-white">Volume History</h2>
+              <p id="activityVolumeSub" class="type-caption" style="color: var(--label-secondary);">Weekly sets logged</p>
+            </div>
+            <span id="activityAvgBadge" class="text-[11px] font-bold px-2.5 py-1 rounded-full" style="background: rgba(10,132,255,0.18); color: #0A84FF;">0 / wk</span>
+          </div>
+          <div id="activityVolumeChart" class="flex items-end gap-2 h-[126px] pt-2"></div>
+        </div>
+
+        <!-- Training Split Distribution (General Overview) -->
+        <div class="fitness-card p-5 space-y-3.5">
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="type-headline text-white">Training Mix</h2>
+            <span id="activityMixTotal" class="type-caption font-semibold" style="color: var(--label-secondary);">0 exercises</span>
+          </div>
+          <div id="activityMixGradientBar" class="w-full h-3 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.08);"></div>
+          <div id="activityMixBreakdown" class="grid grid-cols-2 gap-2.5"></div>
+        </div>
+
+        <!-- Dedicated Exercise Progression & Timelines Entry Card -->
+        <div class="fitness-card p-5 space-y-3.5">
+          <div class="flex items-center justify-between gap-2">
+            <div>
+              <h2 class="type-headline text-white">Exercise Progression</h2>
+              <p id="activityExercisePreviewSub" class="type-caption" style="color: var(--label-secondary);">Tap any lift for full stats &amp; timeline</p>
+            </div>
+            <button type="button" onclick="openActivitySubpage('EXERCISES')" class="text-[13px] font-bold px-3 py-1 rounded-full transition-opacity active:opacity-70 shrink-0" style="background: rgba(10,132,255,0.16); color: #0A84FF;">All Lifts ›</button>
+          </div>
+          <div id="activityExercisePreviewList" class="space-y-2"></div>
+        </div>
+
+        <!-- Detailed Breakdowns Drill-Down Group -->
+        <div class="space-y-2">
+          <div class="px-1">
+            <span class="type-caption uppercase tracking-wider font-bold" style="color: var(--label-secondary);">Detailed Breakdowns</span>
+          </div>
+          <div class="settings-group">
+            <button type="button" onclick="openActivitySubpage('MUSCLES')" class="settings-row !py-3.5">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(191,90,242,0.18); color: #BF5AF2;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                </span>
+                <div class="min-w-0 text-left">
+                  <div class="type-headline text-white font-semibold truncate">Muscle Distribution</div>
+                  <div id="activityMuscleNavSub" class="type-caption truncate" style="color: var(--label-secondary);">0 / 12 muscle groups hit</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span id="activityMuscleNavPill" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full" style="background: rgba(191,90,242,0.16); color: #BF5AF2;">0/12</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </button>
+            <button type="button" onclick="openActivitySubpage('EQUIPMENT_STATS')" class="settings-row !py-3.5">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(255,159,10,0.18); color: #FF9F0A;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg>
+                </span>
+                <div class="min-w-0 text-left">
+                  <div class="type-headline text-white font-semibold truncate">Equipment Usage</div>
+                  <div id="activityEquipNavSub" class="type-caption truncate" style="color: var(--label-secondary);">Top machines &amp; stations</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span id="activityEquipNavPill" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full" style="background: rgba(255,159,10,0.16); color: #FF9F0A;">0</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- Hero Historical KPIs -->
-      <div id="activityKpiGrid" class="grid grid-cols-2 gap-3"></div>
-
-      <!-- Weekly Sets & Consistency Trend -->
-      <div class="fitness-card p-5 space-y-3">
-        <div class="flex items-center justify-between gap-2">
-          <div>
-            <h2 class="type-headline text-white">Volume History</h2>
-            <p id="activityVolumeSub" class="type-caption" style="color: var(--label-secondary);">Weekly sets logged</p>
-          </div>
-          <span id="activityAvgBadge" class="text-[11px] font-bold px-2.5 py-1 rounded-full" style="background: rgba(10,132,255,0.18); color: #0A84FF;">0 / wk</span>
-        </div>
-        <div id="activityVolumeChart" class="flex items-end gap-2 h-[126px] pt-2"></div>
+      <!-- Activity Parallax Underlay Layer -->
+      <div id="activitySwipeUnderlay" aria-hidden="true">
+        <div id="activitySwipeUnderlayInner" class="w-full max-w-lg mx-auto px-4 pb-32"></div>
+        <div id="activitySwipeUnderlayScrim"></div>
       </div>
 
-      <!-- Training Split Distribution (Proportional Gradient) -->
-      <div class="fitness-card p-5 space-y-3.5">
-        <div class="flex items-center justify-between gap-2">
-          <h2 class="type-headline text-white">Training Mix</h2>
-          <span id="activityMixTotal" class="type-caption font-semibold" style="color: var(--label-secondary);">0 exercises</span>
-        </div>
-        <div id="activityMixGradientBar" class="w-full h-3 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.08);"></div>
-        <div id="activityMixBreakdown" class="grid grid-cols-2 gap-2.5"></div>
-      </div>
-
-      <!-- Exercise Strength Progression -->
-      <div class="fitness-card p-5 space-y-3.5">
-        <div class="flex items-center justify-between gap-2">
-          <h2 class="type-headline text-white">Lift Progression</h2>
-          <span id="activityProgBest" class="type-caption font-bold" style="color: #FFD60A;">—</span>
-        </div>
-        <select id="activityExerciseSelect" onchange="setActivityExercise(this.value)" aria-label="Select exercise for progression" class="fitness-field !py-2 !px-3 font-semibold text-[14px]"></select>
-        <div id="activityProgressionChart" class="flex items-end gap-2 h-[118px] pt-2"></div>
-      </div>
-
-      <!-- 12-Muscle Historical Heatmap -->
-      <div class="fitness-card p-5 space-y-3">
-        <div class="flex items-center justify-between gap-2">
-          <h2 class="type-headline text-white">Muscle Distribution</h2>
-          <span id="activityMuscleSummary" class="type-caption font-semibold" style="color: var(--label-secondary);">0 / 12 hit</span>
-        </div>
-        <div id="activityMuscleGrid" class="grid grid-cols-3 gap-2"></div>
-      </div>
-
-      <!-- Top Equipment Utilization -->
-      <div class="fitness-card p-5 space-y-3">
-        <div class="flex items-center justify-between gap-2">
-          <h2 class="type-headline text-white">Equipment Usage</h2>
-          <span class="type-caption" style="color: var(--label-secondary);">Top stations</span>
-        </div>
-        <div id="activityEquipmentList" class="space-y-2.5"></div>
+      <!-- Activity Push-In Subpage Container -->
+      <div id="activitySubpageContainer" class="hidden space-y-4">
+        <div id="activitySubpageHero" style="padding-top: calc(env(safe-area-inset-top, 12px) + 84px);"></div>
+        <div id="activitySubpageBody" class="space-y-4"></div>
       </div>
     </section>
 
@@ -3713,8 +3798,18 @@
         closeMenuSubpage();
         return;
       }
+      if (tabKey === 'ACTIVITY' && isSameTab && activeActivitySubpage) {
+        closeActivitySubpage();
+        return;
+      }
       if (tabKey !== 'MENU') {
+        if (activeMenuSubpage === 'PROFILE' && profileSubViewMode !== 'MAIN') {
+          commitProfileFieldDraftIfDirty(false);
+        }
         activeMenuSubpage = null;
+      }
+      if (tabKey !== 'ACTIVITY') {
+        activeActivitySubpage = null;
       }
       state.activeTab = tabKey;
       saveState();
@@ -3880,12 +3975,17 @@
       let edgeDx = 0;
       let edgeTracking = false;
       let edgeActive = false;
+      let edgeMode = null; // 'MENU' | 'ACTIVITY'
 
       document.addEventListener('touchstart', (e) => {
-        if (state.activeTab !== 'MENU' || !activeMenuSubpage || e.touches.length !== 1) return;
+        if (e.touches.length !== 1) return;
         if (document.body.classList.contains('has-sheet-open')) return;
+        const isMenuSub = state.activeTab === 'MENU' && Boolean(activeMenuSubpage);
+        const isActSub = state.activeTab === 'ACTIVITY' && Boolean(activeActivitySubpage);
+        if (!isMenuSub && !isActSub) return;
         const touch = e.touches[0];
         if (touch.clientX > 72) return;
+        edgeMode = isActSub ? 'ACTIVITY' : 'MENU';
         edgeStartX = touch.clientX;
         edgeStartY = touch.clientY;
         edgeDx = 0;
@@ -3904,17 +4004,18 @@
           }
           if (dx < 6) return;
           edgeActive = true;
-          prepareMenuSwipeUnderlay();
+          if (edgeMode === 'ACTIVITY') prepareActivitySwipeUnderlay();
+          else prepareMenuSwipeUnderlay();
         }
         if (e.cancelable) e.preventDefault();
         edgeDx = Math.max(0, dx);
         const w = window.innerWidth || 390;
         const progress = Math.min(1, edgeDx / w);
-        const subEl = document.getElementById('menuSubpageContainer');
+        const subEl = document.getElementById(edgeMode === 'ACTIVITY' ? 'activitySubpageContainer' : 'menuSubpageContainer');
         const hdrEl = document.getElementById('stickyCompactHeader');
         const centerEl = document.getElementById('stickyHeaderCenter');
-        const underInner = document.getElementById('menuSwipeUnderlayInner');
-        const underScrim = document.getElementById('menuSwipeUnderlayScrim');
+        const underInner = document.getElementById(edgeMode === 'ACTIVITY' ? 'activitySwipeUnderlayInner' : 'menuSwipeUnderlayInner');
+        const underScrim = document.getElementById(edgeMode === 'ACTIVITY' ? 'activitySwipeUnderlayScrim' : 'menuSwipeUnderlayScrim');
         if (subEl) subEl.style.transform = `translate3d(${edgeDx}px, 0, 0)`;
         if (centerEl) centerEl.style.transform = `translate3d(${edgeDx}px, -50%, 0)`;
         if (hdrEl) hdrEl.style.setProperty('--hdr-backdrop-opacity', (1 - progress).toFixed(3));
@@ -3982,16 +4083,18 @@
         edgeTracking = false;
         if (!edgeActive) return;
         edgeActive = false;
+        const mode = edgeMode || 'MENU';
+        const isAct = mode === 'ACTIVITY';
         const w = window.innerWidth || 390;
         const threshold = Math.min(105, w * 0.27);
-        const subEl = document.getElementById('menuSubpageContainer');
+        const subEl = document.getElementById(isAct ? 'activitySubpageContainer' : 'menuSubpageContainer');
         const hdrEl = document.getElementById('stickyCompactHeader');
         const leftEl = document.getElementById('stickyHeaderLeft');
         const centerEl = document.getElementById('stickyHeaderCenter');
-        const underInner = document.getElementById('menuSwipeUnderlayInner');
-        const underScrim = document.getElementById('menuSwipeUnderlayScrim');
+        const underInner = document.getElementById(isAct ? 'activitySwipeUnderlayInner' : 'menuSwipeUnderlayInner');
+        const underScrim = document.getElementById(isAct ? 'activitySwipeUnderlayScrim' : 'menuSwipeUnderlayScrim');
         const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
-        const goingToRoot = !isCurrentSettingsSubpageNested();
+        const goingToRoot = isAct ? !isCurrentActivitySubpageNested() : !isCurrentSettingsSubpageNested();
 
         if (edgeDx >= threshold) {
           if (subEl) {
@@ -4012,24 +4115,29 @@
           }
           if (underInner) {
             underInner.style.transition = `transform 0.26s ${ease}`;
-            underInner.style.transform = 'translate3d(0%, 0, 0)';
+            underInner.style.transform = `translate3d(0%, 0, 0)`;
           }
           if (underScrim) {
             underScrim.style.transition = 'opacity 0.26s ease';
             underScrim.style.opacity = '0';
           }
           setTimeout(() => {
-            cleanupMenuSwipeUnderlay(goingToRoot);
-            closeMenuSubpage(true);
+            if (isAct) {
+              cleanupActivitySwipeUnderlay(goingToRoot);
+              closeActivitySubpage(true);
+            } else {
+              cleanupMenuSwipeUnderlay(goingToRoot);
+              closeMenuSubpage(true);
+            }
           }, 265);
         } else {
           if (subEl) {
             subEl.style.transition = `transform 0.24s ${ease}`;
-            subEl.style.transform = 'translate3d(0, 0, 0)';
+            subEl.style.transform = `translate3d(0, 0, 0)`;
           }
           if (centerEl) {
             centerEl.style.transition = `transform 0.24s ${ease}`;
-            centerEl.style.transform = 'translate3d(0, -50%, 0)';
+            centerEl.style.transform = `translate3d(0, -50%, 0)`;
           }
           if (hdrEl) {
             hdrEl.classList.remove('is-swiping-back');
@@ -4037,14 +4145,15 @@
           }
           if (underInner) {
             underInner.style.transition = `transform 0.24s ${ease}`;
-            underInner.style.transform = 'translate3d(-28%, 0, 0)';
+            underInner.style.transform = `translate3d(-28%, 0, 0)`;
           }
           if (underScrim) {
             underScrim.style.transition = 'opacity 0.24s ease';
             underScrim.style.opacity = '0.46';
           }
           setTimeout(() => {
-            cleanupMenuSwipeUnderlay(false);
+            if (isAct) cleanupActivitySwipeUnderlay(false);
+            else cleanupMenuSwipeUnderlay(false);
           }, 245);
         }
       };
@@ -5182,9 +5291,86 @@
       saveState();
     }
 
+    let profileFieldDraftVal = null;
+    let profileFieldInitialVal = null;
+    let profileFieldDirty = false;
+
+    function updateProfileHeaderCheckBtn() {
+      const btn = document.getElementById('profileCommitCheckBtn');
+      if (!btn) return;
+      btn.classList.toggle('is-dirty', Boolean(profileFieldDirty));
+    }
+
+    function onProfileFieldDraftChange(val) {
+      profileFieldDraftVal = val;
+      profileFieldDirty = String(val ?? '') !== String(profileFieldInitialVal ?? '');
+      updateProfileHeaderCheckBtn();
+    }
+
+    function selectProfileGenderDraft(val) {
+      profileFieldDraftVal = val;
+      profileFieldDirty = String(val ?? '') !== String(profileFieldInitialVal ?? '');
+      ['M', 'F'].forEach(optId => {
+        const iconEl = document.getElementById(`profileGenderCheck_${optId}`);
+        if (iconEl) iconEl.style.opacity = optId === val ? '1' : '0';
+      });
+      updateProfileHeaderCheckBtn();
+    }
+
+    function commitProfileFieldDraftIfDirty(triggerSync = false) {
+      if (!editingProfileFieldKey) return false;
+      const shouldCommit = profileFieldDirty || triggerSync;
+      if (!shouldCommit) return false;
+
+      if (!state.userProfile || typeof state.userProfile !== 'object') state.userProfile = {};
+      const key = editingProfileFieldKey;
+      const val = profileFieldDraftVal != null ? String(profileFieldDraftVal) : '';
+
+      if (key === 'firstName' || key === 'lastName') {
+        state.userProfile[key] = val.trim();
+        if (key === 'firstName') {
+          state.userName = val.trim();
+          renderSummaryView();
+          const profNameEl = document.getElementById('menuRowProfileName');
+          const profInitEl = document.getElementById('menuRowProfileInitial');
+          const clean = state.userName || 'Your Profile';
+          if (profNameEl) profNameEl.textContent = clean;
+          if (profInitEl) profInitEl.textContent = getProfileAvatarLetter();
+        }
+      } else {
+        state.userProfile[key] = val;
+      }
+
+      profileFieldInitialVal = state.userProfile[key] || '';
+      profileFieldDraftVal = profileFieldInitialVal;
+      profileFieldDirty = false;
+      updateProfileHeaderCheckBtn();
+      saveState();
+
+      if (triggerSync && typeof pushStateToCloud === 'function' && isCloudSyncSupported() && authSession && authSession.authenticated) {
+        pushStateToCloud(true);
+      }
+      return true;
+    }
+
+    function commitProfileFieldAndSync() {
+      commitProfileFieldDraftIfDirty(true);
+      closeMenuSubpage();
+    }
+
     function openProfileFieldEditor(fieldKey, mode) {
+      const prof = state.userProfile || {};
+      let curVal = '';
+      if (fieldKey === 'firstName') curVal = prof.firstName || state.userName || '';
+      else if (fieldKey === 'lastName') curVal = prof.lastName || '';
+      else if (fieldKey === 'dob') curVal = prof.dob || '';
+      else if (fieldKey === 'gender') curVal = prof.gender || '';
+
       editingProfileFieldKey = fieldKey;
       profileSubViewMode = mode;
+      profileFieldInitialVal = curVal;
+      profileFieldDraftVal = curVal;
+      profileFieldDirty = false;
       window.scrollTo({ top: 0, behavior: 'instant' });
       renderMenuSubpageContent('PROFILE');
       updateCollapsibleHeaderOnScroll();
@@ -5491,7 +5677,7 @@
         : `<span class="text-white">Welcome</span>`;
 
       document.documentElement.classList.add('is-welcome-intro');
-      document.body.classList.add('is-welcome-intro');
+      document.body.classList.add('is-welcome-intro', 'is-welcome-swooping');
 
       introText.style.transition = 'none';
       introText.style.transform = 'translate3d(0, 8px, 0) scale(0.96)';
@@ -5512,19 +5698,20 @@
         const dy = (toRect.top + toRect.height / 2) - (fromRect.top + fromRect.height / 2);
         const targetScale = fromRect.height > 0 ? Math.min(1, Math.max(0.75, toRect.height / fromRect.height)) : 0.9;
 
-        introText.style.transition = 'transform 0.78s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease 0.56s';
+        introText.style.transition = 'transform 0.78s cubic-bezier(0.22, 1, 0.36, 1)';
         introText.style.transform = `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) scale(${targetScale.toFixed(3)})`;
         document.documentElement.classList.remove('is-welcome-intro');
         document.body.classList.remove('is-welcome-intro');
 
         setTimeout(() => {
+          document.body.classList.remove('is-welcome-swooping');
           overlay.classList.remove('is-visible');
           overlay.classList.add('hidden');
           introText.style.transition = '';
           introText.style.transform = '';
           introText.style.opacity = '';
           triggerSignInCardSweep();
-        }, 820);
+        }, 780);
       }, 1750);
     }
 
@@ -7453,118 +7640,790 @@
         }).join('');
       }
 
-      // 4. Exercise Strength Progression
-      const exHistoryMap = new Map();
-      allCompleted.slice().reverse().forEach(s => {
-        (s.entries || []).forEach(e => {
-          if (getModality(e) === 'Cardio' || !e.weight) return;
-          const wt = parseFloat(String(e.weight).replace(/[^0-9.]/g, '')) || 0;
-          if (wt <= 0) return;
-          if (!exHistoryMap.has(e.name)) exHistoryMap.set(e.name, []);
-          exHistoryMap.get(e.name).push({
-            date: s.date,
-            weight: wt,
-            label: e.weight,
-            is1RM: String(e.sets) === '1' && String(e.reps) === '1'
-          });
-        });
-      });
-
-      const rankedExNames = Array.from(exHistoryMap.entries())
-        .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
-        .map(([n]) => n);
-
-      if (!activitySelectedExercise || !exHistoryMap.has(activitySelectedExercise)) {
-        activitySelectedExercise = rankedExNames[0] || '';
+      // 4. Dedicated Exercise Progression Preview (Top 3 Lifts -> Drill-Down)
+      const exAnalytics = buildAllExerciseAnalytics(allCompleted);
+      const previewSub = document.getElementById('activityExercisePreviewSub');
+      if (previewSub) {
+        previewSub.textContent = exAnalytics.length
+          ? `${exAnalytics.length} tracked exercise${exAnalytics.length === 1 ? '' : 's'} · Tap for stats & timeline`
+          : 'Log weighted lifts to unlock progression timelines';
       }
 
-      const exSelect = document.getElementById('activityExerciseSelect');
-      if (exSelect) {
-        exSelect.innerHTML = rankedExNames.length
-          ? rankedExNames.map(n => `<option value="${esc(n)}" ${n === activitySelectedExercise ? 'selected' : ''}>${esc(n)} (${exHistoryMap.get(n).length})</option>`).join('')
-          : `<option value="">No weighted lifts yet</option>`;
-      }
-
-      const progChart = document.getElementById('activityProgressionChart');
-      const progBest = document.getElementById('activityProgBest');
-      const pts = activitySelectedExercise ? (exHistoryMap.get(activitySelectedExercise) || []).slice(-8) : [];
-      if (progBest) {
-        if (pts.length) {
-          const maxPt = pts.reduce((a, b) => b.weight > a.weight ? b : a, pts[0]);
-          progBest.textContent = `Best: ${maxPt.label}${maxPt.is1RM ? ' · 1RM ★' : ''}`;
+      const previewList = document.getElementById('activityExercisePreviewList');
+      if (previewList) {
+        if (!exAnalytics.length) {
+          previewList.innerHTML = `<p class="type-caption py-2 text-center" style="color: var(--label-tertiary);">Complete a strength workout to see exercise progression here.</p>`;
         } else {
-          progBest.textContent = '—';
-        }
-      }
-      if (progChart) {
-        if (!pts.length) {
-          progChart.innerHTML = `<p class="type-caption w-full text-center self-center" style="color: var(--label-tertiary);">Log weighted strength sessions to track load progression.</p>`;
-        } else {
-          const maxW = Math.max(1, ...pts.map(pt => pt.weight));
-          progChart.innerHTML = pts.map(pt => {
-            const hPct = Math.max(18, Math.round((pt.weight / maxW) * 100));
-            const [, mm, dd] = pt.date.split('-').map(Number);
-            const barBg = pt.is1RM
-              ? 'linear-gradient(180deg, #FFD60A 0%, #FF9F0A 100%)'
-              : 'linear-gradient(180deg, #30D158 0%, #0A84FF 100%)';
+          previewList.innerHTML = exAnalytics.slice(0, 3).map(item => {
+            const deltaHtml = item.deltaWeight > 0
+              ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full" style="background: rgba(48,209,88,0.18); color: #30D158;">+${item.deltaWeight} lb</span>`
+              : item.deltaWeight < 0
+                ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full" style="background: rgba(255,69,58,0.16); color: #FF453A;">${item.deltaWeight} lb</span>`
+                : '';
             return `
-              <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end min-w-0">
-                <span class="text-[10px] font-extrabold tabular-nums" style="color: ${pt.is1RM ? '#FFD60A' : '#FFFFFF'};">${pt.weight}</span>
-                <div class="w-full rounded-xl" style="height: ${hPct}%; min-height: 8px; background: ${barBg};"></div>
-                <span class="text-[9px] font-semibold" style="color: var(--label-secondary);">${mm}/${dd}</span>
-              </div>
+              <button type="button" onclick="openActivityExerciseDetail('${esc(item.name).replace(/'/g, "\\'")}', 'ROOT')" class="w-full flex items-center justify-between gap-3 px-3.5 py-3 rounded-2xl text-left transition-opacity active:opacity-75" style="background: #262629;">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="text-[14px] font-bold text-white truncate">${esc(item.name)}</span>
+                    ${item.has1RM ? `<span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full shrink-0" style="background: rgba(255,214,10,0.20); color: #FFD60A;">1RM ★</span>` : ''}
+                  </div>
+                  <div class="type-caption truncate mt-0.5" style="color: var(--label-secondary);">
+                    Best ${esc(item.bestWeightLabel)} · Est. 1RM ${item.bestEst1RM} lb · ${item.sessions.length} session${item.sessions.length === 1 ? '' : 's'}
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  ${deltaHtml}
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </button>
             `;
           }).join('');
         }
       }
 
-      // 5. 12-Muscle Historical Heatmap
+      // 5. Muscle Distribution Drill-Down Summary
       const mHits = {};
       MUSCLE_GROUPS.forEach(m => { mHits[m] = 0; });
       entries.forEach(e => normalizeMuscles(e).forEach(m => { if (mHits.hasOwnProperty(m)) mHits[m] += 1; }));
-      const maxMHits = Math.max(1, ...Object.values(mHits));
       const hitTotal = MUSCLE_GROUPS.filter(m => mHits[m] > 0).length;
-      const mSumEl = document.getElementById('activityMuscleSummary');
-      if (mSumEl) mSumEl.textContent = `${hitTotal} / ${MUSCLE_GROUPS.length} hit`;
+      const topMuscleEntry = Object.entries(mHits).filter(([, c]) => c > 0).sort((a, b) => b[1] - a[1])[0];
+      const mNavSub = document.getElementById('activityMuscleNavSub');
+      const mNavPill = document.getElementById('activityMuscleNavPill');
+      if (mNavSub) mNavSub.textContent = topMuscleEntry ? `Top: ${topMuscleEntry[0]} (${topMuscleEntry[1]}×) · ${rangeLabel}` : `No muscles logged in ${rangeLabel.toLowerCase()}`;
+      if (mNavPill) mNavPill.textContent = `${hitTotal}/${MUSCLE_GROUPS.length}`;
 
-      const mGridEl = document.getElementById('activityMuscleGrid');
-      if (mGridEl) {
-        mGridEl.innerHTML = MUSCLE_GROUPS.map(m => {
-          const hits = mHits[m];
-          const intensity = hits / maxMHits;
-          const bg = hits === 0 ? '#262629' : intensity > 0.6 ? 'rgba(191, 90, 242, 0.34)' : 'rgba(191, 90, 242, 0.16)';
-          const bdr = hits === 0 ? '1px solid transparent' : `1px solid rgba(191, 90, 242, ${intensity > 0.6 ? '0.60' : '0.32'})`;
-          return `
-            <div class="px-2.5 py-2 rounded-2xl flex items-center justify-between gap-1.5" style="background: ${bg}; border: ${bdr};">
-              <span class="text-[11px] font-semibold truncate" style="color: ${hits > 0 ? '#FFFFFF' : 'var(--label-secondary)'};">${esc(m)}</span>
-              <span class="text-[11px] font-extrabold tabular-nums shrink-0" style="color: ${hits > 0 ? '#BF5AF2' : 'var(--label-tertiary)'};">${hits > 0 ? `${hits}×` : '—'}</span>
-            </div>
-          `;
-        }).join('');
-      }
-
-      // 6. Top Equipment Usage
+      // 6. Equipment Usage Drill-Down Summary
       const eqCounts = new Map();
       entries.forEach(e => { if (e.equipment) eqCounts.set(e.equipment, (eqCounts.get(e.equipment) || 0) + 1); });
-      const topEq = Array.from(eqCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
-      const eqEl = document.getElementById('activityEquipmentList');
-      if (eqEl) {
-        if (!topEq.length) {
-          eqEl.innerHTML = `<p class="type-caption" style="color: var(--label-tertiary);">No equipment logged in this timeframe.</p>`;
-        } else {
-          const maxEq = topEq[0][1];
-          eqEl.innerHTML = topEq.map(([eq, cnt]) => `
-            <div class="space-y-1">
-              <div class="flex items-center justify-between text-[12px]">
-                <span class="font-semibold text-white truncate pr-2">${esc(eq)}</span>
-                <span class="font-bold tabular-nums shrink-0" style="color: #FF9F0A;">${cnt}</span>
+      const topEq = Array.from(eqCounts.entries()).sort((a, b) => b[1] - a[1]);
+      const eqNavSub = document.getElementById('activityEquipNavSub');
+      const eqNavPill = document.getElementById('activityEquipNavPill');
+      if (eqNavSub) eqNavSub.textContent = topEq.length ? `Most used: ${topEq[0][0]} (${topEq[0][1]}×)` : `No equipment logged in ${rangeLabel.toLowerCase()}`;
+      if (eqNavPill) eqNavPill.textContent = `${topEq.length}`;
+
+      // Toggle Root vs Subpage Visibility
+      const rootEl = document.getElementById('activityRootContainer');
+      const subEl = document.getElementById('activitySubpageContainer');
+      if (rootEl && subEl) {
+        rootEl.classList.toggle('hidden', Boolean(activeActivitySubpage));
+        subEl.classList.toggle('hidden', !activeActivitySubpage);
+      }
+      if (activeActivitySubpage) {
+        renderActivitySubpageContent();
+      }
+    }
+
+    // =========================================================================
+    // ACTIVITY DRILL-DOWN SUBPAGES (EXERCISES, EXERCISE DETAIL, MUSCLES, EQUIPMENT)
+    // =========================================================================
+    let activeActivitySubpage = null; // null | 'EXERCISES' | 'EXERCISE_DETAIL' | 'MUSCLES' | 'EQUIPMENT_STATS'
+    let activityDetailExerciseName = '';
+    let activityDetailMetric = 'est1rm'; // 'est1rm' | 'weight' | 'volume'
+    let activityDetailRange = 'ALL'; // '3M' | '6M' | '1Y' | 'ALL'
+    let activityDetailSelectedIdx = -1;
+    let activityExSearchQuery = '';
+    let activityExSortMode = 'sessions'; // 'sessions' | 'heaviest' | 'recent' | '1rm'
+    let activitySubpageReturnTo = 'ROOT'; // 'ROOT' | 'EXERCISES' | 'EQUIPMENT_STATS'
+    let isActivityPopping = false;
+
+    function calcEpley1RM(weight, reps) {
+      if (!weight || weight <= 0) return 0;
+      const r = Number(reps) || 1;
+      if (r <= 1) return Math.round(weight);
+      return Math.round(weight * (1 + r / 30));
+    }
+
+    function getActivityFilteredSessions() {
+      const todayStr = getTodayDateStr();
+      const [ty, tm, td] = todayStr.split('-').map(Number);
+      const allCompleted = getSortedSessions().filter(s => s.completed);
+      const fmtYmd = (dObj) => `${dObj.getFullYear()}-${String(dObj.getMonth() + 1).padStart(2, '0')}-${String(dObj.getDate()).padStart(2, '0')}`;
+      let cutoffStr = '0000-00-00';
+      let endStr = '9999-12-31';
+      let rangeLabel = 'All Time';
+
+      if (activityRange === '1W') { cutoffStr = fmtYmd(new Date(ty, tm - 1, td - 6)); endStr = todayStr; rangeLabel = 'Last 7 Days'; }
+      else if (activityRange === '1M') { cutoffStr = fmtYmd(new Date(ty, tm - 1, td - 29)); endStr = todayStr; rangeLabel = 'Last 30 Days'; }
+      else if (activityRange === '3M') { cutoffStr = fmtYmd(new Date(ty, tm - 1, td - 89)); endStr = todayStr; rangeLabel = 'Last 3 Months'; }
+      else if (activityRange === '6M') { cutoffStr = fmtYmd(new Date(ty, tm - 1, td - 179)); endStr = todayStr; rangeLabel = 'Last 6 Months'; }
+      else if (activityRange === '1Y') { cutoffStr = fmtYmd(new Date(ty - 1, tm - 1, td)); endStr = todayStr; rangeLabel = 'Past Year'; }
+      else if (activityRange === 'CUSTOM') {
+        cutoffStr = activityCustomStart || '0000-00-00';
+        endStr = activityCustomEnd || todayStr;
+        rangeLabel = activityCustomStart && activityCustomEnd ? `${formatNiceDate(activityCustomStart).slice(5)} – ${formatNiceDate(activityCustomEnd).slice(5)}` : 'Custom Range';
+      }
+      return {
+        allCompleted,
+        filtered: allCompleted.filter(s => s.date >= cutoffStr && s.date <= endStr),
+        rangeLabel
+      };
+    }
+
+    function buildAllExerciseAnalytics(allCompleted) {
+      const map = new Map();
+      // Chronological ascending order for timeline calculations
+      const chrono = allCompleted.slice().sort((a, b) => a.date.localeCompare(b.date));
+      chrono.forEach(s => {
+        (s.entries || []).forEach(e => {
+          const mod = getModality(e);
+          if (mod === 'Cardio') return;
+          const wt = parseFloat(String(e.weight || '').replace(/[^0-9.]/g, '')) || 0;
+          const sets = Number(e.sets) || 0;
+          const reps = Number(e.reps) || 0;
+          if (wt <= 0 && sets <= 0) return;
+          if (!map.has(e.name)) {
+            map.set(e.name, {
+              name: e.name,
+              modality: mod,
+              direction: getDirection(e),
+              muscles: normalizeMuscles(e),
+              equipmentCounts: {},
+              sessions: [],
+              bestWeight: 0,
+              bestWeightLabel: '—',
+              bestWeightReps: 0,
+              bestEst1RM: 0,
+              bestVolume: 0,
+              totalVolume: 0,
+              totalSets: 0,
+              has1RM: false
+            });
+          }
+          const rec = map.get(e.name);
+          if (e.equipment) rec.equipmentCounts[e.equipment] = (rec.equipmentCounts[e.equipment] || 0) + 1;
+          const is1RM = String(e.sets) === '1' && String(e.reps) === '1';
+          const est1rm = calcEpley1RM(wt, reps);
+          const vol = (sets > 0 && reps > 0 && wt > 0) ? Math.round(sets * reps * wt) : 0;
+          const isNewWeightPR = wt > rec.bestWeight && wt > 0;
+          const isNew1RMPR = est1rm > rec.bestEst1RM && est1rm > 0;
+          if (isNewWeightPR) {
+            rec.bestWeight = wt;
+            rec.bestWeightLabel = e.weight || `${wt} lb`;
+            rec.bestWeightReps = reps;
+          }
+          if (isNew1RMPR) rec.bestEst1RM = est1rm;
+          if (vol > rec.bestVolume) rec.bestVolume = vol;
+          rec.totalVolume += vol;
+          rec.totalSets += sets;
+          if (is1RM) rec.has1RM = true;
+          rec.sessions.push({
+            date: s.date,
+            sets,
+            reps,
+            weight: wt,
+            weightLabel: e.weight || (wt ? `${wt} lb` : 'BW'),
+            est1rm,
+            volume: vol,
+            equipment: e.equipment || '',
+            setting: e.setting || '',
+            notes: e.notes || '',
+            is1RM,
+            isPR: isNewWeightPR || isNew1RMPR
+          });
+        });
+      });
+
+      return Array.from(map.values()).map(rec => {
+        const firstWt = rec.sessions.find(x => x.weight > 0)?.weight || 0;
+        const lastWt = rec.sessions.slice().reverse().find(x => x.weight > 0)?.weight || 0;
+        rec.deltaWeight = (firstWt > 0 && lastWt > 0 && rec.sessions.length > 1) ? Math.round((lastWt - firstWt) * 10) / 10 : 0;
+        rec.lastDate = rec.sessions.length ? rec.sessions[rec.sessions.length - 1].date : '';
+        const topEq = Object.entries(rec.equipmentCounts).sort((a, b) => b[1] - a[1])[0];
+        rec.primaryEquipment = topEq ? topEq[0] : '';
+        return rec;
+      }).sort((a, b) => b.sessions.length - a.sessions.length || b.bestWeight - a.bestWeight || a.name.localeCompare(b.name));
+    }
+
+    function openHomeTopLiftInActivity() {
+      const allCompleted = getSortedSessions().filter(s => s.completed);
+      const list = buildAllExerciseAnalytics(allCompleted);
+      state.activeTab = 'ACTIVITY';
+      if (list.length) {
+        const top = list.slice().sort((a, b) => b.bestWeight - a.bestWeight)[0];
+        activityDetailExerciseName = top.name;
+        activityDetailMetric = 'est1rm';
+        activityDetailRange = 'ALL';
+        activityDetailSelectedIdx = -1;
+        activitySubpageReturnTo = 'ROOT';
+        activeActivitySubpage = 'EXERCISE_DETAIL';
+      } else {
+        activeActivitySubpage = 'EXERCISES';
+      }
+      saveState();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      renderAll();
+    }
+
+    function openActivitySubpage(subKey) {
+      activeActivitySubpage = subKey;
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      renderActivityView();
+      updateCollapsibleHeaderOnScroll();
+    }
+
+    function openActivityExerciseDetail(exName, returnTo = 'EXERCISES') {
+      activityDetailExerciseName = exName;
+      activityDetailMetric = 'est1rm';
+      activityDetailRange = 'ALL';
+      activityDetailSelectedIdx = -1;
+      activitySubpageReturnTo = returnTo || 'EXERCISES';
+      activeActivitySubpage = 'EXERCISE_DETAIL';
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      renderActivityView();
+      updateCollapsibleHeaderOnScroll();
+    }
+
+    function isCurrentActivitySubpageNested() {
+      return activeActivitySubpage === 'EXERCISE_DETAIL' && (activitySubpageReturnTo === 'EXERCISES' || activitySubpageReturnTo === 'EQUIPMENT_STATS');
+    }
+
+    function prepareActivitySwipeUnderlay() {
+      const under = document.getElementById('activitySwipeUnderlay');
+      const underInner = document.getElementById('activitySwipeUnderlayInner');
+      const underScrim = document.getElementById('activitySwipeUnderlayScrim');
+      const subEl = document.getElementById('activitySubpageContainer');
+      const hdrEl = document.getElementById('stickyCompactHeader');
+      const rootEl = document.getElementById('activityRootContainer');
+      if (!under || !underInner || !underScrim) return;
+
+      const previewSource = rootEl ? rootEl.innerHTML.replace(/\sid="[^"]*"/g, '') : '';
+      underInner.innerHTML = `<div class="space-y-4 pt-2">${previewSource}</div>`;
+      underInner.style.transition = 'none';
+      underInner.style.transform = 'translate3d(-28%, 0, 0)';
+      underScrim.style.transition = 'none';
+      underScrim.style.opacity = '0.46';
+      under.classList.add('is-visible');
+
+      if (subEl) {
+        subEl.classList.add('is-ios-swiping');
+        subEl.style.transition = 'none';
+        subEl.style.transform = 'translate3d(0, 0, 0)';
+      }
+      const leftEl = document.getElementById('stickyHeaderLeft');
+      const centerEl = document.getElementById('stickyHeaderCenter');
+      if (hdrEl) {
+        hdrEl.classList.add('is-swiping-back');
+        hdrEl.style.transition = 'none';
+        hdrEl.style.transform = 'translate3d(0, 0, 0)';
+        hdrEl.style.setProperty('--hdr-backdrop-opacity', '1');
+      }
+      if (leftEl) { leftEl.style.transition = 'none'; leftEl.style.opacity = '1'; }
+      if (centerEl) { centerEl.style.transition = 'none'; centerEl.style.transform = 'translate3d(0, -50%, 0)'; }
+    }
+
+    function cleanupActivitySwipeUnderlay(hideHeaderInstant = false) {
+      const under = document.getElementById('activitySwipeUnderlay');
+      const underInner = document.getElementById('activitySwipeUnderlayInner');
+      const underScrim = document.getElementById('activitySwipeUnderlayScrim');
+      const subEl = document.getElementById('activitySubpageContainer');
+      const hdrEl = document.getElementById('stickyCompactHeader');
+      const leftEl = document.getElementById('stickyHeaderLeft');
+      const centerEl = document.getElementById('stickyHeaderCenter');
+      if (under) under.classList.remove('is-visible');
+      if (underInner) { underInner.style.transition = ''; underInner.style.transform = ''; }
+      if (underScrim) { underScrim.style.transition = ''; underScrim.style.opacity = ''; }
+      if (subEl) { subEl.classList.remove('is-ios-swiping'); subEl.style.transition = ''; subEl.style.transform = ''; subEl.style.opacity = ''; }
+      if (hdrEl) {
+        hdrEl.style.transition = 'none';
+        hdrEl.classList.remove('is-swiping-back', 'has-scrolled-bar');
+        hdrEl.style.removeProperty('--hdr-backdrop-opacity');
+        if (hideHeaderInstant) hdrEl.classList.remove('is-pinned');
+        hdrEl.style.transform = '';
+        hdrEl.style.opacity = '';
+        void hdrEl.offsetWidth;
+        hdrEl.style.transition = '';
+      }
+      if (leftEl) { leftEl.style.transition = ''; leftEl.style.opacity = ''; }
+      if (centerEl) { centerEl.style.transition = ''; centerEl.style.transform = ''; }
+    }
+
+    function commitCloseActivitySubpageImmediate() {
+      if (isCurrentActivitySubpageNested()) {
+        activeActivitySubpage = activitySubpageReturnTo;
+        activitySubpageReturnTo = 'ROOT';
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        renderActivityView();
+        updateCollapsibleHeaderOnScroll();
+        return;
+      }
+      activeActivitySubpage = null;
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      renderActivityView();
+      updateCollapsibleHeaderOnScroll();
+    }
+
+    function closeActivitySubpage(skipAnim = false) {
+      if (skipAnim === true) {
+        commitCloseActivitySubpageImmediate();
+        return;
+      }
+      if (isActivityPopping || !activeActivitySubpage) return;
+      isActivityPopping = true;
+      prepareActivitySwipeUnderlay();
+      const w = window.innerWidth || 390;
+      const subEl = document.getElementById('activitySubpageContainer');
+      const hdrEl = document.getElementById('stickyCompactHeader');
+      const leftEl = document.getElementById('stickyHeaderLeft');
+      const centerEl = document.getElementById('stickyHeaderCenter');
+      const underInner = document.getElementById('activitySwipeUnderlayInner');
+      const underScrim = document.getElementById('activitySwipeUnderlayScrim');
+      const ease = 'cubic-bezier(0.22, 1, 0.36, 1)';
+      const goingToRoot = !isCurrentActivitySubpageNested();
+
+      if (subEl) void subEl.offsetWidth;
+      if (subEl) { subEl.style.transition = `transform 0.28s ${ease}`; subEl.style.transform = `translate3d(${w}px, 0, 0)`; }
+      if (centerEl) { centerEl.style.transition = `transform 0.28s ${ease}`; centerEl.style.transform = `translate3d(${w}px, -50%, 0)`; }
+      if (hdrEl) { hdrEl.classList.remove('is-swiping-back'); hdrEl.style.setProperty('--hdr-backdrop-opacity', '0'); }
+      if (goingToRoot && leftEl) { leftEl.style.transition = 'opacity 0.22s ease'; leftEl.style.opacity = '0'; }
+      if (underInner) { underInner.style.transition = `transform 0.28s ${ease}`; underInner.style.transform = `translate3d(0%, 0, 0)`; }
+      if (underScrim) { underScrim.style.transition = 'opacity 0.28s ease'; underScrim.style.opacity = '0'; }
+
+      setTimeout(() => {
+        cleanupActivitySwipeUnderlay(goingToRoot);
+        commitCloseActivitySubpageImmediate();
+        isActivityPopping = false;
+      }, 285);
+    }
+
+    function setActivityExSearch(val) {
+      activityExSearchQuery = val || '';
+      renderActivitySubpageContent();
+    }
+
+    function setActivityExSort(mode) {
+      activityExSortMode = mode;
+      renderActivitySubpageContent();
+    }
+
+    function setActivityDetailMetric(metric) {
+      activityDetailMetric = metric;
+      activityDetailSelectedIdx = -1;
+      renderActivitySubpageContent();
+    }
+
+    function setActivityDetailRange(rng) {
+      activityDetailRange = rng;
+      activityDetailSelectedIdx = -1;
+      renderActivitySubpageContent();
+    }
+
+    function selectActivityDetailPoint(idx) {
+      activityDetailSelectedIdx = idx;
+      renderActivitySubpageContent();
+    }
+
+    function renderActivitySubpageContent() {
+      const hero = document.getElementById('activitySubpageHero');
+      const body = document.getElementById('activitySubpageBody');
+      if (!hero || !body || !activeActivitySubpage) return;
+
+      const { allCompleted, filtered, rangeLabel } = getActivityFilteredSessions();
+
+      // ---------------------------------------------------------------------
+      // SUBPAGE 1: EXERCISE PROGRESSION LIST
+      // ---------------------------------------------------------------------
+      if (activeActivitySubpage === 'EXERCISES') {
+        const allEx = buildAllExerciseAnalytics(allCompleted);
+        const q = activityExSearchQuery.trim().toLowerCase();
+        let list = allEx.filter(it => !q || it.name.toLowerCase().includes(q) || it.primaryEquipment.toLowerCase().includes(q) || it.muscles.some(m => m.toLowerCase().includes(q)));
+        if (activityExSortMode === 'heaviest') list.sort((a, b) => b.bestWeight - a.bestWeight || b.bestEst1RM - a.bestEst1RM);
+        else if (activityExSortMode === 'recent') list.sort((a, b) => b.lastDate.localeCompare(a.lastDate));
+        else if (activityExSortMode === '1rm') list = list.filter(it => it.has1RM).sort((a, b) => b.bestWeight - a.bestWeight);
+
+        hero.innerHTML = `
+          <div id="activitySubpageHeroCard" class="space-y-1 px-1">
+            <h1 class="text-[30px] font-extrabold tracking-tight text-white">Exercise Progression</h1>
+            <p class="type-subhead" style="color: var(--label-secondary);">${allEx.length} tracked lift${allEx.length === 1 ? '' : 's'} across all completed sessions</p>
+          </div>
+        `;
+
+        const sortPills = [
+          { id: 'sessions', label: 'Most Logged' },
+          { id: 'heaviest', label: 'Heaviest' },
+          { id: 'recent', label: 'Recent' },
+          { id: '1rm', label: '1RM ★' }
+        ];
+
+        body.innerHTML = `
+          <div class="space-y-3">
+            <input
+              type="search"
+              id="activityExSearchInput"
+              value="${esc(activityExSearchQuery)}"
+              oninput="setActivityExSearch(this.value)"
+              placeholder="Search exercises, muscles, or machines..."
+              class="fitness-field !rounded-full !px-4 !py-2.5 text-[14px]"
+            />
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              ${sortPills.map(p => {
+                const act = activityExSortMode === p.id;
+                return `<button type="button" onclick="setActivityExSort('${p.id}')" class="px-3.5 py-1.5 rounded-full text-[12px] font-bold shrink-0 transition-all" style="background: ${act ? '#0A84FF' : '#1C1C1E'}; color: ${act ? '#FFFFFF' : 'rgba(235,235,245,0.65)'}; border: 0.5px solid rgba(255,255,255,0.08);">${p.label}</button>`;
+              }).join('')}
+            </div>
+          </div>
+
+          <div class="space-y-2.5">
+            ${!list.length ? `
+              <div class="fitness-card p-6 text-center space-y-1">
+                <p class="type-headline text-white">No matching exercises</p>
+                <p class="type-caption" style="color: var(--label-secondary);">Log weighted strength sets to build exercise timelines.</p>
               </div>
-              <div class="progress-track !h-2">
-                <div class="progress-fill" style="width: ${Math.round((cnt / maxEq) * 100)}%; background: linear-gradient(90deg, #FF9F0A 0%, #FF375F 100%);"></div>
+            ` : list.map(it => {
+              const deltaHtml = it.deltaWeight > 0
+                ? `<span class="text-[11px] font-extrabold px-2 py-0.5 rounded-full" style="background: rgba(48,209,88,0.18); color: #30D158;">+${it.deltaWeight} lb</span>`
+                : it.deltaWeight < 0
+                  ? `<span class="text-[11px] font-extrabold px-2 py-0.5 rounded-full" style="background: rgba(255,69,58,0.16); color: #FF453A;">${it.deltaWeight} lb</span>`
+                  : '';
+              return `
+                <button type="button" onclick="openActivityExerciseDetail('${esc(it.name).replace(/'/g, "\\'")}', 'EXERCISES')" class="w-full fitness-card fitness-card-interactive p-4 text-left space-y-2.5">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-2 min-w-0">
+                        <span class="type-headline text-white font-bold truncate">${esc(it.name)}</span>
+                        ${it.has1RM ? `<span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full shrink-0" style="background: rgba(255,214,10,0.20); color: #FFD60A;">1RM ★</span>` : ''}
+                      </div>
+                      <p class="type-caption truncate mt-0.5" style="color: var(--label-secondary);">${esc(it.muscles.join(' · ') || it.direction)}${it.primaryEquipment ? ` · ${esc(it.primaryEquipment)}` : ''}</p>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      ${deltaHtml}
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(235,235,245,0.35)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-3 gap-2 pt-1">
+                    <div class="px-2.5 py-2 rounded-xl" style="background: #262629;">
+                      <div class="text-[10px] uppercase font-bold" style="color: var(--label-secondary);">Best Load</div>
+                      <div class="text-[14px] font-extrabold text-white tabular-nums mt-0.5 truncate">${esc(it.bestWeightLabel)}</div>
+                    </div>
+                    <div class="px-2.5 py-2 rounded-xl" style="background: #262629;">
+                      <div class="text-[10px] uppercase font-bold" style="color: var(--label-secondary);">Est. 1RM</div>
+                      <div class="text-[14px] font-extrabold tabular-nums mt-0.5" style="color: #0A84FF;">${it.bestEst1RM ? `${it.bestEst1RM} lb` : '—'}</div>
+                    </div>
+                    <div class="px-2.5 py-2 rounded-xl" style="background: #262629;">
+                      <div class="text-[10px] uppercase font-bold" style="color: var(--label-secondary);">Sessions</div>
+                      <div class="text-[14px] font-extrabold text-white tabular-nums mt-0.5">${it.sessions.length}</div>
+                    </div>
+                  </div>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        `;
+        return;
+      }
+
+      // ---------------------------------------------------------------------
+      // SUBPAGE 2: DEDICATED EXERCISE DETAIL & TIMELINE
+      // ---------------------------------------------------------------------
+      if (activeActivitySubpage === 'EXERCISE_DETAIL') {
+        const allEx = buildAllExerciseAnalytics(allCompleted);
+        const rec = allEx.find(x => x.name === activityDetailExerciseName);
+        hero.innerHTML = `<div id="activitySubpageHeroCard" class="hidden"></div>`;
+
+        if (!rec) {
+          body.innerHTML = `
+            <div class="fitness-card p-6 text-center space-y-1">
+              <p class="type-headline text-white">No history yet</p>
+              <p class="type-caption" style="color: var(--label-secondary);">Complete a session with this exercise to see stats and timeline data.</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Filter timeline points by detail range
+        const todayStr = getTodayDateStr();
+        const [ty, tm, td] = todayStr.split('-').map(Number);
+        const fmtYmd = (dObj) => `${dObj.getFullYear()}-${String(dObj.getMonth() + 1).padStart(2, '0')}-${String(dObj.getDate()).padStart(2, '0')}`;
+        let detCutoff = '0000-00-00';
+        if (activityDetailRange === '3M') detCutoff = fmtYmd(new Date(ty, tm - 1, td - 89));
+        else if (activityDetailRange === '6M') detCutoff = fmtYmd(new Date(ty, tm - 1, td - 179));
+        else if (activityDetailRange === '1Y') detCutoff = fmtYmd(new Date(ty - 1, tm - 1, td));
+
+        const chartPts = rec.sessions.filter(pt => pt.date >= detCutoff);
+        const getVal = (pt) => activityDetailMetric === 'weight' ? pt.weight : activityDetailMetric === 'volume' ? pt.volume : pt.est1rm;
+        const unitStr = activityDetailMetric === 'volume' ? 'lb vol' : 'lb';
+
+        const activeIdx = (activityDetailSelectedIdx >= 0 && activityDetailSelectedIdx < chartPts.length)
+          ? activityDetailSelectedIdx
+          : chartPts.length - 1;
+        const activePt = chartPts[activeIdx] || null;
+
+        // Build Interactive SVG Line/Area Chart
+        let svgChartHtml = `<p class="type-caption text-center py-8" style="color: var(--label-tertiary);">No sessions in this range.</p>`;
+        if (chartPts.length) {
+          const vals = chartPts.map(getVal);
+          const minV = Math.min(...vals);
+          const maxV = Math.max(...vals);
+          const span = Math.max(1, maxV - minV);
+          const padMin = Math.max(0, minV - span * 0.15);
+          const padMax = maxV + span * 0.15;
+          const W = 320, H = 144, padL = 10, padR = 10, padT = 18, padB = 24;
+          const plotW = W - padL - padR;
+          const plotH = H - padT - padB;
+
+          const coords = chartPts.map((pt, i) => {
+            const x = chartPts.length === 1 ? padL + plotW / 2 : padL + (i / (chartPts.length - 1)) * plotW;
+            const y = padT + plotH - ((getVal(pt) - padMin) / Math.max(1, padMax - padMin)) * plotH;
+            return { x, y, pt, i };
+          });
+
+          const linePath = coords.map((c, idx) => `${idx === 0 ? 'M' : 'L'} ${c.x.toFixed(1)} ${c.y.toFixed(1)}`).join(' ');
+          const areaPath = coords.length > 1
+            ? `${linePath} L ${coords[coords.length - 1].x.toFixed(1)} ${(H - padB).toFixed(1)} L ${coords[0].x.toFixed(1)} ${(H - padB).toFixed(1)} Z`
+            : '';
+
+          const strokeColor = activityDetailMetric === 'volume' ? '#FFD60A' : activityDetailMetric === 'weight' ? '#30D158' : '#0A84FF';
+          const firstDate = chartPts[0].date.slice(5).replace('-', '/');
+          const lastDate = chartPts[chartPts.length - 1].date.slice(5).replace('-', '/');
+
+          svgChartHtml = `
+            <svg viewBox="0 0 ${W} ${H}" class="w-full h-[160px] overflow-visible">
+              <defs>
+                <linearGradient id="exProgGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="${strokeColor}" stop-opacity="0.34"/>
+                  <stop offset="100%" stop-color="${strokeColor}" stop-opacity="0.01"/>
+                </linearGradient>
+              </defs>
+              <line x1="${padL}" y1="${padT}" x2="${W - padR}" y2="${padT}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="3 3"/>
+              <line x1="${padL}" y1="${(padT + plotH / 2).toFixed(1)}" x2="${W - padR}" y2="${(padT + plotH / 2).toFixed(1)}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 3"/>
+              <line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="rgba(255,255,255,0.10)"/>
+              ${areaPath ? `<path d="${areaPath}" fill="url(#exProgGrad)"/>` : ''}
+              ${coords.length > 1 ? `<path d="${linePath}" fill="none" stroke="${strokeColor}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+              ${coords.map(c => {
+                const isSel = c.i === activeIdx;
+                const fill = c.pt.is1RM ? '#FFD60A' : strokeColor;
+                return `
+                  <g onclick="selectActivityDetailPoint(${c.i})" style="cursor: pointer;">
+                    <circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="14" fill="transparent"/>
+                    ${isSel ? `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="8" fill="${fill}" fill-opacity="0.24"/>` : ''}
+                    <circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="${isSel ? '5' : '3.5'}" fill="${fill}" stroke="#000000" stroke-width="1.5"/>
+                  </g>
+                `;
+              }).join('')}
+              <text x="${padL}" y="${H - 6}" fill="rgba(235,235,245,0.48)" font-size="10" font-weight="600">${firstDate}</text>
+              <text x="${W - padR}" y="${H - 6}" fill="rgba(235,235,245,0.48)" font-size="10" font-weight="600" text-anchor="end">${lastDate}</text>
+            </svg>
+          `;
+        }
+
+        const bestVolLabel = rec.bestVolume >= 1000 ? `${(rec.bestVolume / 1000).toFixed(1)}k` : `${rec.bestVolume}`;
+
+        body.innerHTML = `
+          <!-- Metadata Chips -->
+          <div class="flex flex-wrap items-center gap-1.5 px-0.5">
+            ${rec.muscles.map(m => `<span class="text-[11px] font-bold px-2.5 py-1 rounded-full" style="background: rgba(10,132,255,0.16); color: #64D2FF;">${esc(m)}</span>`).join('')}
+            ${rec.primaryEquipment ? `<span class="text-[11px] font-semibold px-2.5 py-1 rounded-full" style="background: #1C1C1E; color: var(--label-secondary); border: 0.5px solid rgba(255,255,255,0.08);">${esc(rec.primaryEquipment)}</span>` : ''}
+          </div>
+
+          <!-- 4 Hero Exercise KPI Cards -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="fitness-card p-4 space-y-1">
+              <span class="type-caption uppercase tracking-wider" style="color: var(--label-secondary);">Best Load</span>
+              <div class="flex items-baseline gap-1.5">
+                <span class="fitness-metric text-[26px]" style="color: #30D158;">${rec.bestWeight || '—'}</span>
+                <span class="type-caption font-bold" style="color: var(--label-secondary);">LB${rec.bestWeightReps ? ` × ${rec.bestWeightReps}` : ''}</span>
               </div>
             </div>
-          `).join('');
-        }
+            <div class="fitness-card p-4 space-y-1">
+              <span class="type-caption uppercase tracking-wider" style="color: var(--label-secondary);">Est. 1RM</span>
+              <div class="flex items-baseline gap-1.5">
+                <span class="fitness-metric text-[26px]" style="color: #0A84FF;">${rec.bestEst1RM || '—'}</span>
+                <span class="type-caption font-bold" style="color: var(--label-secondary);">LB${rec.has1RM ? ' ★' : ''}</span>
+              </div>
+            </div>
+            <div class="fitness-card p-4 space-y-1">
+              <span class="type-caption uppercase tracking-wider" style="color: var(--label-secondary);">Best Volume</span>
+              <div class="flex items-baseline gap-1.5">
+                <span class="fitness-metric text-[26px]" style="color: #FFD60A;">${bestVolLabel}</span>
+                <span class="type-caption font-bold" style="color: var(--label-secondary);">LB / SESS</span>
+              </div>
+            </div>
+            <div class="fitness-card p-4 space-y-1">
+              <span class="type-caption uppercase tracking-wider" style="color: var(--label-secondary);">Sessions</span>
+              <div class="flex items-baseline gap-2">
+                <span class="fitness-metric text-[26px] text-white">${rec.sessions.length}</span>
+                ${rec.deltaWeight !== 0 ? `<span class="text-[11px] font-extrabold" style="color: ${rec.deltaWeight > 0 ? '#30D158' : '#FF453A'};">${rec.deltaWeight > 0 ? '+' : ''}${rec.deltaWeight} lb</span>` : ''}
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Progression Chart Card -->
+          <div class="fitness-card p-5 space-y-3.5">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1 p-1 rounded-full" style="background: #262629;">
+                ${[
+                  { id: 'est1rm', label: 'Est. 1RM' },
+                  { id: 'weight', label: 'Weight' },
+                  { id: 'volume', label: 'Volume' }
+                ].map(m => {
+                  const act = activityDetailMetric === m.id;
+                  return `<button type="button" onclick="setActivityDetailMetric('${m.id}')" class="px-2.5 py-1 rounded-full text-[11px] font-bold transition-all" style="background: ${act ? '#0A84FF' : 'transparent'}; color: ${act ? '#FFFFFF' : 'rgba(235,235,245,0.60)'};">${m.label}</button>`;
+                }).join('')}
+              </div>
+              <div class="flex items-center gap-1">
+                ${['3M', '6M', '1Y', 'ALL'].map(r => {
+                  const act = activityDetailRange === r;
+                  return `<button type="button" onclick="setActivityDetailRange('${r}')" class="px-2 py-1 rounded-full text-[10px] font-bold" style="background: ${act ? 'rgba(255,255,255,0.14)' : 'transparent'}; color: ${act ? '#FFFFFF' : 'var(--label-secondary)'};">${r === 'ALL' ? 'All' : r}</button>`;
+                }).join('')}
+              </div>
+            </div>
+
+            ${activePt ? `
+              <div class="flex items-center justify-between px-3 py-2 rounded-2xl" style="background: #262629;">
+                <span class="type-caption font-semibold text-white">${formatNiceDate(activePt.date)}</span>
+                <span class="text-[13px] font-extrabold tabular-nums" style="color: ${activityDetailMetric === 'volume' ? '#FFD60A' : activityDetailMetric === 'weight' ? '#30D158' : '#0A84FF'};">
+                  ${getVal(activePt).toLocaleString()} ${unitStr} · ${activePt.sets}×${activePt.reps} @ ${esc(activePt.weightLabel)}
+                </span>
+              </div>
+            ` : ''}
+
+            ${svgChartHtml}
+          </div>
+
+          <!-- Chronological Session Timeline -->
+          <div class="fitness-card p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <h2 class="type-headline text-white">Session Timeline</h2>
+              <span class="type-caption font-semibold" style="color: var(--label-secondary);">${rec.sessions.length} logged</span>
+            </div>
+            <div class="relative pl-5 space-y-4">
+              <div class="absolute left-[7px] top-2 bottom-2 w-[1.5px]" style="background: rgba(255,255,255,0.12);"></div>
+              ${rec.sessions.slice().reverse().map(pt => `
+                <div class="relative">
+                  <span class="absolute -left-5 top-1.5 w-3.5 h-3.5 rounded-full border-2 border-black" style="background: ${pt.is1RM ? '#FFD60A' : pt.isPR ? '#30D158' : '#0A84FF'};"></span>
+                  <div class="p-3.5 rounded-2xl space-y-1.5" style="background: #262629;">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="text-[13px] font-bold text-white">${formatNiceDate(pt.date)}</span>
+                      <div class="flex items-center gap-1.5">
+                        ${pt.is1RM ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full" style="background: rgba(255,214,10,0.20); color: #FFD60A;">1RM ★</span>` : pt.isPR ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full" style="background: rgba(48,209,88,0.18); color: #30D158;">PR</span>` : ''}
+                        <span class="text-[12px] font-extrabold tabular-nums" style="color: #0A84FF;">${pt.sets}×${pt.reps} @ ${esc(pt.weightLabel)}</span>
+                      </div>
+                    </div>
+                    <div class="flex items-center justify-between type-caption" style="color: var(--label-secondary);">
+                      <span>Est. 1RM: <strong class="text-white">${pt.est1rm ? `${pt.est1rm} lb` : '—'}</strong> · Vol: <strong class="text-white">${pt.volume ? `${pt.volume.toLocaleString()} lb` : '—'}</strong></span>
+                    </div>
+                    ${pt.equipment ? `<div class="text-[11px]" style="color: var(--label-tertiary);">${esc(pt.equipment)}${pt.setting ? ` · ${esc(pt.setting)}` : ''}</div>` : ''}
+                    ${pt.notes ? `<p class="text-[12px] pt-1" style="color: rgba(235,235,245,0.78);">${esc(pt.notes)}</p>` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // ---------------------------------------------------------------------
+      // SUBPAGE 3: MUSCLE DISTRIBUTION (BODY ZONE GROUPED)
+      // ---------------------------------------------------------------------
+      if (activeActivitySubpage === 'MUSCLES') {
+        const entries = filtered.flatMap(s => (s.entries || []).map(e => ({ ...e, _date: s.date })));
+        const stats = {};
+        MUSCLE_GROUPS.forEach(m => { stats[m] = { hits: 0, sets: 0, lastDate: '' }; });
+        entries.forEach(e => {
+          const sets = Number(e.sets) || 0;
+          normalizeMuscles(e).forEach(m => {
+            if (!stats[m]) return;
+            stats[m].hits += 1;
+            stats[m].sets += sets;
+            if (!stats[m].lastDate || e._date > stats[m].lastDate) stats[m].lastDate = e._date;
+          });
+        });
+
+        const maxSets = Math.max(1, ...Object.values(stats).map(s => s.sets || s.hits));
+        const hitCount = MUSCLE_GROUPS.filter(m => stats[m].hits > 0).length;
+
+        const zones = [
+          { title: 'Upper Push', color: '#0A84FF', muscles: ['Pec', 'Shoulders', 'Tricep'] },
+          { title: 'Upper Pull', color: '#30D158', muscles: ['Lats', 'Traps', 'Bicep', 'Forearm'] },
+          { title: 'Lower Body', color: '#FF9F0A', muscles: ['Quad', 'Hamstring', 'Glute', 'Calf'] },
+          { title: 'Core', color: '#BF5AF2', muscles: ['Core'] }
+        ];
+
+        hero.innerHTML = `
+          <div id="activitySubpageHeroCard" class="space-y-1 px-1">
+            <h1 class="text-[30px] font-extrabold tracking-tight text-white">Muscle Distribution</h1>
+            <p class="type-subhead" style="color: var(--label-secondary);">${hitCount} of ${MUSCLE_GROUPS.length} muscle groups trained · ${rangeLabel}</p>
+          </div>
+        `;
+
+        body.innerHTML = zones.map(z => `
+          <div class="fitness-card p-5 space-y-3.5">
+            <div class="flex items-center justify-between">
+              <span class="type-headline text-white font-bold">${z.title}</span>
+              <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full" style="background: ${z.color}26; color: ${z.color};">
+                ${z.muscles.reduce((sum, m) => sum + (stats[m]?.sets || 0), 0)} sets
+              </span>
+            </div>
+            <div class="space-y-3">
+              ${z.muscles.map(m => {
+                const st = stats[m] || { hits: 0, sets: 0, lastDate: '' };
+                const metric = st.sets || st.hits;
+                const pct = metric > 0 ? Math.max(8, Math.round((metric / maxSets) * 100)) : 0;
+                return `
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between text-[13px]">
+                      <span class="font-semibold text-white">${esc(m)}</span>
+                      <span class="type-caption font-bold tabular-nums" style="color: ${metric > 0 ? z.color : 'var(--label-tertiary)'};">
+                        ${st.sets > 0 ? `${st.sets} sets (${st.hits}×)` : st.hits > 0 ? `${st.hits}×` : 'Not trained'}
+                      </span>
+                    </div>
+                    <div class="progress-track !h-2">
+                      <div class="progress-fill" style="width: ${pct}%; background: ${z.color};"></div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `).join('');
+        return;
+      }
+
+      // ---------------------------------------------------------------------
+      // SUBPAGE 4: EQUIPMENT USAGE
+      // ---------------------------------------------------------------------
+      if (activeActivitySubpage === 'EQUIPMENT_STATS') {
+        const entries = filtered.flatMap(s => s.entries || []);
+        const eqMap = new Map();
+        entries.forEach(e => {
+          if (!e.equipment) return;
+          if (!eqMap.has(e.equipment)) eqMap.set(e.equipment, { name: e.equipment, hits: 0, sets: 0, exercises: new Set() });
+          const rec = eqMap.get(e.equipment);
+          rec.hits += 1;
+          rec.sets += Number(e.sets) || 0;
+          if (e.name) rec.exercises.add(e.name);
+        });
+        const ranked = Array.from(eqMap.values()).sort((a, b) => b.hits - a.hits || b.sets - a.sets);
+        const maxHits = ranked.length ? ranked[0].hits : 1;
+
+        hero.innerHTML = `
+          <div id="activitySubpageHeroCard" class="space-y-1 px-1">
+            <h1 class="text-[30px] font-extrabold tracking-tight text-white">Equipment Usage</h1>
+            <p class="type-subhead" style="color: var(--label-secondary);">${ranked.length} station${ranked.length === 1 ? '' : 's'} used · ${rangeLabel}</p>
+          </div>
+        `;
+
+        body.innerHTML = !ranked.length ? `
+          <div class="fitness-card p-6 text-center space-y-1">
+            <p class="type-headline text-white">No equipment logged</p>
+            <p class="type-caption" style="color: var(--label-secondary);">Log exercises with equipment tags to see station usage.</p>
+          </div>
+        ` : `<div class="space-y-3">${ranked.map(eq => `
+          <div class="fitness-card p-4 space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="type-headline text-white font-bold truncate">${esc(eq.name)}</span>
+              <span class="text-[12px] font-extrabold tabular-nums shrink-0" style="color: #FF9F0A;">${eq.hits}× · ${eq.sets} sets</span>
+            </div>
+            <div class="progress-track !h-2">
+              <div class="progress-fill" style="width: ${Math.max(8, Math.round((eq.hits / maxHits) * 100))}%; background: linear-gradient(90deg, #FF9F0A 0%, #FF375F 100%);"></div>
+            </div>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              ${Array.from(eq.exercises).slice(0, 4).map(exName => `
+                <button type="button" onclick="openActivityExerciseDetail('${esc(exName).replace(/'/g, "\\'")}', 'EQUIPMENT_STATS')" class="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-opacity active:opacity-70" style="background: #262629; color: rgba(235,235,245,0.82);">${esc(exName)} ›</button>
+              `).join('')}
+            </div>
+          </div>
+        `).join('')}</div>`;
       }
     }
 
@@ -7858,8 +8717,10 @@
 
     function commitCloseMenuSubpageImmediate() {
       if (activeMenuSubpage === 'PROFILE' && profileSubViewMode !== 'MAIN') {
+        commitProfileFieldDraftIfDirty(false);
         profileSubViewMode = 'MAIN';
         editingProfileFieldKey = null;
+        profileFieldDirty = false;
         window.scrollTo({ top: 0, behavior: 'instant' });
         renderMenuSubpageContent('PROFILE');
         updateCollapsibleHeaderOnScroll();
@@ -8687,11 +9548,11 @@
         const genderLabel = prof.gender === 'M' ? 'Male' : prof.gender === 'F' ? 'Female' : 'Not Set';
 
         if (profileSubViewMode === 'FIELD_TEXT' && (editingProfileFieldKey === 'firstName' || editingProfileFieldKey === 'lastName')) {
-          const curVal = editingProfileFieldKey === 'firstName' ? firstVal : lastVal;
+          const curVal = profileFieldDraftVal !== null ? profileFieldDraftVal : (editingProfileFieldKey === 'firstName' ? firstVal : lastVal);
           const ph = editingProfileFieldKey === 'firstName' ? 'Enter first name' : 'Enter last name';
           hero.innerHTML = `<div id="subpageHeroCard" class="hidden"></div>`;
           body.innerHTML = `
-            <form onsubmit="event.preventDefault(); closeMenuSubpage();" class="space-y-3 pt-1">
+            <form onsubmit="event.preventDefault(); commitProfileFieldAndSync();" class="space-y-3 pt-1">
               <div class="settings-group flex items-center px-4 py-1.5" style="border-radius: 26px;">
                 <input
                   type="text"
@@ -8699,11 +9560,11 @@
                   enterkeyhint="done"
                   value="${esc(curVal)}"
                   placeholder="${esc(ph)}"
-                  oninput="updateProfileNamePart('${editingProfileFieldKey}', this.value)"
+                  oninput="onProfileFieldDraftChange(this.value)"
                   class="flex-1 bg-transparent border-none outline-none text-white py-2.5 pr-2 font-medium"
                 />
               </div>
-              <p class="type-caption px-3" style="color: var(--label-secondary);">Changes save automatically as you type or tap done.</p>
+              <p class="type-caption px-3" style="color: var(--label-secondary);">Tap ✓ to save and sync, or go back to autosave.</p>
             </form>
           `;
           setTimeout(() => {
@@ -8714,6 +9575,7 @@
         }
 
         if (profileSubViewMode === 'FIELD_DATE') {
+          const curDob = profileFieldDraftVal !== null ? profileFieldDraftVal : (dobVal || '');
           hero.innerHTML = `<div id="subpageHeroCard" class="hidden"></div>`;
           body.innerHTML = `
             <div class="space-y-3 pt-1">
@@ -8721,33 +9583,38 @@
                 <input
                   type="date"
                   id="iosProfileDobInput"
-                  value="${esc(dobVal || '2000-01-01')}"
-                  onchange="updateProfileField('dob', this.value)"
+                  value="${esc(curDob || '2000-01-01')}"
+                  oninput="onProfileFieldDraftChange(this.value)"
+                  onchange="onProfileFieldDraftChange(this.value)"
                   class="w-full bg-transparent border-none outline-none text-white py-2 font-semibold"
                 />
               </div>
-              <p class="type-caption px-3" style="color: var(--label-secondary);">Select your date of birth — saved automatically.</p>
+              <p class="type-caption px-3" style="color: var(--label-secondary);">Tap ✓ to save and sync, or go back to autosave.</p>
             </div>
           `;
           return;
         }
 
         if (profileSubViewMode === 'FIELD_GENDER') {
+          const curGender = profileFieldDraftVal !== null ? profileFieldDraftVal : (prof.gender || '');
           hero.innerHTML = `<div id="subpageHeroCard" class="hidden"></div>`;
           body.innerHTML = `
-            <div class="settings-group mt-1">
-              ${[
-                { id: 'M', label: 'Male', color: '#0A84FF' },
-                { id: 'F', label: 'Female', color: '#FF64B4' }
-              ].map(opt => {
-                const isSel = prof.gender === opt.id;
-                return `
-                  <button type="button" onclick="updateProfileField('gender', '${opt.id}'); closeMenuSubpage();" class="settings-row">
-                    <span class="type-headline text-white">${opt.label}</span>
-                    ${isSel ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${opt.color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>` : `<span></span>`}
-                  </button>
-                `;
-              }).join('')}
+            <div class="space-y-3 pt-1">
+              <div class="settings-group">
+                ${[
+                  { id: 'M', label: 'Male', color: '#0A84FF' },
+                  { id: 'F', label: 'Female', color: '#FF64B4' }
+                ].map(opt => {
+                  const isSel = curGender === opt.id;
+                  return `
+                    <button type="button" onclick="selectProfileGenderDraft('${opt.id}')" class="settings-row">
+                      <span class="type-headline text-white">${opt.label}</span>
+                      <svg id="profileGenderCheck_${opt.id}" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${opt.color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="opacity: ${isSel ? '1' : '0'}; transition: opacity 0.16s ease;"><polyline points="20 6 9 17 4 12"/></svg>
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+              <p class="type-caption px-3" style="color: var(--label-secondary);">Tap ✓ to save and sync, or go back to autosave.</p>
             </div>
           `;
           return;
@@ -9349,9 +10216,55 @@
 
         stickyBar.classList.add('is-pinned');
         stickyBar.classList.toggle('has-scrolled-bar', titlePassedTop);
-        if (!leftSlot.firstElementChild) {
+        if (!leftSlot.firstElementChild || leftSlot.dataset.backTarget !== 'MENU') {
+          leftSlot.dataset.backTarget = 'MENU';
           leftSlot.innerHTML = `
             <button type="button" onclick="closeMenuSubpage()" aria-label="Back to Menu" class="glass glass--clear glass--circle-44 glass-interactive">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+          `;
+        }
+        setCompactCenterTitle(compactTitle, titlePassedTop);
+        const showProfileCommitBtn = activeMenuSubpage === 'PROFILE' && profileSubViewMode !== 'MAIN';
+        if (showProfileCommitBtn) {
+          let checkBtn = document.getElementById('profileCommitCheckBtn');
+          if (!checkBtn) {
+            rightSlot.innerHTML = `
+              <button type="button" id="profileCommitCheckBtn" onclick="commitProfileFieldAndSync()" aria-label="Save and sync" class="glass glass--clear profile-commit-btn glass-interactive ${profileFieldDirty ? 'is-dirty' : ''}">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </button>
+            `;
+          } else {
+            checkBtn.classList.toggle('is-dirty', Boolean(profileFieldDirty));
+          }
+        } else if (rightSlot.innerHTML) {
+          rightSlot.innerHTML = ``;
+        }
+        return;
+      }
+
+      // 1B. Activity Subpages (Exercise Progression, Exercise Detail, Muscle Distribution, Equipment Usage)
+      if (state.activeTab === 'ACTIVITY' && activeActivitySubpage) {
+        let compactTitle = 'Activity';
+        let isDetailWithoutHero = false;
+        if (activeActivitySubpage === 'EXERCISES') compactTitle = 'Exercise Progression';
+        else if (activeActivitySubpage === 'EXERCISE_DETAIL') {
+          compactTitle = activityDetailExerciseName || 'Exercise Details';
+          isDetailWithoutHero = true;
+        } else if (activeActivitySubpage === 'MUSCLES') compactTitle = 'Muscle Distribution';
+        else if (activeActivitySubpage === 'EQUIPMENT_STATS') compactTitle = 'Equipment Usage';
+
+        const heroCard = document.querySelector('#activitySubpageContainer #activitySubpageHeroCard');
+        const heroHeading = heroCard ? heroCard.querySelector('h1') : null;
+        const headerBottomMeasured = stickyBar.getBoundingClientRect().bottom || 82;
+        const titlePassedTop = isDetailWithoutHero || (heroHeading ? heroHeading.getBoundingClientRect().bottom <= headerBottomMeasured + 4 : isScrolled);
+
+        stickyBar.classList.add('is-pinned');
+        stickyBar.classList.toggle('has-scrolled-bar', titlePassedTop);
+        if (!leftSlot.firstElementChild || leftSlot.dataset.backTarget !== 'ACTIVITY') {
+          leftSlot.dataset.backTarget = 'ACTIVITY';
+          leftSlot.innerHTML = `
+            <button type="button" onclick="closeActivitySubpage()" aria-label="Back to Activity" class="glass glass--clear glass--circle-44 glass-interactive">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
           `;
@@ -9361,8 +10274,8 @@
         return;
       }
 
-      // 2. Top-Level Scrollable Pages (Activity & Settings Root only — Home has no sticky header)
-      if (state.activeTab === 'ACTIVITY' || (state.activeTab === 'MENU' && !activeMenuSubpage)) {
+      // 2. Top-Level Scrollable Pages (Activity Root & Settings Root only — Home has no sticky header)
+      if ((state.activeTab === 'ACTIVITY' && !activeActivitySubpage) || (state.activeTab === 'MENU' && !activeMenuSubpage)) {
         const headingEl = state.activeTab === 'ACTIVITY'
           ? document.querySelector('#activityHeroHeader h1')
           : document.querySelector('#menuHeroHeader h1');
@@ -10068,7 +10981,7 @@
       renderTabBar();
       if (state.activeTab === 'SUMMARY') {
         renderSummaryView();
-        if (!document.body.classList.contains('is-welcome-intro')) {
+        if (!document.body.classList.contains('is-welcome-intro') && !document.body.classList.contains('is-welcome-swooping')) {
           setTimeout(triggerSignInCardSweep, 120);
         }
       }
